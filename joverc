@@ -1,0 +1,21 @@
+# .joverc
+
+bind-to-key beginning-of-line ^[OH
+bind-to-key beginning-of-line ^[[1~
+bind-to-key end-of-line ^[OF
+bind-to-key end-of-line ^[[4~
+
+bind-to-key delete-next-character ^[[3~
+bind-to-key save-file ^[OQ
+bind-to-key save-file ^[[[B
+bind-to-key delete-buffer ^[OR
+bind-to-key delete-buffer ^[[[C
+bind-to-key exit-jove ^[[23~
+bind-to-key execute-kbd-macro ^[[19~
+
+bind-to-key query-replace-string ^[%
+
+bind-to-key previous-page ^[[5~
+bind-to-key next-page ^[[6~
+
+set case-ignore-search on

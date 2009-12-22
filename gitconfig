@@ -1,0 +1,109 @@
+# .gitconfig
+
+[user]
+    email = @EMAIL@
+    name = @NAME@
+
+[alias]
+    ci = commit --signoff
+    co = checkout
+    st = status
+    br = branch
+    praise = blame
+    sa = stash apply
+    sc = stash clear
+    ss = stash save
+
+    l1 = !git --no-pager log --max-count=1 HEAD
+    l3 = !git --no-pager log --max-count=3 HEAD
+    l5 = log --max-count=5 HEAD
+
+# git-svn commands
+# ================
+
+    up = svn rebase
+    dc = svn dcommit
+
+# handling a local transient branch
+# =================================
+
+# the intended sequence is:
+#   git co master # if not already there
+#   git pull      # update
+#   git today     # create local today branch
+#   while work
+#     edit ${file}
+#     git add ${file}
+#     git ci
+#   gitk # see the state
+#   git fetch
+#   git rebase master
+#   git tidy # more than once
+#   git done
+
+    today = checkout -b today
+    tidy = rebase -i master
+    done = rebase today master
+
+# rewrite history
+# ===============
+
+   last10 = rebase -i HEAD~10
+   last5 = rebase -i HEAD~5
+   last2 = rebase -i HEAD~2
+   last1 = rebase -i HEAD
+
+   # and the last 10 commits will appear in your favourite $EDITOR. A sample excerpt:
+   # pick 5c6eb73 Added repo.or.cz link
+   # pick a311a64 Reordered analogies in "Work How You Want"
+   # pick 100834f Added push target to Makefile
+
+   # Then:
+   # Remove commits by deleting lines.
+   # Reorder commits by reordering lines.
+   # Replace "pick" with "edit" to mark a commit for amending.
+   # Replace "pick" with "squash" to merge a commit with the previous one.
+
+   # If you marked a commit for editing, then run:
+   amend = commit --amend
+
+   # otherwise, run:
+   cont = rebase --continue
+
+
+# sending patches
+# ===============
+
+    fp = format-patch -C
+#    sm = send-email --compose --no-chain-reply-to --suppress-from --to list@project.tld 00*.patch
+    sm = send-email --compose --no-chain-reply-to --suppress-from --bcc @EMAIL@
+
+
+[sendemail]
+#   identity
+#   aliasesfile
+#   aliasfiletype
+#   to = devel@lists.openmoko.org
+#   cccmd
+    bcc = @EMAIL@
+    chainreplyto = false
+#    smtpserver = <smtp>
+#    smtpuser = <user>
+#    smtppass = <password>
+    smtpssl = false
+
+[apply]
+    whitespace = strip
+
+[diff]
+    color = auto
+    rename = copy
+
+[pager]
+    color = true
+
+[status]
+    color = auto
+
+[core]
+    excludesfile = @HOME@.git-global-ignore

@@ -1,0 +1,251 @@
+# .tcshrc
+
+# A righteous umask
+umask 22
+
+# KDE sets IFS to a spurious value
+unsetenv IFS
+
+# basic stuff
+
+#set path = ($HOME/bin /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin /usr/X11R6/bin)
+set path = ($HOME/bin /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin)
+
+# lang should be set be login.conf or ~/.login_conf
+#setenv LANG "en_GB.UTF-8"
+#setenv LC_ALL "${LANG}"
+
+#give lynx a custom configuration
+alias lynx 'lynx -nopause -cfg=~/.lynxcfg'
+
+# Remove Emacs Backups
+alias reb 'find . -name "*~" -print -exec rm -f {} \;'
+
+# make a directory and change to it
+alias mkcd 'mkdir -p \!:1; cd \!:1'
+
+switch (`uname -s`)
+case "NetBSD":
+  alias la	'ls -la'
+  alias ll	'ls -l'
+  alias lc	'ls -CF'
+  setenv DIFF_OPTIONS -urN
+  set path = ($HOME/bin /sbin /bin /usr/sbin /usr/bin /usr/pkg/sbin /usr/pkg/bin /usr/X11R6/bin)
+  breaksw
+case "FreeBSD":
+  alias la	'ls -laG'
+  alias ll	'ls -lG'
+  alias lc	'ls -CFG'
+  alias lycd	'lynx /host/localhost/cd/'
+  alias lycf	'lynx /host/localhost/cf/'
+  setenv DIFF_OPTIONS -urN
+  setenv GREP_OPTIONS --colour=auto
+  breaksw
+case "Linux":
+  alias la	'ls -la --color=auto'
+  alias ll	'ls -l --color=auto'
+  alias lc	'ls -CF --color=auto'
+  alias diff	'diff -urN'
+  setenv GREP_OPTIONS --colour=auto
+  breaksw
+case "SunOS":
+  alias la	'ls -la'
+  alias ll	'ls -l'
+  alias lc	'ls -CF'
+  alias diff	'diff -ur'
+  breaksw
+default:
+  echo Unrecognised system: \"`uname -s`\"
+endsw
+
+
+# some other users (the cd . uses the special alias to reset xterm title)
+setenv am_root "NO"
+which whoami >/dev/null
+if ($? == 0) then
+  if (`whoami` == root) then
+    setenv am_root "YES"
+  endif
+endif
+
+if ("${am_root}" == "NO") then
+  switch (`uname -s`)
+  case "NetBSD":
+  case "FreeBSD":
+#    alias toor	'su -l toor; cd .'
+    alias toor	'exec su -l toor'
+    alias root	'exec su -l root'
+    breaksw
+  case "Linux":
+    alias toor	'exec su - toor'
+    alias root	'exec su - root'
+    breaksw
+  case "SunOS":
+    alias toor	'exec su - toor'
+    alias root	'exec su - root -c /bin/bash'
+    breaksw
+  endsw
+endif
+unsetenv am_root
+
+alias su 'su \!* ; cd .'
+
+#if (-x `which xcin`) then
+#    setenv XMODIFIERS "@im=xcin"
+#    setenv LC_ALL zh_TW.Big5
+#endif
+
+alias edit "eie --no-frame"
+alias ed "eie --no-wait"
+setenv EDITOR "eie"
+
+foreach value (less more zile ex)
+  setenv PAGER `which $value`
+  if (-x "$PAGER") then
+    if ($value != less) then
+      alias less "$PAGER"
+    endif
+    break
+  endif
+end
+
+setenv BLOCKSIZE M
+
+setenv LESS '-i -R'
+setenv LYNX CFG=~/.lynxcfg
+foreach certdir (/usr/certs /usr/local/certs)
+  if (-d "$certdir") then
+    setenv SSL_CERT_DIR $certdir
+  endif
+end
+
+# cvs environment
+
+#setenv CVSROOT /home/ncvs
+setenv CVS_RSH `which ssh`
+
+
+# text processing
+
+setenv SGML_ROOT /usr/local/share/sgml
+setenv SGML_CATALOG_FILES ${SGML_ROOT}/jade/catalog
+setenv SGML_CATALOG_FILES ${SGML_ROOT}/iso8879/catalog:$SGML_CATALOG_FILES
+setenv SGML_CATALOG_FILES ${SGML_ROOT}/html/catalog:$SGML_CATALOG_FILES
+setenv SGML_CATALOG_FILES ${SGML_ROOT}/docbook/catalog:$SGML_CATALOG_FILES
+setenv SGML_CATALOG_FILES /usr/doc/share/sgml/catalog:$SGML_CATALOG_FILES
+
+
+if (-x `which kpsexpand` && -d ${HOME}/sgml) then
+  #setenv SGML_PATH /usr/local/share/sgml:${HOME}/sgml
+  setenv SGML_CATALOG_FILES ${SGML_ROOT}/linuxdoc/catalog:$SGML_CATALOG_FILES
+  setenv SGML_CATALOG_FILES ${HOME}/sgml/CATALOG:$SGML_CATALOG_FILES
+  setenv TEXINPUTS .:${HOME}/sgml/latex:${HOME}/latex:`kpsexpand -n latex -p tex`
+  # ${HOME}/latex/graphics:/usr/local/share/texmf/tex:/usr/local/share/texmf/tex/latex
+  setenv TPT_LIB ${HOME}/sgml/transpec
+endif
+
+
+# for my pcemu/dos comand line compilers
+
+if (-d ~/dos) then
+  setenv DOS_STARTUP_DRIVE D:
+  setenv DOS_STARTUP_DIRECTORY ~/dos
+  setenv DOS_DATA_DRIVE E:
+  setenv DOS_STARTUP_FILE ${DOS_STARTUP_DIRECTORY}/startup.bat
+endif
+
+
+# java
+
+#setenv JAVA HOME=/usr/local/java
+#setenv CLASSPATH .:${CLASSPATH}
+#setenv PATH ${PATH}:/usr/local/java/bin
+
+
+# command line completion
+
+set fignore = (.o \~)
+
+
+# sort out if interactive
+
+if ($?prompt) then
+  # An interactive shell -- set some stuff up
+  set filec
+  set history = 1000
+  set savehist = 1000
+  set mail = (/var/mail/$USER)
+  set autolist
+
+  #Keys 2=Insert 3=Delete 5=Page Up 6=Page Down 7=Home 8=End
+  # normal=~ control=^
+
+#  bindkey "^[[2~" delete-char
+  bindkey "^[[3~" delete-char
+
+  bindkey "^[[5~" i-search-back
+  bindkey "^[[6~" i-search-fwd
+
+  bindkey "^[[7~" beginning-of-line
+  bindkey "^[[8~" end-of-line
+
+  bindkey "^R" i-search-back
+
+  if (${TERM} == "cons25") then
+    bindkey "^?" delete-char
+  endif
+
+  set prompt = '%S%m%s:%B%c2%b%% '
+  which whoami >/dev/null
+  if ($? == 0) then
+    if (`whoami` == root) then
+      set prompt = '%S%m%s:%B%c2%b[%UROOT%u]# '
+    endif
+  endif
+
+  if (-f /etc/termcap && ${TERM} == "xterm-color" ) then
+    if (`grep 'xterm-color[:|]' /etc/termcap` == "") then
+      setenv TERMCAP \
+        "xterm-color:pa#64:Co#8:AF=\E[3%dm:AB=\E[4%dm:op=\E[39;49m:tc=vt220:"
+    endif
+  endif
+
+  if (${TERM} != "cons25" && ${TERM} != "linux") then
+    # auto executes when cd is used
+    alias cwdcmd 'echo -n "]2;tcsh: ${USER}@${HOST}: $cwd]1;${HOST}"'
+
+    cwdcmd
+  endif
+
+  complete dd c/--/"(help version)"/ c/\[io\]f=/f/ \
+    c/conv=\*,/"(ascii ebcdic ibm block unblock lcase notrunc ucase swab noerror sync)"/,\
+    c/conv=/"(ascii ebcdic ibm block unblock \
+              lcase notrunc ucase swab noerror sync)"/,\
+              c/\*=/x:'<number>'/ \
+              n/\*/"(if of conv ibs obs bs cbs files skip file seek count)"/=
+
+
+  # darcs configuration
+  setenv DARCS_EDITOR $EDITOR
+  setenv DARCS_PAGER $PAGER
+  complete darcs 'p/1/(initialize get add remove mv whatsnew record unrecord \
+                     amend-record revert unrevert pull unpull rollback send \
+                     apply push replace tag setpref diff changes annotate \
+                     optimize check resolve dist trackdown repair query)/' \
+          	 'n/query/(manifest tags)/' \
+		 'n/whatsnew/(-ls)/' \
+		 'p/2/f/'
+
+  complete git 'p/1/(status add commit)/' \
+               'n/commit/(-a)/'
+
+
+  # for fun
+  test -x /usr/games/pom && /usr/games/pom
+
+endif
+
+# additional customisation
+foreach script (${HOME}/bin/AutoStart.*)
+  source ${script}
+end
