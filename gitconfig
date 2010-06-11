@@ -18,6 +18,12 @@
     l3 = !git --no-pager log --max-count=3 HEAD
     l5 = log --max-count=5 HEAD
 
+# graph of tree
+# =============
+
+    lol = log --graph --decorate --pretty=oneline --abbrev-commit
+    lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
+
 # git-svn commands
 # ================
 
@@ -99,6 +105,12 @@
     color = auto
     rename = copy
 
+[color]
+    branch = auto
+    diff = auto
+    interactive = auto
+    status = auto
+
 [pager]
     color = true
 
@@ -107,3 +119,4 @@
 
 [core]
     excludesfile = @HOME@.git-global-ignore
+    autocrlf = input
