@@ -32,6 +32,13 @@ fi
 # give lynx a custom configuration
 alias lynx='lynx -nopause'
 
+# this is a quick fix for lxterminal tab names
+if [ -n "${PROMPT_COMMAND}" ]
+then
+  cd
+  PROMPT_COMMAND='echo -ne "\033]0;${PWD/${HOME}/~}\007"'
+fi
+
 mkcd()
 {
   local dir
