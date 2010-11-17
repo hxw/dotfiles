@@ -90,11 +90,6 @@ unsetenv am_root
 
 alias su 'su \!* ; cd .'
 
-#if (-x `which xcin`) then
-#    setenv XMODIFIERS "@im=xcin"
-#    setenv LC_ALL zh_TW.Big5
-#endif
-
 alias edit "eie --no-frame"
 alias ed "eie --no-wait"
 setenv EDITOR "eie"
