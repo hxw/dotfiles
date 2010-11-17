@@ -21,6 +21,7 @@ SED gitconfig
 
 COPY bashrc
 COPY joverc
+COPY mg
 COPY tcshrc
 
 
@@ -61,7 +62,7 @@ for f in ${list_sed}
 do
   d="${HOME}/.${f}"
   echo Substitute ${f} to ${d}
-  sed "s,@HOME@,${HOME}/,g;s/@EMAIL@/${email}/g;s/@NAME@/${name}/g;" "${f}" Z "${d}"
+  sed "s,@HOME@,${HOME}/,g;s/@EMAIL@/${email}/g;s/@NAME@/${name}/g;" "${f}" > "${d}"
 done
 
 for f in ${list_copy}
