@@ -16,6 +16,12 @@ then
   alias edit="eie --no-frame"
   alias ed="eie --no-wait"
   export EDITOR="eie"
+elif which mg > /dev/null 2>&1
+then
+  alias edit="mg"
+  alias ed="mg"
+  export EDITOR="mg"
+fi
 elif which jove > /dev/null 2>&1
 then
   alias edit="jove"
