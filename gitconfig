@@ -21,8 +21,12 @@
 # graph of tree
 # =============
 
-    lol = log --graph --decorate --pretty=oneline --abbrev-commit
-    lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
+    #lol = log --graph --decorate --pretty=oneline --abbrev-commit
+    #lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
+
+    lol = log --graph --pretty=format:'%C(bold red)%h%Creset -%C(bold yellow)%d%Creset %s %C(bold green)(%cr)%Creset' --abbrev-commit --date=relative --all
+
+    lola = log --graph --pretty=format:'%C(bold red)%h%Creset -%C(bold yellow)%d%Creset %s %C(bold green)(%cr) %C(bold ul blue)%an%Creset' --abbrev-commit --date=relative --all
 
 # git-svn commands
 # ================
@@ -108,8 +112,46 @@
 [color]
     branch = auto
     diff = auto
+    grep = auto
     interactive = auto
     status = auto
+
+# Colours:  black, red, green, yellow, blue, magenta, cyan and white
+# Attributes: bold, dim, ul, blink and reverse
+# var = [attribute] foreground [background]
+
+[color.branch]
+    current = bold green
+    local = bold yellow
+    remote = bold red
+    plain = white
+
+[color.diff]
+    #plain = white
+    #meta = white
+    frag = ul bold blue
+    #func = white
+    old = bold red
+    new = bold green
+    commit = yellow
+    #whitespace = white
+
+[color.grep]
+    match = bold yellow
+
+[color.interactive]
+    prompt = bold cyan
+    header = bold blue
+    help = bold green
+    error = bold red
+
+[color.status]
+    #header = green
+    added = bold yellow
+    updated = bold green
+    changed = bold red
+    untracked = bold blue
+    nobranch = bold magenta
 
 [pager]
     color = true
