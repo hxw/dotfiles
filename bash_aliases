@@ -21,7 +21,6 @@ then
   alias edit="mg"
   alias ed="mg"
   export EDITOR="mg"
-fi
 elif which jove > /dev/null 2>&1
 then
   alias edit="jove"
