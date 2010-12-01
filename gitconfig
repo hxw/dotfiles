@@ -146,12 +146,13 @@
     error = bold red
 
 [color.status]
-    #header = green
+    header = bold white
     added = bold yellow
     updated = bold green
     changed = bold red
     untracked = bold blue
     nobranch = bold magenta
+    unmerged = bold cyan
 
 [pager]
     color = true
@@ -161,4 +162,4 @@
 
 [core]
     excludesfile = @HOME@.git-global-ignore
-    autocrlf = input
+#    autocrlf = input
