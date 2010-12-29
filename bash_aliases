@@ -1,4 +1,4 @@
-# .bash_aliases
+# .bash_aliases -*- mode: shell-script -*-
 
 alias ll='ls -l'
 alias la='ls -A'
@@ -32,7 +32,7 @@ fi
 alias lynx='lynx -nopause'
 
 # this is a quick fix for lxterminal tab names
-if [ -n "${PROMPT_COMMAND}" ]
+if [ -z "${PROMPT_COMMAND}" ]
 then
   cd
   PROMPT_COMMAND='echo -ne "\033]0;${PWD/${HOME}/~}\007"'
