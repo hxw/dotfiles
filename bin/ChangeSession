@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# KDE3
+if [ -n "${KONSOLE_DCOP_SESSION}" ]
+then
+  dcop "${KONSOLE_DCOP_SESSION}" renameSession "$1"
+fi
+
+# KDE4
+if [ -n "${KONSOLE_DBUS_SERVICE}" -a -n "${KONSOLE_DBUS_SESSION}" ]
+then
+  qdbus "${KONSOLE_DBUS_SERVICE}" "${KONSOLE_DBUS_SESSION}" setTitle 0 "$*" 2> /dev/null
+  qdbus "${KONSOLE_DBUS_SERVICE}" "${KONSOLE_DBUS_SESSION}" setTitle 1 "$*" 2> /dev/null
+fi

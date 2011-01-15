@@ -1,0 +1,337 @@
+# setup for calc
+
+print "Starting calc\n"
+
+scale = 24
+
+print "  scale = ", scale, "\n"
+pi = 4 * a(1)
+print "  pi = ", pi, "\n"
+
+print "\n"
+
+
+# some basic additions
+
+print "int(x) = integer part\n"
+define int(number) {
+  auto oldscale
+  oldscale = scale
+  scale = 0
+  number /= 1 /* round number down */
+  scale = oldscale
+  return(number)
+}
+
+print "power(number, exponent) = number^exponent == e^(exponent*log(number))\n"
+define power(number, exponent) {
+  if (exponent == int(exponent)) {
+    return(number ^ exponent) 
+  } else {
+    return(e(exponent * l(number)))
+  }
+}
+
+print "sin, cos, tan arcsin, arccos, arctan\n"
+
+define sin(theta) {
+  return(s(theta))
+}
+
+define cos(theta) {
+  return(c(theta))
+}
+
+define tan(theta) {
+  return(s(theta) / c(theta))
+}
+
+define arcsin(x) {
+ return(2 * a(x / (1 + sqrt(1 - x^2))))
+}
+
+define arccos(x) {
+  return(2 * a(sqrt(1 - x^2) / (1 + x)))
+}
+
+define arctan(x) {
+  return(a(x))
+}
+
+print "\n"
+
+
+# scaling
+
+print "scaling: pico, nano, micro, milli, kilo, mega, giga, tera\n"
+print "  e.g.   kilo(1.5) -> 1500\n"
+print "  e.g.   to_mega(25123456) -> 25.123456\n"
+
+define pico(x) { return(x * 10^-12) }
+define nano(x) { return(x * 10^-9) }
+define micro(x) { return(x * 10^-6) }
+define milli(x) { return(x * 10^-3) }
+define kilo(x) { return(x * 10^3) }
+define mega(x) { return(x * 10^6) }
+define giga(x) { return(x * 10^9) }
+define tera(x) { return(x * 10^12) }
+
+define to_pico(x) { return(x / 10^-12) }
+define to_nano(x) { return(x / 10^-9) }
+define to_micro(x) { return(x / 10^-6) }
+define to_milli(x) { return(x / 10^-3) }
+define to_kilo(x) { return(x / 10^3) }
+define to_mega(x) { return(x / 10^6) }
+define to_giga(x) { return(x / 10^9) }
+define to_tera(x) { return(x / 10^12) }
+print "\n"
+
+
+# Resistors
+
+print "pd(v, rh, rl) = potential divider\n"
+print "  v applied to top of rh, rl bottom grounded\n"
+
+define pd(v, rh, rl) {
+
+  return(v * rl / (rh + rl))
+
+}
+
+print "\n"
+print "p_r(r1, r2) = resistors in parallel\n"
+define p_r(r1, r2) {
+  return(1 / (1/r1 + 1/r2))
+}
+
+
+print "r_p(rd, rc) = resistor to put in parallel with rc to get rd\n"
+print "  rd = desired resitance\n"
+print "  rc = current value\n"
+
+define r_p(rd, rc) {
+  return(1 / (1/rd - 1/rc))
+}
+
+print "\n"
+
+
+# Inductors and capacitors
+
+print "xl(fHz, lH)        = inductive reactance\n"
+print "xc(fHz, cF)        = capcitative reactance\n"
+print "lc(lH, cF)         = resonant frequency (Hz)\n"
+print "qslcr(lH, cF, rW)  = series Q factor\n"
+print "qplcr(lH, cF, rW)  = parallel Q factor\n"
+print "bwlcr(lH, cF, rW)  = bandwidth (Hz)\n"
+print "dfslcr(lH, cF, rW) = series damping factor\n"
+print "dfplcr(lH, cF, rW) = parallel damping factor\n"
+print "lcr(lH, cF, rW)    = print lcr info\n"
+print "tc(tS, rW, cF)     = time constant calc in %\n"
+print "  e.g. to_mega(lc(nano(135), pico(1.8)))\n"
+print "  e.g. lcr(nano(135), pico(1.8), 1.5)\n"
+
+define xl(f, l) {
+  return(2 * pi * f * l)
+}
+
+define xc(f, c) {
+  return(-1 / (2 * pi * f * c))
+}
+
+define lc(l, c) {
+  return(1 / (2 * pi * sqrt(l * c)))
+}
+
+define qslcr(l, c, r) {
+  return((1 / r) * sqrt(l / c))
+}
+
+define qplcr(l, c, r) {
+  return(1 / qslcr(l, c, r))
+}
+
+define bwlcr(l, c, r) {
+  return(r / (2 * pi * l))
+}
+
+define dfslcr(l, c, r) {
+  return(r / (2 * l))
+}
+
+define dfplcr(l, c, r) {
+  return(1 /(2 * r * c))
+}
+
+
+define printfreq(f) {
+  auto oldscale
+  oldscale = scale
+  scale = 3
+  if (f >= 10^9) {
+    f = int(f + 0.5) / 10^9
+    print f, " GHz"
+  } else if (f >= 10^6) {
+    f = int(f + 0.5) / 10^6
+    print f, " MHz"
+  } else if (f >= 10^3) {
+    f = int(f + 0.5) / 10^3
+    print f, " kHz"
+  } else {
+    f = int(f * 1000 + 0.5) / 1000
+    print f, " Hz"
+  }
+  scale = oldscale
+}
+
+define printtime(t) {
+  auto oldscale
+  oldscale = scale
+  if (t >= 10^9) {
+    scale = 3
+    t = int(t + 0.5) / 10^9
+    print t, " Gs"
+  } else if (t >= 10^6) {
+    scale = 3
+    t = int(t + 0.5) / 10^6
+    print t, " Ms"
+  } else if (t >= 10^3) {
+    scale = 3
+    t = int(t + 0.5) / 10^3
+    print t, " ks"
+  } else if (t >= 1) {
+    scale = 3
+    t = int(t * 1000 + 0.5) / 1000
+    print t, " s"
+  } else if (t >= 10^-3) {
+    scale = 3
+    t = int(t * 10^6 + 0.5) / 1000
+    print t, " ms"
+  } else if (t >= 10^-6) {
+    scale = 3
+    t = int(t * 10^9 + 0.5) / 1000
+    print t, " us"
+  } else if (t >= 10^-9) {
+    scale = 3
+    t = int(t * 10^12 + 0.5) / 1000
+    print t, " ns"
+  } else {
+    scale = 3
+    t = int(t * 10^15 + 0.5) / 1000
+    print t, " ps"
+  }
+  scale = oldscale
+}
+
+define lcr(l, c, r) {
+  auto f, n
+  f = lc(l, c)
+  print "resonance = "; n = printfreq(f); print "\n"
+  print "bwlcr     = "; n = printfreq(bwlcr(l, c, r)); print "\n"
+
+  print "xl        = ", xl(f, l), " W\n"
+  print "xc        = ", xc(f, c), " W\n"
+
+  print "qslcr     = ", qslcr(l, c, r), "\n"
+  print "qplcr     = ", qplcr(l, c, r), "\n"
+ 
+  print "dfslcr    = ", dfslcr(l, c, r), "\n"
+  print "dfplcr    = ", dfplcr(l, c, r), "\n"
+}
+
+define tc(t, r, c) {
+  auto p, n
+  if (t > 0) {
+    p = 100 * (1 - e(-t/(r * c)))
+    print "Percentage charge = ", p, "\n"
+  }
+  print "Time constant     = "; n = printtime(r * c); print "\n"
+}
+
+print "\n"
+
+
+# digital filtering
+
+define q(e, x) {
+  return(2^e * x)
+}
+
+define printq(e, x) {
+  auto i, oldbase
+  i = int(2^e * x + 0.5)
+  if (i < 0) {
+    i += 2^(e + 2)
+  }
+  oldobase = obase
+  obase = 16
+  print "0x", i
+  obase = oldobase
+  print " ", i
+}
+
+
+print "notch(bits, fnotchHz, fsampleHz)  e.g.  notch(14, 400, kilo(16))\n"
+define notch(bits, fnotch, fsample) {
+  auto k0, k1, k2, n
+  k0 = 1
+  k1 = -2 * cos(2 * pi * fnotch / fsample)
+  k2 = 1
+
+  print "k0 = ", k0, "\n"
+  print "k1 = ", k1, "\n"
+  print "k2 = ", k2, "\n"
+
+  print "k0 = "; n = printq(bits, k0); print "\n"
+  print "k1 = -"; n = printq(bits, -k1); print "\n"
+  print "k1 = "; n = printq(bits, k1); print "\n"
+  print "k2 = "; n = printq(bits, k2); print "\n"
+}
+
+print "\n"
+
+# time difference
+
+print "tdiff(hour1, minute1, second1, hour2, minute2, second2)\n"
+define tdiff(hour1, minute1, second1, hour2, minute2, second2) {
+  auto ts1, ts2, diff, ddiff, hdiff, mdiff, sdiff
+  ts1 = 60 * 60 * hour1 + 60 * minute1 + second1
+  ts2 = 60 * 60 * hour2 + 60 * minute2 + second2
+  if (ts1 < ts2) {
+    diff = ts2 - ts1
+  } else {
+    diff = ts1 - ts2
+  }
+
+  ddiff = int(diff / (24 * 60 * 60))
+  diff = diff - ddiff * 24 * 60 * 60
+  hdiff = int(diff / (60 * 60))
+  sdiff = diff - 60 * 60 * hdiff
+  mdiff = int(sdiff / 60)
+  sdiff -= 60 * mdiff
+
+  print "time difference = "
+  if (ddiff == 1) {
+    print "1 day "
+  } else {
+    print ddiff, " days "
+  }
+  print hdiff, ":"
+  if (mdiff < 10) {
+    print "0", mdiff
+  } else {
+    print mdiff
+  }
+  print ":"
+  if (sdiff < 10) {
+    print "0", sdiff
+  } else {
+    print sdiff
+  }
+  print "\n"
+
+  return(diff)
+}
+
+print "\n"
+print "Enter Calculation:\n"

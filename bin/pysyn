@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+
+import sys, os
+
+
+def check(filename):
+    """Check python file for syntax errors"""
+
+    if not os.path.exists(filename):
+        raise IOError, 'File not found.'
+
+    file = open(filename).read()
+    try:
+        compile(file, 'test', 'exec')
+    except:
+        exception_instance = sys.exc_info()[1]
+        print 'file: %s line: %i col: %i' % (filename, exception_instance.lineno,
+                                             exception_instance.offset)
+    else:
+        print 'file: %s No error' %(filename)
+
+
+def main():
+    for file in sys.argv[1:]:
+        check(file)
+
+
+# run the program
+if __name__ == "__main__":
+    main()

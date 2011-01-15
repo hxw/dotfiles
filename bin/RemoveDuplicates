@@ -1,0 +1,231 @@
+#!/bin/sh
+# Remove Duplicate files
+# Copyright 2006 Christopher Hall
+# License GPL2 or later
+
+usage()
+{
+  if [ -n "$1" ]
+  then
+    echo error: $*
+  fi
+  echo usage: $(basename "$0") '[--yes] [--precious=prefix]...' list-of-directories
+  exit 1
+}
+
+TempList=''
+
+# remove all files created by NewTemp (needs trap command)
+cleanup()
+{
+  [ -n "${TempList}" ] && eval rm -f "${TempList}"
+}
+
+trap cleanup INT EXIT
+
+# usage: NetTemp var_name
+NewTemp()
+{
+  local TempName TempFile
+
+  [ -z "$1" ] && usage INTERNAL ERROR: NewTemp requires argument
+
+  TempName="$1"; shift
+  TempFile=$(mktemp /tmp/$(basename "$0").XXXXXX)
+  TempList="${TempList} '${TempFile}'"
+  eval "${TempName}=\"\${TempFile}\""
+}
+
+
+# detect program from a list of choices
+DetectProgram()
+{
+  local ProgramName prog PathProg
+
+  ProgramName="$1"; shift
+
+  for prog in "$@"
+  do
+    PathProg=$(which "${prog%%:*}" 2>/dev/null)
+    [ -n "${PathProg}" ] && break
+  done
+  [ -z "${PathProg}" ] && usage ${ProgramName} not found
+
+  echo using:${ProgramName} = ${PathProg} ${prog#*:}
+  eval "${ProgramName}=\"\${PathProg} \${prog#*:}\""
+}
+
+
+# Find out if file is protected
+IsPrecious()
+{
+  local i file p q
+  file="$1"; shift
+
+  i=1
+  while [ ${i} -lt ${PreciousIndex} ]
+  do
+    eval p="\${precious_${i}}"
+    eval q="\${file#${p}}"
+
+    if [ X"${file}" != X"${q}" ]
+    then
+      return 0
+    fi
+    i=$((${i} + 1))
+  done
+
+  return 1
+}
+
+
+# Prompt for removal of non-precious files
+REMOVE()
+{
+  local f
+
+  echo "-----"
+  for f in "$@"
+  do
+    if ! IsPrecious "${f}"
+    then
+      if [ X"${DefaultYes}" = X"YES" ]
+      then
+        yn=YES
+      else
+        yn=NO
+        read -p "==>REMOVE: ${f} (y/n/a/q) ? [n] " yn junk
+      fi
+      case "${yn}" in
+	[aA]|[aA][lL][lL])
+          rm -f "${f}"
+          echo DELETED: "${f}"
+          DefaultYes=YES
+          ;;
+	[yY]|[yY][eE][sS])
+          rm -f "${f}"
+          echo DELETED: "${f}"
+          ;;
+	[qQ]|[qQ][uU][iI][tT])
+          exit 1
+          ;;
+        *)
+          echo KEEP: "${f}"
+          ;;
+      esac
+    else
+      echo ***PRECIOUS: ${f}
+    fi
+  done
+}
+
+
+# Check for differences, this is called
+# for files with matching MD5 sums
+# i.e. two dissimilar files can have the same
+# sum.  So this uses cmp to be certain
+MultiDiff()
+{
+  local first f differ
+  first="$1"; shift
+
+  differ=NO
+  echo
+  echo '*'File: "${first}"
+  for f in "$@"
+  do
+    if cmp "${first}" "${f}"
+    then
+      echo ' 'Same: "${f}"
+    else
+      echo DIFFERENT: "${f}"
+      differ=YES
+    fi
+  done
+
+  if [ X"${differ}" = X"NO" ]
+  then
+    REMOVE "${first}" "$@"
+  else
+    echo CANNOT REMOVE
+  fi
+}
+
+
+# initialisation
+DetectProgram AWK gawk: awk: nawk:
+DetectProgram MD5 md5:-r md5sum:
+
+precious=''
+PreciousIndex=1
+outfile=''
+DefaultYes=NO
+NewTemp outfile
+
+# scan arguments
+while :
+do
+  case "$1" in
+    --precious=*)
+      eval "precious_${PreciousIndex}='${1#--precious=}'"
+      PreciousIndex=$((${PreciousIndex} + 1))
+      shift
+      ;;
+    --yes)
+      DefaultYes=YES
+      shift
+      ;;
+    -*)
+      usage invalid option $1
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+[ -z "$1" ] && usage Missing arguments
+
+# search all directories and get MD5 sums for files
+# awk is then used to tabulate MD% matches
+find "$@" -type d | ( 
+  IFS=''
+  while read dir
+  do
+    echo Check ${MD5} ${dir}
+    if [ ! -d "${dir}" ]
+    then
+      echo Something wrong with: "'${dir}'"
+      exit 99
+    fi
+    eval ${MD5} \"${dir}\"/* 2>/dev/null
+  done
+  exit 0
+) | ${AWK} '
+  BEGIN {
+    delete h
+    delete k
+  }
+  /^[0-9a-fA-F]+[[:space:]]/ {
+    md5 = $1
+    sub("^[0-9a-fA-F]*[[:space:]]*", "")
+    file = $0
+    h[md5] = h[md5] " \"" file "\""
+    ++k[md5]
+    #print("# " md5 ">" file "<")
+  }
+
+  END {
+    for (i in h)
+    {
+      if (k[i] > 1)
+      {
+        print("MultiDiff",h[i]," || exit $?")
+      }
+    }
+  }
+' | sort >> "${outfile}"
+[ $? -ne 0 ] && usage find/${AWK} Process failed
+
+# outfile is a script to run the REMOVE routine above
+[ -r "${outfile}" ] && . "${outfile}"
