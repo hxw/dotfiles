@@ -9,6 +9,8 @@ global-set-key "\eg" goto-line
 
 ; F2
 global-set-key "\eOQ" save-buffer
+; F2 on linux console
+global-set-key "\e[[B" save-buffer
 
 ; F8
 global-set-key "\e[19~" call-last-kbd-macro
