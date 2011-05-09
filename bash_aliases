@@ -60,6 +60,45 @@ mkcd()
   return 0
 }
 
+# remove items from PATH
+pathrm()
+{
+  local item pa p IFS old_ifs
+  old_ifs="${IFS}"
+  IFS=':'
+  pa=(${PATH})
+  IFS="${old_ifs}"
+
+  for item in $@
+  do
+    pa=("${pa[@]/${item}/}")
+  done
+
+  p=
+  for item in "${pa[@]}"
+  do
+    [ -n "${item}" ] && p="${p}:${item}"
+  done
+  pa="${pa[@]}"
+  PATH="${p:1}"
+}
+
+# add items to front of PATH
+# move existing items to front of PATH
+pathfront()
+{
+  local item p
+  pathrm "$@"
+
+  p=
+  for item in $@
+  do
+    [ -n "${item}" ] && p="${p}:${item}"
+  done
+  PATH="${p:1}:${PATH}"
+}
+
+# include machine specific aliases
 if [ -f ~/.bash_aliases_extra ]; then
     . ~/.bash_aliases_extra
 fi
