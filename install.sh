@@ -1,4 +1,6 @@
 #!/bin/sh
+# install compare update
+
 
 list_sed=''
 list_copy=''
@@ -19,8 +21,8 @@ COPY()
 
 SED gitconfig
 
-COPY bashrc
-COPY joverc
+COPY bash_aliases
+#COPY joverc
 COPY mg
 COPY tcshrc
 
@@ -39,9 +41,11 @@ ERROR()
 # note: need the exit as the ERROR only terminates the $() sub-shell
 get()
 {
-  local prompt data
-  read -p "$*: " -r data
-  [ -z "${data}" ] && ERROR field cannot be blank
+  local default prompt data
+  default="$1"; shift
+
+  read -p "$* [${default}]: " -r data
+  [ -z "${data}" ] && data="${default}"
   printf '%s' "${data}" | sed 's/\\/\\\\/g;s,/,\\/,g;s,&,\\\&,g'
 }
 
@@ -52,12 +56,24 @@ get()
 echo this will install the files to: ${HOME}
 echo Ctrl-C to abort
 
+config="${HOME}/.dotfilesrc"
+
+name=
+email=
+[ -f "${config}" ] && . "${config}"
 
 echo Enter some data for substitutions
 
-name=$(get Enter full name) || exit 1
-email=$(get Enter email address) || exit 1
+name=$(get "${name}" Enter full name) || exit 1
+email=$(get "${email}" Enter email address) || exit 1
 
+rm -f "${config}"
+echo '# .dotfilesrc' >> "${config}"
+echo '' >> "${config}"
+echo 'email='"'"${email}"'" >> "${config}"
+echo 'name='"'"${name}"'" >> "${config}"
+
+# use sed to substitute som @VAR@ by values saved in ${config}
 for f in ${list_sed}
 do
   d="${HOME}/.${f}"
@@ -65,6 +81,7 @@ do
   sed "s,@HOME@,${HOME}/,g;s/@EMAIL@/${email}/g;s/@NAME@/${name}/g;" "${f}" > "${d}"
 done
 
+# file that are just copied
 for f in ${list_copy}
 do
   d="${HOME}/.${f}"
