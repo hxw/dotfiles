@@ -31,8 +31,8 @@ fi
 # give lynx a custom configuration
 alias lynx='lynx -nopause'
 
-# this is a quick fix for lxterminal tab names
-if [ -z "${PROMPT_COMMAND}" ]
+# this is a quick fix for roxterm tab names
+if [ -n "${ROXTERM_ID}" -a -z "${PROMPT_COMMAND}" ]
 then
   cd
   PROMPT_COMMAND='echo -ne "\033]0;${PWD/${HOME}/~}\007"'
