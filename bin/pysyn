@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import sys, os
 
 
@@ -14,10 +16,14 @@ def check(filename):
         compile(file, 'test', 'exec')
     except:
         exception_instance = sys.exc_info()[1]
-        print 'file: %s line: %i col: %i' % (filename, exception_instance.lineno,
-                                             exception_instance.offset)
+        print('error: {e:s}'.format(e=exception_instance.args[0]))
+        print('file: {f:s} line: {l:d} col: {c:d}'.format(f=filename,
+                                                          l=exception_instance.lineno,
+                                                          c=exception_instance.offset))
+        print(exception_instance.text.rstrip())
+        print('{s:s}^'.format(s=' '*exception_instance.offset))
     else:
-        print 'file: %s No error' %(filename)
+        print('file: {f:s} No error'.format(f=filename))
 
 
 def main():
