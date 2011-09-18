@@ -131,6 +131,12 @@ main()
 }
 
 
+if [ X"root" = X"$(whoami)" ]
+then
+  main "$@"
+  exit 0
+fi
+
 if [ -z "${SUDO_UID}" -o -z "${SUDO_GID}" ]
 then
   echo re-run with sudo
