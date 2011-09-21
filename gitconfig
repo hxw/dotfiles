@@ -109,7 +109,7 @@
 
 [diff]
     color = auto
-    rename = copy
+    renames = copy
 
 [color]
     branch = auto
