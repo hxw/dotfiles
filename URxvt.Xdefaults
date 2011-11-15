@@ -1,0 +1,56 @@
+! rxvt-unicode scheme
+
+URxvt*geometry: 100x30
+
+URxvt*background: CornflowerBlue
+URxvt*foreground: White
+
+
+! black
+URxvt.color0  : Black
+URxvt.color8  : Grey41
+! red
+URxvt.color1  : Red3
+URxvt.color9  : Pink
+! green
+URxvt.color2  : ForestGreen
+URxvt.color10 : SpringGreen2
+! yellow
+URxvt.color3  : Orange
+URxvt.color11 : Yellow
+! blue
+URxvt.color4  : RoyalBlue4
+URxvt.color12 : LightSkyBlue
+! magenta
+URxvt.color5  : Purple
+URxvt.color13 : Magenta
+! cyan
+URxvt.color6  : DarkCyan
+URxvt.color14 : Cyan
+! white
+URxvt.color7  : Grey60
+URxvt.color15 : White
+
+
+!URxvt*font: xft:Monospace:pixelsize=12
+!URxvt*boldFont: xft:Monospace:pixelsize=12
+
+URxvt*font: xft:DejaVu Sans Mono:pixelsize=16
+URxvt*boldFont: xft:DejaVu Sans Mono:pixelsize=16
+
+URxvt*letterSpace: -1
+
+URxvt.perl-ext-common: default,tabbed,matcher
+
+!URxvt.perl-ext-common : default,matcher
+URxvt.urlLauncher     : firefox
+URxvt.matcher.button  : 1
+
+!URxvt.matcher.pattern.1:  \\bwww\\.[\\w-]+\\.[\\w./?&@#-]*[\\w/-]
+!URxvt.matcher.pattern.2:  \\B(/\\S+?):(\\d+)(?=:|$)
+!URxvt.matcher.launcher.2: gvim +$2 $1
+
+URxvt.tabbed.tabbar-fg: 11
+URxvt.tabbed.tabbar-bg: 7
+URxvt.tabbed.tab-fg: 15
+URxvt.tabbed.tab-bg: 4

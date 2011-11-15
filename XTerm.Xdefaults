@@ -1,4 +1,4 @@
-! .Xdefaults
+! XTerm scheme
 
 XTerm*background: Blue4
 XTerm*foreground: White
