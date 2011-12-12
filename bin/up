@@ -24,10 +24,16 @@ verbose=no
 update=yes
 purge=yes
 prompt=yes
-use_apt_get=no
-
 debug=no
 
+if [ -z "$(which aptitude)" ]
+then
+  use_apt_get=yes
+else
+  use_apt_get=no
+fi
+
+# decode options
 getopt=/usr/local/bin/getopt
 [ -x "${getopt}" ] || getopt=getopt
 args=$(${getopt} -o hvynpa --long=help,verbose,yes,no-update,no-purge,use-apt-get,debug -- "$@") ||exit 1
