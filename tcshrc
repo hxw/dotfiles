@@ -8,12 +8,7 @@ unsetenv IFS
 
 # basic stuff
 
-#set path = ($HOME/bin /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin /usr/X11R6/bin)
 set path = ($HOME/bin /sbin /bin /usr/sbin /usr/bin /usr/games /usr/local/sbin /usr/local/bin)
-
-# lang should be set be login.conf or ~/.login_conf
-#setenv LANG "en_GB.UTF-8"
-#setenv LC_ALL "${LANG}"
 
 #give lynx a custom configuration
 alias lynx 'lynx -nopause -cfg=~/.lynxcfg'
@@ -108,53 +103,6 @@ setenv BLOCKSIZE M
 
 setenv LESS '-i -R'
 setenv LYNX CFG=~/.lynxcfg
-foreach certdir (/usr/certs /usr/local/certs)
-  if (-d "$certdir") then
-    setenv SSL_CERT_DIR $certdir
-  endif
-end
-
-# cvs environment
-
-#setenv CVSROOT /home/ncvs
-setenv CVS_RSH `which ssh`
-
-
-# text processing
-
-setenv SGML_ROOT /usr/local/share/sgml
-setenv SGML_CATALOG_FILES ${SGML_ROOT}/jade/catalog
-setenv SGML_CATALOG_FILES ${SGML_ROOT}/iso8879/catalog:$SGML_CATALOG_FILES
-setenv SGML_CATALOG_FILES ${SGML_ROOT}/html/catalog:$SGML_CATALOG_FILES
-setenv SGML_CATALOG_FILES ${SGML_ROOT}/docbook/catalog:$SGML_CATALOG_FILES
-setenv SGML_CATALOG_FILES /usr/doc/share/sgml/catalog:$SGML_CATALOG_FILES
-
-
-if (-x `which kpsexpand` && -d ${HOME}/sgml) then
-  #setenv SGML_PATH /usr/local/share/sgml:${HOME}/sgml
-  setenv SGML_CATALOG_FILES ${SGML_ROOT}/linuxdoc/catalog:$SGML_CATALOG_FILES
-  setenv SGML_CATALOG_FILES ${HOME}/sgml/CATALOG:$SGML_CATALOG_FILES
-  setenv TEXINPUTS .:${HOME}/sgml/latex:${HOME}/latex:`kpsexpand -n latex -p tex`
-  # ${HOME}/latex/graphics:/usr/local/share/texmf/tex:/usr/local/share/texmf/tex/latex
-  setenv TPT_LIB ${HOME}/sgml/transpec
-endif
-
-
-# for my pcemu/dos comand line compilers
-
-if (-d ~/dos) then
-  setenv DOS_STARTUP_DRIVE D:
-  setenv DOS_STARTUP_DIRECTORY ~/dos
-  setenv DOS_DATA_DRIVE E:
-  setenv DOS_STARTUP_FILE ${DOS_STARTUP_DIRECTORY}/startup.bat
-endif
-
-
-# java
-
-#setenv JAVA HOME=/usr/local/java
-#setenv CLASSPATH .:${CLASSPATH}
-#setenv PATH ${PATH}:/usr/local/java/bin
 
 
 # command line completion
@@ -218,22 +166,6 @@ if ($?prompt) then
               lcase notrunc ucase swab noerror sync)"/,\
               c/\*=/x:'<number>'/ \
               n/\*/"(if of conv ibs obs bs cbs files skip file seek count)"/=
-
-
-  # darcs configuration
-  setenv DARCS_EDITOR $EDITOR
-  setenv DARCS_PAGER $PAGER
-  complete darcs 'p/1/(initialize get add remove mv whatsnew record unrecord \
-                     amend-record revert unrevert pull unpull rollback send \
-                     apply push replace tag setpref diff changes annotate \
-                     optimize check resolve dist trackdown repair query)/' \
-          	 'n/query/(manifest tags)/' \
-		 'n/whatsnew/(-ls)/' \
-		 'p/2/f/'
-
-  complete git 'p/1/(status add commit)/' \
-               'n/commit/(-a)/'
-
 
   # for fun
   test -x /usr/games/pom && /usr/games/pom
