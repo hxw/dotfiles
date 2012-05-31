@@ -20,7 +20,8 @@ COPY()
 # COPY just copies the file
 
 SED gitconfig
-SED git-global-ignore
+COPY git-global-ignore
+COPY git-global-attributes
 
 COPY bash_aliases
 #COPY joverc

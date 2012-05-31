@@ -164,4 +164,5 @@
 
 [core]
     excludesfile = @HOME@.git-global-ignore
+    attributesfile = @HOME@.git-global-attributes
 #    autocrlf = input
