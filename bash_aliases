@@ -3,6 +3,7 @@
 alias ll='ls -l'
 alias la='ls -A'
 alias lc='ls -CF'
+export TIME_STYLE='posix-long-iso'
 
 # gnu diff does not have DIFFOPTIONS like FreeBSD so:
 alias diff='diff -u'
