@@ -2,8 +2,27 @@
 
 URxvt*geometry: 100x30
 
-URxvt*background: CornflowerBlue
+URxvt*saveLines: 2000
+
+URxvt*transparent: False
+URxvt*shading: 100
+
+URxvt*borderColor: DarkBlue
+URxvt*background: DarkBlue
 URxvt*foreground: White
+
+URxvt*cursorUnderline: True
+URxvt*cursorBlink: True
+URxvt*cursorColor: White
+URxvt*cursorColor2: DarkBlue
+
+URxvt*scrollstyle: rxvt
+URxvt*scrollColor: White
+URxvt*troughColor: Red
+URxvt*scrollBar: True
+URxvt*scrollBar_right: True
+URxvt*scrollBar_floating: False
+URxvt*thickness: 13
 
 
 ! black
