@@ -1,3 +1,4 @@
+#!/bin/tcsh
 # .tcshrc
 
 # A righteous umask
@@ -160,12 +161,16 @@ if ($?prompt) then
     cwdcmd
   endif
 
+  # dd
   complete dd c/--/"(help version)"/ c/\[io\]f=/f/ \
     c/conv=\*,/"(ascii ebcdic ibm block unblock lcase notrunc ucase swab noerror sync)"/,\
     c/conv=/"(ascii ebcdic ibm block unblock \
               lcase notrunc ucase swab noerror sync)"/,\
               c/\*=/x:'<number>'/ \
               n/\*/"(if of conv ibs obs bs cbs files skip file seek count)"/=
+  # git
+  set gitcmds = ( `ls -1  /usr/local/libexec/git-core/git-* | sed 's@^/usr/local/.*/git-@@g'` )
+  complete git "p/1/(${gitcmds})/" 'n/branch/`git branch|cut -c 3-`/' 'n/co/`git branch|cut -c 3-`/' 'n/remote/(show add rm prune update)/' 'N/remote/`git remote`/'
 
   # for fun
   test -x /usr/games/pom && /usr/games/pom
@@ -173,6 +178,8 @@ if ($?prompt) then
 endif
 
 # additional customisation
-foreach script (${HOME}/bin/AutoStart.*)
-  source ${script}
-end
+if (-d "${HOME}/bin") then
+  foreach script (${HOME}/bin/AutoStart.*)
+    source ${script}
+  end
+endif
