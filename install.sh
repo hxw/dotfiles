@@ -75,7 +75,7 @@ src=$(dirname "$0")
 
 getopt=/usr/local/bin/getopt
 [ -x "${getopt}" ] || getopt=getopt
-args=$(${getopt} -o hvp:nd --long=help,verbose,prefix:,non-interactivedebug -- "$@") ||exit 1
+args=$(${getopt} -o hvp:nd --long=help,verbose,prefix:,non-interactive,debug -- "$@") ||exit 1
 
 # replace the arguments with the parsed values
 eval set -- "${args}"
