@@ -34,9 +34,22 @@ COPY tcshrc
 
 ERROR()
 {
-  echo error: $* 1>&2
+  echo error: $*
   exit 1
 }
+
+USAGE()
+{
+  [ -z "$1" ] || echo error: $*
+  echo usage: $(basename "$0") '<options>'
+  echo '       --help             -h         this message'
+  echo '       --verbose          -v         more messages'
+  echo '       --prefix=<dir>     -p <dir>   set installation directory ['"${home}"']'
+  echo '       --non-interactive  -n         no interactive input'
+  echo '       --debug            -d         show debug information'
+  exit 1
+}
+
 
 # get a string escaping / & for later sed substitution
 # usage:  var=$(get prompt message here) || exit 1
@@ -52,13 +65,63 @@ get()
 }
 
 
-# main
-# ====
+# main program
 
-echo this will install the files to: ${HOME}
+verbose=no
+prefix="${HOME}"
+interactive=yes
+wait=yes
+src=$(dirname "$0")
+
+getopt=/usr/local/bin/getopt
+[ -x "${getopt}" ] || getopt=getopt
+args=$(${getopt} -o hvp:nd --long=help,verbose,prefix:,non-interactivedebug -- "$@") ||exit 1
+
+# replace the arguments with the parsed values
+eval set -- "${args}"
+
+while :
+do
+  case "$1" in
+    -v|--verbose)
+      verbose=yes
+      shift
+      ;;
+
+    -n|--non-interactive)
+      interactive=no
+      shift
+      ;;
+
+    -p|--prefix)
+      prefix=$2
+      shift 2
+      ;;
+
+    -d|--debug)
+      debug=yes
+      shift
+      ;;
+
+    --)
+      shift
+      break
+      ;;
+
+    *)
+      USAGE invalid argument $1
+      ;;
+  esac
+done
+
+[ $# -eq 0 ] || USAGE extraneous arguments
+
+[ X"${debug}" = X"yes" ] && set -x
+
+echo this will install the files to: ${prefix}
 echo Ctrl-C to abort
 
-config="${HOME}/.dotfilesrc"
+config="${prefix}/.dotfilesrc"
 
 name=
 email=
@@ -66,27 +129,30 @@ email=
 
 echo Enter some data for substitutions
 
-name=$(get "${name}" Enter full name) || exit 1
-email=$(get "${email}" Enter email address) || exit 1
+if [ X"${interactive}" = X"yes" ]
+then
+  name=$(get "${name}" Enter full name) || exit 1
+  email=$(get "${email}" Enter email address) || exit 1
 
-rm -f "${config}"
-echo '# .dotfilesrc' >> "${config}"
-echo '' >> "${config}"
-echo 'email='"'"${email}"'" >> "${config}"
-echo 'name='"'"${name}"'" >> "${config}"
+  rm -f "${config}"
+  echo '# .dotfilesrc' >> "${config}"
+  echo '' >> "${config}"
+  echo 'email='"'"${email}"'" >> "${config}"
+  echo 'name='"'"${name}"'" >> "${config}"
+fi
 
 # use sed to substitute som @VAR@ by values saved in ${config}
 for f in ${list_sed}
 do
-  d="${HOME}/.${f}"
+  d="${prefix}/.${f}"
   echo Substitute ${f} to ${d}
-  sed "s,@HOME@,${HOME}/,g;s/@EMAIL@/${email}/g;s/@NAME@/${name}/g;" "${f}" > "${d}"
+  sed "s,@HOME@,${prefix}/,g;s/@EMAIL@/${email}/g;s/@NAME@/${name}/g;" "${src}/${f}" > "${d}"
 done
 
 # file that are just copied
 for f in ${list_copy}
 do
-  d="${HOME}/.${f}"
+  d="${prefix}/.${f}"
   echo Copy ${f} to ${d}
-  cp -p "${f}" "${d}"
+  cp -p "${src}/${f}" "${d}"
 done
