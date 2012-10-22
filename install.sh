@@ -119,7 +119,6 @@ done
 [ X"${debug}" = X"yes" ] && set -x
 
 echo this will install the files to: ${prefix}
-echo Ctrl-C to abort
 
 config="${prefix}/.dotfilesrc"
 
@@ -127,10 +126,11 @@ name=
 email=
 [ -f "${config}" ] && . "${config}"
 
-echo Enter some data for substitutions
-
 if [ X"${interactive}" = X"yes" ]
 then
+  echo Ctrl-C to abort
+  echo Enter some data for substitutions
+
   name=$(get "${name}" Enter full name) || exit 1
   email=$(get "${email}" Enter email address) || exit 1
 
