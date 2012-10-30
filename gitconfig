@@ -19,6 +19,7 @@
     l3 = !git --no-pager log --max-count=3 HEAD
     log5 = log --max-count=5 HEAD
 
+    k = !gitk --all
 
 # graph of tree
 # =============
@@ -30,6 +31,8 @@
 
     lola = log --graph --pretty=format:'%C(bold red)%h%Creset -%C(bold yellow)%d%Creset %s %C(bold green)(%cr) %C(bold ul blue)%an%Creset' --abbrev-commit --date=relative --all
     l10 = !git --no-pager log --graph --pretty=format:'%C(bold red)%h%Creset -%C(bold yellow)%d%Creset %s %C(bold green)(%cr) %C(bold ul blue)%an%Creset' --abbrev-commit --date=relative -10 && echo
+
+    ll = !git --no-pager log --graph --pretty=format:'%C(bold red)%h%Creset -%C(bold yellow)%d%Creset %s %C(bold green)(%cr) %C(bold ul blue)%an%Creset' --abbrev-commit --date=relative --all --max-count=$(tput lines) | head -n $(expr $(tput lines) - 5)
 
 # git-svn commands
 # ================
