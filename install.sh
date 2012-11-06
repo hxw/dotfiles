@@ -141,12 +141,27 @@ then
   echo 'name='"'"${name}"'" >> "${config}"
 fi
 
+# set to an '#' if do not have the item
+# to allow commenting out lines in scripts
+have_home=
+have_name=
+have_email=
+[ -z "${prefix}" ] && have_home='#'
+[ -z "${name}" ] && have_name='#' && name='Full Name'
+[ -z "${email}" ] && have_email='#' && email='root@localhost'
+
 # use sed to substitute som @VAR@ by values saved in ${config}
 for f in ${list_sed}
 do
   d="${prefix}/.${f}"
   echo Substitute ${f} to ${d}
-  sed "s,@HOME@,${prefix}/,g;s/@EMAIL@/${email}/g;s/@NAME@/${name}/g;" "${src}/${f}" > "${d}"
+  sed "s,@HOME@,${prefix}/,g;
+       s,@HAVE_HOME@,${have_home},g;
+       s/@EMAIL@/${email}/g;
+       s/@HAVE_EMAIL@/${have_email}/g;
+       s/@NAME@/${name}/g;
+       s/@HAVE_NAME@/${have_name}/g;
+      " "${src}/${f}" > "${d}"
 done
 
 # file that are just copied
