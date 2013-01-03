@@ -19,6 +19,27 @@ autoload select-word-style
 # Remove Emacs Backups
 alias reb='find . -name "*~" -print -delete'
 
+# Editor aliases
+if [[ -x "$(whence eie)" ]]
+then
+  alias edit="eie --no-frame"
+  alias ed="eie --no-wait"
+  export EDITOR="eie"
+elif [[ -x "$(whence mg)" ]]
+then
+  alias edit="mg"
+  alias ed="mg"
+  export EDITOR="mg"
+elif  [[ -x "$(jove eie)" ]]
+then
+  alias edit="jove"
+  alias ed="jove"
+  export EDITOR="jove"
+fi
+
+# For less
+export LESS="-iR"
+
 # make a directory and change to it
 function mkcd { mkdir -p "$1"; cd "$1"; }
 
@@ -65,6 +86,7 @@ case "$(uname -s)" in
     function dq {
       dpkg-query -W --showformat='${Installed-Size} ${Package} ${Status}\n' | grep -v deinstall | sort -n | awk '{print $1" "$2}'
     }
+    export TIME_STYLE='posix-long-iso'
     ;;
 
   (FreeBSD)
