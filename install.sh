@@ -26,7 +26,8 @@ COPY git-global-attributes
 COPY bash_aliases
 #COPY joverc
 COPY mg
-COPY tcshrc
+#COPY tcshrc
+COPY zshrc
 
 
 # end of list
