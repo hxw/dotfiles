@@ -120,3 +120,9 @@ case "$(uname -s)" in
   (*)
     ;;
 esac
+
+# Source any machine specific aliases, ors settings
+if [[ -e .zsh_local ]]
+then
+  source .zsh_local
+fi
