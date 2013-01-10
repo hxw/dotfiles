@@ -25,16 +25,17 @@ then
   alias edit="eie --no-frame"
   alias ed="eie --no-wait"
   export EDITOR="eie"
-elif [[ -x "$(whence mg)" ]]
-then
-  alias edit="mg"
-  alias ed="mg"
-  export EDITOR="mg"
-elif  [[ -x "$(jove eie)" ]]
-then
-  alias edit="jove"
-  alias ed="jove"
-  export EDITOR="jove"
+else
+  # search for an editor
+  for e in mg emacs jove vim vi
+  do
+    if [[ -x "$(whence "${e}")" ]]
+    then
+      alias edit="${e}"
+      alias ed="${e}"
+      export EDITOR="${e}"
+    fi
+  done
 fi
 
 # For less
@@ -83,6 +84,9 @@ case "$(uname -s)" in
     alias acs='apt-cache search'
     alias aw='apt-cache show'
 
+    alias alp='netstat -plunt'
+    alias alps='netstat -plut --numeric-host'
+
     function dq {
       dpkg-query -W --showformat='${Installed-Size} ${Package} ${Status}\n' | grep -v deinstall | sort -n | awk '{print $1" "$2}'
     }
@@ -90,7 +94,7 @@ case "$(uname -s)" in
     ;;
 
   (FreeBSD)
-    if [[ "${TERM}" = "rxvt-unicode" ]]
+    if [[ "${TERM}" =~ "^rxvt" ]]
     then
       TERM=rxvt-unicode-256color
     fi
@@ -99,12 +103,16 @@ case "$(uname -s)" in
     alias ll='ls -l'
     alias la='ls -la'
     alias lc='ls -C'
+
+    alias alp="netstat -an |grep --colour=never '\(^Proto.*\|LISTEN\|^udp\)'"
+    alias alps="netstat -aS |grep --colour=never '\(^Proto.*\|LISTEN\|^udp\)'"
+
     export DIFF_OPTIONS=-urN
     export GREP_OPTIONS=--colour=auto
     ;;
 
   (NetBSD)
-    if [[ "${TERM}" = "rxvt-unicode" ]]
+    if [[ "${TERM}" =~ "^rxvt" ]]
     then
       TERM=rxvt-256color
     fi
@@ -114,6 +122,10 @@ case "$(uname -s)" in
     alias la='ls -la'
     alias lc='ls -CF'
     alias grep='grep --colour=auto'
+
+    alias alp="netstat -an |grep --colour=never '\(^Proto.*\|LISTEN\|^udp\)'"
+    alias alps="netstat -aS |grep --colour=never '\(^Proto.*\|LISTEN\|^udp\)'"
+
     export DIFF_OPTIONS=-urN
     ;;
 
@@ -121,7 +133,7 @@ case "$(uname -s)" in
     ;;
 esac
 
-# Source any machine specific aliases, ors settings
+# Source any machine specific aliases, or settings
 if [[ -e .zsh_local ]]
 then
   source .zsh_local
