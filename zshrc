@@ -42,7 +42,65 @@ fi
 export LESS="-iR"
 
 # make a directory and change to it
-function mkcd { mkdir -p "$1"; cd "$1"; }
+function mkcd {
+  local dir
+  dir="$1"; shift
+
+  if [ -z "${dir}" ]
+  then
+    pwd
+  elif [ -d "${dir}" ]
+  then
+    cd "${dir}"
+  elif [ -f "${dir}" ]
+  then
+   echo A file of that name already exists
+   return 1
+  else
+    mkdir -p "${dir}"
+    cd "${dir}"
+  fi
+  return 0
+}
+# remove items from PATH
+function pathrm {
+  local item pa p IFS old_ifs
+  old_ifs="${IFS}"
+  IFS=':'
+  pa=(${PATH})
+  IFS="${old_ifs}"
+
+  for item in $@
+  do
+    pa=("${pa[@]/${item}/}")
+  done
+
+  p=
+  for item in "${pa[@]}"
+  do
+    [ -n "${item}" ] && p="${p}:${item}"
+  done
+  pa="${pa[@]}"
+  PATH="${p:1}"
+}
+
+# add items to front of PATH
+# move existing items to front of PATH
+function pathfront {
+  local item p
+  pathrm "$@"
+
+  p=
+  for item in $@
+  do
+    [ -n "${item}" ] && p="${p}:${item}"
+  done
+  PATH="${p:1}:${PATH}"
+}
+
+# show path
+alias path='echo ${PATH}'
+
 
 # Single history for all open shells
 HISTFILE=~/.zhistory
