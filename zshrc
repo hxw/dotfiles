@@ -62,6 +62,7 @@ function mkcd {
   fi
   return 0
 }
+
 # remove items from PATH
 function pathrm {
   local item pa p IFS old_ifs
@@ -101,6 +102,8 @@ function pathfront {
 # show path
 alias path='echo ${PATH}'
 
+# put user's bin directory first
+[ -d "${HOME}/bin" ] && pathfront "${HOME}/bin"
 
 # Single history for all open shells
 HISTFILE=~/.zhistory
