@@ -34,6 +34,7 @@ else
       alias edit="${e}"
       alias ed="${e}"
       export EDITOR="${e}"
+      break
     fi
   done
 fi
