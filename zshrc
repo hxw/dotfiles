@@ -66,12 +66,9 @@ function mkcd {
 
 # remove items from PATH
 function pathrm {
-  local item pa p IFS old_ifs
-  old_ifs="${IFS}"
-  IFS=':'
-  pa=(${PATH})
-  IFS="${old_ifs}"
+  local item p pa
 
+  pa=(${(s/:/)PATH})
   for item in $@
   do
     pa=("${pa[@]/${item}/}")
@@ -82,7 +79,6 @@ function pathrm {
   do
     [ -n "${item}" ] && p="${p}:${item}"
   done
-  pa="${pa[@]}"
   PATH="${p:1}"
 }
 
