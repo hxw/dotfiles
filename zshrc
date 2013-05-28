@@ -105,9 +105,10 @@ alias path='echo ${PATH}'
 # Single history for all open shells
 HISTFILE=~/.zhistory
 HISTSIZE=SAVEHIST=10000
-setopt incappendhistory
-setopt sharehistory
-setopt extendedhistory
+setopt inc_append_history
+setopt share_history
+setopt extended_history
+setopt hist_ignore_all_dups
 
 # Enables all sorts of extended globbing:
 #   ls */.txt       find all text files
