@@ -6,4 +6,4 @@ init_file="$0-init.bc"
 in=''
 [ -n "$1" ] && in='<'"$1"
 
-eval BC_LINE_LENGTH=100 bc -q -i -l \"${init_file}\" ${in}
+eval BC_LINE_LENGTH=100 bc -q -l \"${init_file}\" ${in}
