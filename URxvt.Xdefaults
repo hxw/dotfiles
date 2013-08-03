@@ -38,7 +38,8 @@ URxvt.color10 : SpringGreen2
 URxvt.color3  : Orange
 URxvt.color11 : Yellow
 ! blue
-URxvt.color4  : RoyalBlue4
+!URxvt.color4  : RoyalBlue4
+URxvt.color4  : RoyalBlue
 URxvt.color12 : LightSkyBlue
 ! magenta
 URxvt.color5  : Purple
