@@ -21,6 +21,9 @@
 
     k = !gitk --all
 
+[push]
+    default = simple
+
 # graph of tree
 # =============
 
