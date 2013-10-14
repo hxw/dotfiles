@@ -4,6 +4,9 @@
 @HAVE_EMAIL@    email = @EMAIL@
 @HAVE_NAME@    name = @NAME@
 
+[push]
+    default = simple
+
 [alias]
     ci = commit --signoff
     co = checkout
@@ -20,9 +23,6 @@
     log5 = log --max-count=5 HEAD
 
     k = !gitk --all
-
-[push]
-    default = simple
 
 # graph of tree
 # =============
