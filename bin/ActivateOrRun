@@ -1,0 +1,91 @@
+#!/bin/sh
+# activate a window or run a program
+
+ERROR()
+{
+  echo error: $*
+  exit 1
+}
+
+USAGE()
+{
+  [ -z "$1" ] || echo error: $*
+  echo usage: $(basename "$0") '<options> -- <program-file> <program-arguments>'
+  echo '       --help           -h         this message'
+  echo '       --verbose        -v         more messages'
+  echo '       --search=S       -s <S>     xdotool search for window'
+  echo '       --debug          -d         show debug information'
+  exit 1
+}
+
+
+# main program
+
+verbose=no
+debug=no
+search=
+
+getopt=/usr/local/bin/getopt
+[ -x "${getopt}" ] || getopt=getopt
+args=$(${getopt} -o hvs:d --long=help,verbose,search:,debug -- "$@") ||exit 1
+
+# replace the arguments with the parsed values
+eval set -- "${args}"
+
+while :
+do
+  case "$1" in
+    (-v|--verbose)
+      verbose=yes
+      shift
+      ;;
+
+    (-s|--search)
+      search="$2"
+      shift 2
+      ;;
+
+    -d|--debug)
+      debug=yes
+      shift
+      ;;
+
+    --)
+      shift
+      break
+      ;;
+
+    *)
+      USAGE invalid argument $1
+      ;;
+  esac
+done
+
+[ $# -eq 0 ] && USAGE missing arguments
+[ -z "${search}" ] && USAGE missing search option
+
+[ X"${debug}" = X"yes" ] && set -x
+
+
+program="$1"; shift
+if [ ! -x "${program}" ]
+then
+  program2=$(which "${program}" 2> /dev/null)
+  [ -x "${program2}" ] || USAGE program-file: ${program} is not executable or not on PATH
+  program="${program2}"
+fi
+
+xdo=$(which xdotool)
+[ -x "${xdo}" ] || ERROR cannot locate xdotool - perhaps install it
+
+
+# try to activate window
+rc=0
+${xdo} search ${search} windowactivate
+rc="$?"
+
+# failed to activate then start program
+if [ 0 -ne "${rc}" ]
+then
+  "${program}" "$@"
+fi
