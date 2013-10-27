@@ -193,7 +193,7 @@ case "$(uname -s)" in
 esac
 
 # Source any machine specific aliases, or settings
-if [[ -e .zsh_local ]]
+if [[ -e "${HOME}/.zsh_local" ]]
 then
-  source .zsh_local
+  source "${HOME}/.zsh_local"
 fi
