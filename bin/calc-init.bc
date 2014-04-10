@@ -26,7 +26,7 @@ define int(number) {
 print "power(number, exponent) = number^exponent == e^(exponent*log(number))\n"
 define power(number, exponent) {
   if (exponent == int(exponent)) {
-    return(number ^ exponent) 
+    return(number ^ exponent)
   } else {
     return(e(exponent * l(number)))
   }
@@ -67,23 +67,55 @@ print "scaling: pico, nano, micro, milli, kilo, mega, giga, tera\n"
 print "  e.g.   kilo(1.5) -> 1500\n"
 print "  e.g.   to_mega(25123456) -> 25.123456\n"
 
-define pico(x) { return(x * 10^-12) }
-define nano(x) { return(x * 10^-9) }
-define micro(x) { return(x * 10^-6) }
-define milli(x) { return(x * 10^-3) }
-define kilo(x) { return(x * 10^3) }
-define mega(x) { return(x * 10^6) }
-define giga(x) { return(x * 10^9) }
-define tera(x) { return(x * 10^12) }
+define pico(x) {
+  return(x * 10^-12)
+}
+define nano(x) {
+  return(x * 10^-9)
+}
+define micro(x) {
+  return(x * 10^-6)
+}
+define milli(x) {
+  return(x * 10^-3)
+}
+define kilo(x) {
+  return(x * 10^3)
+}
+define mega(x) {
+  return(x * 10^6)
+}
+define giga(x) {
+  return(x * 10^9)
+}
+define tera(x) {
+  return(x * 10^12)
+}
 
-define to_pico(x) { return(x / 10^-12) }
-define to_nano(x) { return(x / 10^-9) }
-define to_micro(x) { return(x / 10^-6) }
-define to_milli(x) { return(x / 10^-3) }
-define to_kilo(x) { return(x / 10^3) }
-define to_mega(x) { return(x / 10^6) }
-define to_giga(x) { return(x / 10^9) }
-define to_tera(x) { return(x / 10^12) }
+define to_pico(x) {
+  return(x / 10^-12)
+}
+define to_nano(x) {
+  return(x / 10^-9)
+}
+define to_micro(x) {
+  return(x / 10^-6)
+}
+define to_milli(x) {
+  return(x / 10^-3)
+}
+define to_kilo(x) {
+  return(x / 10^3)
+}
+define to_mega(x) {
+  return(x / 10^6)
+}
+define to_giga(x) {
+  return(x / 10^9)
+}
+define to_tera(x) {
+  auto t ; return(x / 10^12)
+}
 print "\n"
 
 
@@ -234,7 +266,7 @@ define lcr(l, c, r) {
 
   print "qslcr     = ", qslcr(l, c, r), "\n"
   print "qplcr     = ", qplcr(l, c, r), "\n"
- 
+
   print "dfslcr    = ", dfslcr(l, c, r), "\n"
   print "dfplcr    = ", dfplcr(l, c, r), "\n"
 }
