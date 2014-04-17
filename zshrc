@@ -125,7 +125,11 @@ setopt interactivecomments
 setopt auto_cd
 
 # Change the prompt
-PS1='[%T] %n@%m:%2~%# '
+#PS1='[%T] %n@%m %2~ %# '
+
+# colours: black red green yellow blue magenta cyan white
+PS1='%F{green}%B[%T]%b%f %F{cyan}%B%n@%m %2~ %#%b%f '
+
 
 # Display CPU usage stats for commands taking more than 10 seconds
 REPORTTIME=10
