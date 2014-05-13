@@ -203,7 +203,7 @@ then
 fi
 
 # set up default function key map - if zkbd ras been run
-if [ -e "${HOME}/.zkbd/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE}"
+if [ -e "${HOME}/.zkbd/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE}" ]
 then
   source "${HOME}/.zkbd/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE}"
   # [[ -n "${key[F1]}" ]] && bindkey "${key[F1]}" x
