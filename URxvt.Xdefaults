@@ -24,6 +24,9 @@ URxvt*scrollBar_right: True
 URxvt*scrollBar_floating: False
 URxvt*thickness: 13
 
+URxvt.iso14755: true
+URxvt.iso14755_52: false
+
 
 ! black
 URxvt.color0  : Black
