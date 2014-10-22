@@ -1,0 +1,9 @@
+#!/bin/sh
+
+normal='0;30 0;31 0;32 0;33 0;34 0;35 0;36 0;37'
+bold='1;30 1;31 1;32 1;33 1;34 1;35 1;36 1;37'
+
+for fg in ${normal} ${bold}
+do
+  printf "\\033[${fg}m1234567890 - abcdefghijklmnopqrstuvwxyz _ ABCDEFGHIJKLMNOPQRSTUVWXYZ\\033[0m\\n"
+done

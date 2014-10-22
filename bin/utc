@@ -1,0 +1,9 @@
+#!/bin/sh
+# show local ann utc time
+
+echo -n 'local: '
+date '+%F %T%z'
+
+# UTC: ISO 8601 format 
+echo -n 'UTC:   '
+date -u '+%FT%TZ'
