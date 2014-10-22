@@ -41,7 +41,6 @@ URxvt.color10 : SpringGreen2
 URxvt.color3  : Orange
 URxvt.color11 : Yellow
 ! blue
-!URxvt.color4  : RoyalBlue4
 URxvt.color4  : RoyalBlue
 URxvt.color12 : LightSkyBlue
 ! magenta
@@ -63,11 +62,11 @@ URxvt*boldFont: xft:DejaVu Sans Mono:pixelsize=16
 
 URxvt*letterSpace: -1
 
-URxvt.perl-ext-common: default,tabbed,matcher
+!URxvt.perl-ext-common: default,tabbed,matcher
+URxvt.perl-ext-common : default,matcher
 
-!URxvt.perl-ext-common : default,matcher
 URxvt.urlLauncher     : firefox
-URxvt.matcher.button  : 1
+URxvt.matcher.button  : 2
 
 !URxvt.matcher.pattern.1:  \\bwww\\.[\\w-]+\\.[\\w./?&@#-]*[\\w/-]
 !URxvt.matcher.pattern.2:  \\B(/\\S+?):(\\d+)(?=:|$)
