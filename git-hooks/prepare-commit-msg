@@ -1,0 +1,32 @@
+#!/bin/sh
+# fixup the commit message so first line is:
+#
+#   [dir1, dir2, ..., dirN]
+#
+# where the "dir"s are the "root" directories in the repo
+# and are obtained from the files about to be committed
+
+# amend: file commit HEAD
+# ci:    file ''     ''
+
+file="$1"
+if [ -z "$2" -a -z "$3" ]
+then
+  # only on commit: extract first path element from each file to be committed
+  # sort/deduplicate these and insert into commit message line 1
+  sections=$(awk -- '
+/^# Changes to be committed:[[:space:]]*$/, /^#[[:space:]]*$/ {
+  split($0, parts, ":")
+  sub("^[[:space:]]*", "", parts[2])
+  split(parts[2], path, "/")
+  if ("" != path[1]) {
+    print path[1] ","
+  }
+}' "${file}" | sort -u | tr '\n' ' ')
+  sections=${sections%, }
+  if [ -n "${sections}" ]
+  then
+    sed -i -e "1i\\
+[${sections}] " "$1"
+  fi
+fi
