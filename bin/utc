@@ -1,9 +1,39 @@
 #!/bin/sh
-# show local ann utc time
+# show local and utc time
 
-echo -n 'local: '
-date '+%F %T%z'
+# list of timezones to display
+list='
+Asia/Taipei
+UTC
+Europe/London
+Europe/Paris
+America/Los_Angeles
+America/New_York
+Asia/Tokyo
+America/Vancouver
+'
 
-# UTC: ISO 8601 format 
-echo -n 'UTC:   '
-date -u '+%FT%TZ'
+# compute longest title length
+n=0
+for tz_full in ${list}
+do
+  tz="${tz_full##*/}"
+  l=${#tz}
+  [ ${l} -gt ${n} ] && n=${l}
+done
+
+base_date=
+# display all timezones
+for tz_full in ${list}
+do
+  tz="${tz_full##*/}"
+  printf "%-${n}s  " "${tz}"
+  d=$(env TZ="${tz_full}" date '+%F')
+  if [ X"${d}" != X"${base_date}" ]
+  then
+    env TZ="${tz_full}" date '+%F %T%z'
+    base_date="${d}"
+  else
+    env TZ="${tz_full}" date '+     ..    %T%z'
+  fi
+done
