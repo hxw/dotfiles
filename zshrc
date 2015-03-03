@@ -40,7 +40,13 @@ else
 fi
 
 # For less
-export LESS="-iR"
+pager=$(which less)
+if [ -x "${pager}" ]
+then
+  export PAGER=${pager}
+  export LESS="-iR"
+fi
+unset pager
 
 # make a directory and change to it
 function mkcd {
