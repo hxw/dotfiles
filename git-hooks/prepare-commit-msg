@@ -24,6 +24,8 @@ then
   }
 }' "${file}" | sort -u | tr '\n' ' ')
   sections=${sections%, }
+  prefix="${GIT_PREFIX%%/*}"
+  [ -z "${prefix}" ] || sections="${prefix},%{sections}"
   if [ -n "${sections}" ]
   then
     sed -i -e "1i\\
