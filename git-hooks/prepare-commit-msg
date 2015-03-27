@@ -17,7 +17,7 @@ then
   sections=$(awk -- '
 /^# Changes to be committed:[[:space:]]*$/, /^#[[:space:]]*$/ {
   split($0, parts, ":")
-  sub("^[[:space:]]*", "", parts[2])
+  sub("^[[:space:]]*(../)*", "", parts[2])
   split(parts[2], path, "/")
   if ("" != path[1]) {
     print path[1] ","
@@ -25,7 +25,7 @@ then
 }' "${file}" | sort -u | tr '\n' ' ')
   sections=${sections%, }
   prefix="${GIT_PREFIX%%/*}"
-  [ -z "${prefix}" ] || sections="${prefix},%{sections}"
+  [ -z "${prefix}" ] || sections="${prefix},${sections}"
   if [ -n "${sections}" ]
   then
     sed -i -e "1i\\
