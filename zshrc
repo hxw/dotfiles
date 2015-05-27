@@ -202,6 +202,21 @@ case "$(uname -s)" in
     ;;
 esac
 
+# access the zkbd setup since it is in a versioned directory
+function zkbd()
+{
+  local p f
+  for p in /usr /usr/local
+  do
+    f="${p}/share/zsh/${ZSH_VERSION}/functions/Misc/zkbd"
+    if [ -f "${f}" ]
+    then
+      zsh "${f}"
+      break
+    fi
+  done
+}
+
 # turn caps lock into compose (if running inder X)
 if which setxkbmap > /dev/null 2>&1
 then
