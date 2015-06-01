@@ -208,7 +208,7 @@ function zkbd()
   local p f
   for p in /usr /usr/local
   do
-    f="${p}/share/zsh/${ZSH_VERSION}/functions/Misc/zkbd"
+    for f in "${p}/share/zsh/${ZSH_VERSION}/functions/Misc/zkbd" "${p}/share/zsh/functions/Misc/zkbd"
     if [ -f "${f}" ]
     then
       zsh "${f}"
