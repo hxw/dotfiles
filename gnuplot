@@ -23,10 +23,10 @@ set grid nomytics ytics
 set grid nomy2tics noy2tics
 
 # turn off tic mirrors
-set xtics nomirror
-set x2tics nomirror
-set ytics nomirror
-set y2tics nomirror
+set xtics out nomirror
+unset x2tics
+set ytics out nomirror
+unset y2tics
 
 # line colours
 set linetype 1  lc rgb 'forest-green' lw 2 pt 2
@@ -61,12 +61,11 @@ if (!exists('emacs')) {
 # delay between graphs if more than one are selected
 #PAUSE="if ('*' eq item || words(item) > 1) {pause 10 'waiting 10 seconds…';}"
 PAUSE="\
-if ('*' eq item || words(item) > 1 || emacs) {\
 pause mouse any 'press mouse button or Enter to continue, Q or X to exit…';\
 print '';\
 set terminal x11 close;\
 if ('Q' eq MOUSE_CHAR || 'q' eq MOUSE_CHAR || 'X' eq MOUSE_CHAR || 'x' eq MOUSE_CHAR) { unset output; print 'EXIT'; exit gnuplot; };\
-};"
+"
 
 # see if particular plot is selected
 doplot(x) = 0 != strstrt(item, x) || '*' eq item
