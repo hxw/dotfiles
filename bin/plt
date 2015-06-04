@@ -1,0 +1,12 @@
+#!/bin/sh
+# call gnuplot
+
+for f in *.plt
+do
+  if [ -f "${f}" ]
+  then
+    e=0
+    [ X"t" = X"${EMACS}" ] && e=1
+    exec gnuplot -e "emacs=${e}"';item="'"$*"'"' "${f}"
+  fi
+done
