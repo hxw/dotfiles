@@ -19,13 +19,13 @@ then
   split($0, parts, ":")
   sub("^[[:space:]]*(../)*", "", parts[2])
   split(parts[2], path, "/")
-  if ("" != path[1]) {
+  if ("" != path[1] && "" != path[2]) {
     print path[1] ","
   }
-}' "${file}" | sort -u | tr '\n' ' ')
-  sections=${sections%, }
+}' "${file}" | sort -u | tr -d '\n')
   prefix="${GIT_PREFIX%%/*}"
   [ -z "${prefix}" ] || sections="${prefix},${sections}"
+  sections=${sections%,}
   if [ -n "${sections}" ]
   then
     sed -i -e "1i\\

@@ -168,10 +168,10 @@ case "$(uname -s)" in
       TERM=rxvt-unicode-256color
     fi
     alias toor='exec su -l toor'
-    alias ls='ls -GF'
-    alias ll='ls -l'
-    alias la='ls -la'
-    alias lc='ls -C'
+    alias ls='ls -GF -D %Y-%m-%d'
+    alias ll='ls -l -D %Y-%m-%d'
+    alias la='ls -la -D %Y-%m-%d'
+    alias lc='ls -C -D %Y-%m-%d'
 
     alias alp="netstat -an |grep --colour=never '\(^Proto.*\|LISTEN\|^udp\)'"
     alias alps="netstat -aS |grep --colour=never '\(^Proto.*\|LISTEN\|^udp\)'"
