@@ -223,10 +223,13 @@ then
   setxkbmap -option compose:caps
 fi
 
-# set up default function key map - if zkbd ras been run
-if [ -e "${HOME}/.zkbd/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE}" ]
+# set up default function key map - if zkbd has been run
+termfile="${HOME}/.zkbd/${TERM}-${${DISPLAY:t}:-${VENDOR}-${OSTYPE}}"
+# if no os specific, try for a general one
+[ -e "${termfile}" ] || termfile="${HOME}/.zkbd/${TERM}"
+if [ -e "${termfile}" ]
 then
-  source "${HOME}/.zkbd/$TERM-${${DISPLAY:t}:-$VENDOR-$OSTYPE}"
+  source "${termfile}"
   # [[ -n "${key[F1]}" ]] && bindkey "${key[F1]}" x
   # [[ -n "${key[F2]}" ]] && bindkey "${key[F2]}" x
   # [[ -n "${key[F3]}" ]] && bindkey "${key[F3]}" x
@@ -252,6 +255,7 @@ then
   [[ -n "${key[Right]}" ]] && bindkey "${key[Right]}" forward-char
   [[ -n "${key[Menu]}" ]] && bindkey "${key[Menu]}" list-choices
 fi
+unset termfile
 
 # Source any machine specific aliases, or settings
 if [[ -e "${HOME}/.zsh_local" ]]
