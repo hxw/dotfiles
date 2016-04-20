@@ -1,5 +1,9 @@
 # .zshrc      -*- mode: shell-script -*-
 
+# determine if root user
+is_root=no
+[ X"0" = X"$(id -u)" ] && is_root=yes
+
 # Tab completion
 autoload -U compinit
 compinit
@@ -148,7 +152,14 @@ case "$(uname -s)" in
     alias ll='ls -l'
     alias la='ls -a'
     alias lc='ls -C'
-    alias diff='diff -urN'
+    case "${is_root}" in
+      (yes)
+        alias diff='diff -u'
+        ;;
+      (no)
+        alias diff='diff -urN'
+        ;;
+    esac
 
     alias acs='apt-cache search'
     alias aw='apt-cache show'
@@ -176,7 +187,15 @@ case "$(uname -s)" in
     alias alp="netstat -an |grep --colour=never '\(^Proto.*\|LISTEN\|^udp\)'"
     alias alps="netstat -aS |grep --colour=never '\(^Proto.*\|LISTEN\|^udp\)'"
 
-    export DIFF_OPTIONS=-urN
+    case "${is_root}" in
+      (yes)
+        export DIFF_OPTIONS=-u
+        ;;
+      (no)
+        export DIFF_OPTIONS=-urN
+        ;;
+    esac
+
     export GREP_OPTIONS=--colour=auto
     ;;
 
@@ -195,7 +214,14 @@ case "$(uname -s)" in
     alias alp="netstat -an |grep --colour=never '\(^Proto.*\|LISTEN\|^udp\)'"
     alias alps="netstat -aS |grep --colour=never '\(^Proto.*\|LISTEN\|^udp\)'"
 
-    export DIFF_OPTIONS=-urN
+    case "${is_root}" in
+      (yes)
+        export DIFF_OPTIONS=-u
+        ;;
+      (no)
+        export DIFF_OPTIONS=-urN
+        ;;
+    esac
     ;;
 
   (*)
@@ -262,3 +288,6 @@ if [[ -e "${HOME}/.zsh_local" ]]
 then
   source "${HOME}/.zsh_local"
 fi
+
+# clean up
+unset is_root
