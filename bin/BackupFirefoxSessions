@@ -1,0 +1,115 @@
+#!/bin/sh
+# save a copy of the Firefox sessions file
+
+
+ERROR()
+{
+  echo error: $*
+  exit 1
+}
+
+USAGE()
+{
+  [ -z "$1" ] || echo error: $*
+  echo usage: $(basename "$0")
+  echo '       --help           -h         this message'
+  echo '       --verbose        -v         more messages'
+  echo '       --config=DIR     -c DIR     config subdirectory'
+  echo '       --session=FILE   -s FILE    specify session file'
+  echo '       --dest=DIR       -d DIR     backupsdirectory'
+  exit 1
+}
+
+# main program
+verbose=no
+config=gqg328lc.default
+#session=sessionstore.js
+session=recovery.js
+dest_dir="${HOME}/Firefox-Sessions"
+
+debug=no
+
+getopt=/usr/local/bin/getopt
+[ -x "${getopt}" ] || getopt=getopt
+args=$(${getopt} -o hvc:s:d: --long=help,verbose,config:,session:,dest:,debug -- "$@") ||exit 1
+
+# replace the arguments with the parsed values
+eval set -- "${args}"
+
+while :
+do
+  case "$1" in
+    (-v|--verbose)
+      verbose=yes
+      ;;
+
+    (-c|--config)
+      config=$2
+      shift
+      ;;
+
+    (-s|--session)
+      session=$2
+      shift
+      ;;
+
+    (-d|--dest)
+      dest_dir=$2
+      shift
+      ;;
+
+    (--debug)
+      debug=yes
+      ;;
+
+    (--)
+      shift
+      break
+      ;;
+
+    (-h|--help)
+      USAGE
+      ;;
+
+    (*)
+      USAGE invalid option: $1
+      ;;
+  esac
+  shift
+done
+
+# verify arguments
+[ -z "${config}" ] && USAGE 'config is not set'
+[ -z "${session}" ] && USAGE 'session is not set'
+#[ $# -eq 0 ] && USAGE 'missing arguments'
+[ $# -ne 0 ] && USAGE 'extraneous arguments'
+#[ $# -ne 2 ] && USAGE 'exactly two arguments are required'
+
+config_dir="${HOME}/.mozilla/firefox/${config}/sessionstore-backups"
+[ -d "${config_dir}" ] || USAGE "not a directory: ${config_dir}"
+
+session_file="${config_dir}/${session}"
+[ -f "${session_file}" ] || USAGE "missing file: ${session_file}"
+
+[ -d "${dest_dir}" ] || USAGE "not a directory: ${dest_dir}"
+
+
+# enable debuging
+[ X"${debug}" = X"yes" ] && set -x
+
+date=$(date '+%Y-%m-%d-%H%M')
+[ X"${verbose}" = X"yes" ] && printf 'backup on: %s\n', "${date}"
+
+# backup names
+full_backup="${dest_dir}/${session}.${date}-complete-history.xz"
+active_backup="${dest_dir}/${session}.${date}-active-page.xz"
+base_backup="${dest_dir}/${session}.${date}-first-page.xz"
+
+# perform the copy
+xz -z < "${session_file}" > "${full_backup}"
+[ X"${verbose}" = X"yes" ] && printf 'full backup to: %s\n', "${date}"
+
+# create a filtered version that only contains the active pages
+# i.e. all the individual tab histories are removed
+filter-firefox-session --active < "${session_file}" | xz -z > "${active_backup}"
+filter-firefox-session --first < "${session_file}" | xz -z > "${base_backup}"

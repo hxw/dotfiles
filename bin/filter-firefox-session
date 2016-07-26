@@ -1,0 +1,112 @@
+#!/bin/sh
+# jq filter to strip all the history from a Firefox sessionstore.js file
+
+ERROR()
+{
+  echo error: $*
+  exit 1
+}
+
+USAGE()
+{
+  [ -z "$1" ] || echo error: $*
+  echo usage: $(basename "$0")
+  echo '       --help           -h         this message'
+  echo '       --verbose        -v         more messages'
+  echo '       --active         -a         only active pages'
+  echo '       --first          -f         only first pages'
+  exit 1
+}
+
+# main program
+verbose=no
+active=no
+first=no
+
+debug=no
+
+getopt=/usr/local/bin/getopt
+[ -x "${getopt}" ] || getopt=getopt
+args=$(${getopt} -o hvaf --long=help,verbose,active,first,debug -- "$@") ||exit 1
+
+# replace the arguments with the parsed values
+eval set -- "${args}"
+
+while :
+do
+  case "$1" in
+    (-v|--verbose)
+      verbose=yes
+      ;;
+
+    (-a|--active)
+      active=yes
+      ;;
+
+    (-f|--first)
+      first=yes
+      ;;
+
+    (--debug)
+      debug=yes
+      ;;
+
+    (--)
+      shift
+      break
+      ;;
+
+    (-h|--help)
+      USAGE
+      ;;
+
+    (*)
+      USAGE invalid option: $1
+      ;;
+  esac
+  shift
+done
+
+# verify arguments
+[ X"${active}" = X"yes" -a X"${first}" = X"yes" ] && USAGE 'set only one of active and first'
+[ X"${active}" = X"no" -a X"${first}" = X"no" ] && USAGE 'must set one of active and first'
+#[ $# -eq 0 ] && USAGE 'missing arguments'
+[ $# -ne 0 ] && USAGE 'extraneous arguments'
+#[ $# -ne 2 ] && USAGE 'exactly two arguments are required'
+
+
+#jq '{tabs:[(.windows[0].tabs[]|.+{index:1,entries:[.entries[.index-1]]})]}'
+#jq '{windows:[{tabs:[(.windows[0].tabs[]|.+{index:1,entries:[.entries[.index-1]]})]}]}'
+
+case "${active}/${first}" in
+  (yes/no)
+  jq '.+
+{
+  selectedWindow: 1,
+  _closedWindows: [],
+  windows:[
+    .windows[0]|.+{
+      tabs:[.tabs[]|.+{index:1,entries:[.entries[.index-1]]}],
+      _closedTabs:[]
+    }
+  ]
+}'
+  ;;
+
+  (no/yes)
+    jq '.+
+{
+  selectedWindow: 1,
+  _closedWindows: [],
+  windows:[
+    .windows[0]|.+{
+      tabs:[.tabs[]|.+{index:1,entries:[.entries[0]]}],
+      _closedTabs:[]
+    }
+  ]
+}'
+    ;;
+  (*)
+    USAGE 'invalid options'
+    ;;
+esac
