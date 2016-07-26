@@ -70,6 +70,23 @@ define factorial(n) {
   return(t)
 }
 
+print "ln  log(x,base) log2 log10\n"
+
+define ln(x) {
+  return(l(x))
+}
+
+define log(x, b) {
+       return(l(x)/l(b))
+}
+define log2(x) {
+  return(log(x, 2))
+}
+define log10(x) {
+  return(log(x, 10))
+}
+
+
 print "\n"
 
 

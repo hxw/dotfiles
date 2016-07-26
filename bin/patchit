@@ -16,7 +16,7 @@ USAGE()
   exit 1
 }
 
-
+# main program
 verbose=no
 prompt=yes
 
@@ -32,41 +32,42 @@ eval set -- "${args}"
 while :
 do
   case "$1" in
-    -v|--verbose)
+    (-v|--verbose)
       verbose=yes
-      shift
       ;;
 
-    -y|--yes)
+    (-y|--yes)
       prompt=no
-      shift
       ;;
 
-    --debug)
+    (--debug)
       debug=yes
-      shift
       ;;
 
-    --)
+    (--)
       shift
       break
       ;;
 
-    -h|--help)
+    (-h|--help)
       USAGE
       ;;
 
-    *)
+    (*)
       USAGE invalid option: $1
       ;;
   esac
+  shift
 done
 
 # verify arguments
 [ -z "${prompt}" ] && USAGE prompt is not set
+#[ $# -eq 0 ] && USAGE missing arguments
 [ $# -ne 2 ] && USAGE exactly two arguments are required
 
+[ X"${debug}" = X"yes" ] && set -x
 
+# extract arguments
 src="$1"; shift
 dest="$1"; shift
 
