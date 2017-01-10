@@ -35,7 +35,8 @@
     lola = log --graph --pretty=format:'%C(bold red)%h%Creset -%C(bold yellow)%d%Creset %s %C(bold green)(%cr) %C(bold ul blue)%an%Creset' --abbrev-commit --date=relative --all
     l10 = !git --no-pager log --graph --pretty=format:'%C(bold red)%h%Creset -%C(bold yellow)%d%Creset %s %C(bold green)(%cr) %C(bold ul blue)%an%Creset' --abbrev-commit --date=relative -10 && echo
 
-    ll = !git --no-pager log --graph --pretty=format:'%C(bold red)%h%Creset -%C(bold yellow)%d%Creset %<(80,trunc)%s %C(bold green)(%cr) %C(bold ul blue)%an%Creset' --abbrev-commit --date=relative --all --max-count=$(tput lines) | head -n $(expr $(tput lines) - 5) && echo
+    # can supply optional line count e.g.: git ll 10
+    ll = !git --no-pager log --graph --pretty=format:'%C(bold red)%h%Creset %<(70,trunc)%s %C(bold green)%cd %C(bold ul blue)%aN%Creset %C(bold yellow)%D%Creset' --abbrev-commit --date='format:%F %T' --decorate=short --all --max-count=$(tput lines) | head -n ${1:-$(expr $(tput lines) - 5)} && echo && :
 
 # git-svn commands
 # ================
