@@ -197,7 +197,7 @@ define xl(f, l) {
 }
 
 define xc(f, c) {
-  return(-1 / (2 * pi * f * c))
+  return(1 / (2 * pi * f * c))
 }
 
 define lc(l, c) {

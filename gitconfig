@@ -11,6 +11,7 @@
     ci = commit --signoff
     co = checkout
     pr = pull --rebase
+    pnp = !git pull --rebase && git push origin HEAD
     st = status
     br = branch
     praise = blame
@@ -18,25 +19,21 @@
     sc = stash clear
     ss = stash save
 
-    l1 = !git --no-pager log --max-count=1 HEAD
-    l3 = !git --no-pager log --max-count=3 HEAD
-    log5 = log --max-count=5 HEAD
+    k = !gitk HEAD
+    ka = !gitk --all
 
-    k = !gitk --all
+    # quickly clone a branch
+    # clbr git@... branch [depth]
+    clbr = !git clone --branch "${2:-master}" --depth "${3:-1}" "$1" "$(basename -s .git "$1")-${2:-master}" && :
+
 
 # graph of tree
 # =============
 
-    #lol = log --graph --decorate --pretty=oneline --abbrev-commit
-    #lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
-
-    lol = log --graph --pretty=format:'%C(bold red)%h%Creset -%C(bold yellow)%d%Creset %s %C(bold green)(%cr)%Creset' --abbrev-commit --date=relative --all
-
-    lola = log --graph --pretty=format:'%C(bold red)%h%Creset -%C(bold yellow)%d%Creset %s %C(bold green)(%cr) %C(bold ul blue)%an%Creset' --abbrev-commit --date=relative --all
-    l10 = !git --no-pager log --graph --pretty=format:'%C(bold red)%h%Creset -%C(bold yellow)%d%Creset %s %C(bold green)(%cr) %C(bold ul blue)%an%Creset' --abbrev-commit --date=relative -10 && echo
-
-    # can supply optional line count e.g.: git ll 10
-    ll = !git --no-pager log --graph --pretty=format:'%C(bold red)%h%Creset %<(70,trunc)%s %C(bold green)%cd %C(bold ul blue)%aN%Creset %C(bold yellow)%D%Creset' --abbrev-commit --date='format:%F %T' --decorate=short --all --max-count=$(tput lines) | head -n ${1:-$(expr $(tput lines) - 5)} && echo && :
+    # log all; can supply optional line count e.g.: git la 10
+    la = !git --no-pager log --graph --pretty=format:'%C(bold red)%h%Creset %<(70,trunc)%s %C(bold green)%cd %C(bold ul blue)%aN%Creset %C(bold yellow)%D%Creset' --abbrev-commit --date='format:%F %T' --decorate=short --all --max-count=$(tput lines) | head -n ${1:-$(expr $(tput lines) - 5)} && echo && :
+    # log just HEAD; can supply optional line count e.g.: git ll 10
+    ll = !git --no-pager log --graph --pretty=format:'%C(bold red)%h%Creset %<(70,trunc)%s %C(bold green)%cd %C(bold ul blue)%aN%Creset %C(bold yellow)%D%Creset' --abbrev-commit --date='format:%F %T' --decorate=short --max-count=$(tput lines) HEAD | head -n ${1:-$(expr $(tput lines) - 5)} && echo && :
 
 # git-svn commands
 # ================
@@ -55,7 +52,7 @@
 #     edit ${file}
 #     git add ${file}
 #     git ci
-#   gitk # see the state
+#   git k # see the state
 #   git fetch
 #   git rebase master
 #   git tidy # more than once
@@ -68,6 +65,7 @@
 # rewrite history
 # ===============
 
+   last = !git rebase -i HEAD~${1:-5} && :
    last10 = rebase -i HEAD~10
    last5 = rebase -i HEAD~5
    last2 = rebase -i HEAD~2
@@ -95,7 +93,6 @@
 # ===============
 
     fp = format-patch -C
-#    sm = send-email --compose --no-chain-reply-to --suppress-from --to list@project.tld 00*.patch
 @HAVE_EMAIL@    sm = send-email --compose --no-chain-reply-to --suppress-from --bcc @EMAIL@
 
 
