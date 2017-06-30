@@ -1,8 +1,12 @@
 # .zshrc      -*- mode: shell-script -*-
 
+# notes:
+# if the file ~/bin/@ADD-TO-PATH exists, any lines that are directories
+# will be appended to the PATH
+
 # determine if root user
 is_root=no
-[ X"0" = X"$(id -u)" ] && is_root=yes
+[[ X"0" = X"$(id -u)" ]] && is_root=yes
 
 # Tab completion
 autoload -U compinit
@@ -45,7 +49,7 @@ fi
 
 # For less
 pager=$(which less)
-if [ -x "${pager}" ]
+if [[ -x "${pager}" ]]
 then
   export PAGER=${pager}
   export LESS="-iR"
@@ -57,13 +61,13 @@ function mkcd {
   local dir
   dir="$1"; shift
 
-  if [ -z "${dir}" ]
+  if [[ -z "${dir}" ]]
   then
     pwd
-  elif [ -d "${dir}" ]
+  elif [[ -d "${dir}" ]]
   then
     cd "${dir}"
-  elif [ -f "${dir}" ]
+  elif [[ -f "${dir}" ]]
   then
    echo A file of that name already exists
    return 1
@@ -87,9 +91,19 @@ function pathrm {
   p=
   for item in "${pa[@]}"
   do
-    [ -n "${item}" ] && p="${p}:${item}"
+    [[ -n "${item}" ]] && p="${p}:${item}"
   done
   PATH="${p:1}"
+}
+
+# convert a directory to an absolute path
+function absolute_path {
+  if [[ -d "$1" ]]
+  then
+    (cd "$1" ; pwd)
+  else
+    echo ""
+  fi
 }
 
 # add items to front of PATH
@@ -101,7 +115,7 @@ function pathfront {
   p=
   for item in $@
   do
-    [ -n "${item}" ] && p="${p}:${item}"
+    [[ -n "${item}" ]] && p="${p}:${item}"
   done
   PATH="${p:1}:${PATH}"
 }
@@ -110,7 +124,21 @@ function pathfront {
 alias path='echo ${PATH}'
 
 # put user's bin directory first
-[ -d "${HOME}/bin" ] && pathfront "${HOME}/bin"
+[[ -d "${HOME}/bin" ]] && pathfront "${HOME}/bin"
+
+# append the @ADD-TO-PATH entries to the path
+# only if they resolve to directories
+if [[ -f "${HOME}/bin/@ADD-TO-PATH" ]]
+then
+  while read line
+  do
+    [[ -z "${line}" ]] && continue
+    [[ X"${line#\#}" != X"${line}" ]] && continue
+    [[ X"${line#/}" = X"${line}" ]] && line=$(absolute_path "${HOME}/bin/${line}")
+    [[ -d "${line}" ]] && PATH="${PATH}:${line}"
+  done < "${HOME}/bin/@ADD-TO-PATH"
+  unset line
+fi
 
 # Single history for all open shells
 HISTFILE="${HOME}/.zhistory"
@@ -235,7 +263,7 @@ function zkbd()
   for p in /usr /usr/local
   do
     for f in "${p}/share/zsh/${ZSH_VERSION}/functions/Misc/zkbd" "${p}/share/zsh/functions/Misc/zkbd"
-    if [ -f "${f}" ]
+    if [[ -f "${f}" ]]
     then
       zsh "${f}"
       break
@@ -252,8 +280,8 @@ fi
 # set up default function key map - if zkbd has been run
 termfile="${HOME}/.zkbd/${TERM}-${${DISPLAY:t}:-${VENDOR}-${OSTYPE}}"
 # if no os specific, try for a general one
-[ -e "${termfile}" ] || termfile="${HOME}/.zkbd/${TERM}"
-if [ -e "${termfile}" ]
+[[ -e "${termfile}" ]] || termfile="${HOME}/.zkbd/${TERM}"
+if [[ -e "${termfile}" ]]
 then
   source "${termfile}"
   # [[ -n "${key[F1]}" ]] && bindkey "${key[F1]}" x
