@@ -15,6 +15,7 @@
     st = status
     br = branch
     praise = blame
+    sp = stash pop
     sa = stash apply
     sc = stash clear
     ss = stash save
