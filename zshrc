@@ -2,7 +2,7 @@
 
 # notes:
 # if the file ~/bin/@ADD-TO-PATH exists, any lines that are directories
-# will be appended to the PATH
+# will be added to the PATH
 
 # determine if root user
 is_root=no
@@ -123,9 +123,6 @@ function pathfront {
 # show path
 alias path='echo ${PATH}'
 
-# put user's bin directory first
-[[ -d "${HOME}/bin" ]] && pathfront "${HOME}/bin"
-
 # append the @ADD-TO-PATH entries to the path
 # only if they resolve to directories
 if [[ -f "${HOME}/bin/@ADD-TO-PATH" ]]
@@ -135,10 +132,13 @@ then
     [[ -z "${line}" ]] && continue
     [[ X"${line#\#}" != X"${line}" ]] && continue
     [[ X"${line#/}" = X"${line}" ]] && line=$(absolute_path "${HOME}/bin/${line}")
-    [[ -d "${line}" ]] && PATH="${PATH}:${line}"
+    [[ -d "${line}" ]] && pathfront "${line}"
   done < "${HOME}/bin/@ADD-TO-PATH"
   unset line
 fi
+
+# put user's main bin directory first
+[[ -d "${HOME}/bin" ]] && pathfront "${HOME}/bin"
 
 # Single history for all open shells
 HISTFILE="${HOME}/.zhistory"
