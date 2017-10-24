@@ -172,3 +172,16 @@ do
   echo Copy ${f} to ${d}
   cp -p "${src}/${f}" "${d}"
 done
+
+# desktop files to .local
+dst="${HOME}/.local/share/applications/"
+mkdir -p "${dst}"
+
+for f in "${src}"/*.desktop
+do
+  bn=$(basename "${f}")
+  [ -e "/usr/local/share/applications/${bn}" ] && continue
+  [ -e "/usr/share/applications/${bn}" ] && continue
+  echo Copy ${bn} to ${dst}
+  cp -p "${f}" "${dst}"
+done

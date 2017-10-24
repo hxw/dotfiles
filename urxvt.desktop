@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=RXVT Unicode
+Type=Application
+GenericName=Terminal emulator
+Comment=Terminal emulator
+
+Icon=utilities-terminal
+Exec=urxvt
+Terminal=false
+Categories=System;
