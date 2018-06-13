@@ -5,7 +5,6 @@ auto-execute *.c c-mode
 make-backup-files 0
 
 global-set-key "\eg" goto-line
-; .mg
 
 ; F2
 global-set-key "\eOQ" save-buffer
@@ -25,8 +24,9 @@ global-set-key "\e[24~" delete-other-windows
 ; delete
 global-set-key "\e[3~" delete-char
 
-; Segmentation fault: if attempt to define C-\
-;global-set-key "\^\" undo
+; Segmentation fault: if define C-\ using:  global-set-key "\^\" undo
+; so must use octal notation: C-\ == \034
+global-set-key "\034" undo
 
 
 ; set-default-mode fill

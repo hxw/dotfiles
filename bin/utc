@@ -4,6 +4,7 @@
 # list of timezones to display
 list='
 Asia/Taipei
+Asia/Ho_Chi_Minh
 UTC
 Europe/London
 Europe/Paris

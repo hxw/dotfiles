@@ -1,0 +1,15 @@
+#command
+D noaction j/\^diff|commit|From \n\eu
+d noaction j/\^diff|commit|From \n\eu
+
+#command
+[ prev-file
+] next-file
+
+#command
+Q quit \1
+:cq quit \1
+
+#command
+\kd forw-line-force
+j forw-line-force

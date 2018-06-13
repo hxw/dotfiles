@@ -28,7 +28,7 @@ COPY bash_aliases
 COPY mg
 #COPY tcshrc
 COPY zshrc
-
+COPY lesskey
 
 # end of list
 # ===========
@@ -74,8 +74,12 @@ interactive=yes
 wait=yes
 src=$(dirname "$0")
 
-getopt=/usr/local/bin/getopt
-[ -x "${getopt}" ] || getopt=getopt
+getopt=
+for g in /usr/local/bin/getopt /usr/local/opt/gnu-getopt/bin/getopt /usr/bin/getopt
+do
+  [ -x "${g}" ] && getopt="${g}" && break
+done
+[ -x "${getopt}" ] || ERROR 'no suitable getopt was found'
 args=$(${getopt} -o hvp:nd --long=help,verbose,prefix:,non-interactive,debug -- "$@") ||exit 1
 
 # replace the arguments with the parsed values
@@ -185,3 +189,6 @@ do
   echo Copy ${bn} to ${dst}
   cp -p "${f}" "${dst}"
 done
+
+# update less configuration
+lesskey
