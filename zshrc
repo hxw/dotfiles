@@ -225,6 +225,7 @@ case "$(uname -s)" in
     esac
 
     export GREP_OPTIONS=--colour=auto
+    export IFCONFIG_FORMAT=inet:cidr,inet6:cidr
     ;;
 
   (NetBSD)
@@ -274,7 +275,7 @@ function zkbd()
 # turn caps lock into compose (if running inder X)
 if which setxkbmap > /dev/null 2>&1
 then
-  setxkbmap -option compose:caps
+  [ -n "${DISPLAY}" ] && setxkbmap -option compose:caps
 fi
 
 # set up default function key map - if zkbd has been run
