@@ -215,6 +215,8 @@ case "$(uname -s)" in
     alias alp="netstat -an |grep --colour=never '\(^Proto.*\|LISTEN\|^udp\)'"
     alias alps="netstat -aS |grep --colour=never '\(^Proto.*\|LISTEN\|^udp\)'"
 
+    alias iotop='top -m io -o total'
+
     case "${is_root}" in
       (yes)
         export DIFF_OPTIONS=-u
