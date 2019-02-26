@@ -32,10 +32,10 @@
 # =============
 
     # log all; can supply optional line count e.g.: git la 10
-    la = !export n=${1:-$(expr $(tput lines) - 5)} && git --no-pager log --graph --pretty=format:'%C(bold red)%h%Creset %<(70,trunc)%s %C(bold green)%cd %C(bold ul blue)%aN%Creset %C(bold yellow)%D%Creset' --abbrev-commit --date='format:%F %T' --decorate=short --all --max-count=${n} | head -n ${n} && echo && :
+    la = !export n=${1:-$(expr $(tput lines) - 5)} && git --no-pager log --graph --color=always --pretty=format:'%C(bold red)%h%Creset %<(70,trunc)%s %C(bold green)%cd %C(bold ul blue)%aN%Creset %C(bold yellow)%D%Creset' --abbrev-commit --date='format:%F %T' --decorate=short --all --max-count=${n} | head -n ${n} && echo && :
 
     # log just HEAD; can supply optional line count e.g.: git ll 10
-    ll = !export n=${1:-$(expr $(tput lines) - 5)} && git --no-pager log --graph --pretty=format:'%C(bold red)%h%Creset %<(70,trunc)%s %C(bold green)%cd %C(bold ul blue)%aN%Creset %C(bold yellow)%D%Creset' --abbrev-commit --date='format:%F %T' --decorate=short --max-count=${n} HEAD | head -n ${n} && echo && :
+    ll = !export n=${1:-$(expr $(tput lines) - 5)} && git --no-pager log --graph --color=always --pretty=format:'%C(bold red)%h%Creset %<(70,trunc)%s %C(bold green)%cd %C(bold ul blue)%aN%Creset %C(bold yellow)%D%Creset' --abbrev-commit --date='format:%F %T' --decorate=short --max-count=${n} HEAD | head -n ${n} && echo && :
 
 # git-svn commands
 # ================
