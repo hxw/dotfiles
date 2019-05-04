@@ -2,29 +2,39 @@
 # Setup some extra PATH variables
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/games:/usr/local/sbin:/usr/local/bin:$HOME/bin; export PATH
-[ -d "${HOME}/.local/bin" ] && PATH="${PATH}:${HOME}/.local/bin"
+
+# append the @ADD-TO-PATH entries to the path
+# only if they resolve to directories
+if [ -f "${HOME}/bin/@ADD-TO-PATH" ]
+then
+  while read line
+  do
+    [ -z "${line}" ] && continue
+    [ X"${line#\#}" != X"${line}" ] && continue
+    [ X"${line#/}" = X"${line}" ] && line=$(realpath -q "${HOME}/bin/${line}")
+    [ -z "${line}" ] && continue
+    [ -d "${line}" ] && PATH="${PATH}:${line}"
+  done < "${HOME}/bin/@ADD-TO-PATH"
+  unset line
+fi
 
 
-#XDG_DATA_DIRS="/share:/usr/share:/usr/local/share"
-#export XDG_DATA_DIRS
-#
-#XDG_CONFIG_DIRS="/usr/local/etc/xdg"
-#export XDG_CONFIG_DIRS
-
-#Load any Xterm settings
+# Load any Xterm settings
 xrdb ~/.Xresources
-
-# scale GTK 3
-#export GDK_SCALE=2
-
-# scale QT - set later
-# deleted by lumina-desktop or desktop is rescaled
-#export QT_AUTO_SCREEN_SCALE_FACTOR=1
 
 
 # Fix an issue with large image rendering via mozilla firefox
 export MOZ_DISABLE_IMAGE_OPTIMIZE=1
-export MALLOC_CONF='narenas:1,tcache:false'
+#export MALLOC_CONF='narenas:1,tcache:false' ##### crashes lumina start menu
+
+
+# ibus
+export XIM=ibus
+export GTK_IM_MODULE=ibus
+export QT_IM_MODULE=xim
+export XMODIFIERS=@im=ibus
+export XIM_PROGRAM="ibus-daemon"
+export XIM_ARGS="--daemonize --xim"
 
 
 # start a fresh gpg agent and set environment
@@ -33,19 +43,5 @@ eval $(gpg-agent --daemon --sh)
 export GPG_TTY='not a tty'
 
 
-# set up for go language
-if [ -z "${GOPATH}" ]
-then
-  GOPATH="${HOME}/gocode"
-  if [ -d "${GOPATH}" ]
-  then
-    gobin="${GOPATH}/bin"
-    export GOPATH
-    export PATH="${PATH}:${gobin}"
-    # needed for FreeBSD 10 and later
-    export CC=clang
-  else
-    unset GOPATH
-  fi
-  unset gobin
-fi
+# go
+export GOPATH="${HOME}/gocode"
