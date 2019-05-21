@@ -83,9 +83,9 @@ function pathrm {
   local item p pa
 
   pa=(${(s/:/)PATH})
-  for item in $@
+  for item in "$@"
   do
-    pa=("${pa[@]/${item}/}")
+    pa=("${pa[@]:#${item}}")
   done
 
   p=
@@ -115,6 +115,8 @@ function pathfront {
   p=
   for item in $@
   do
+    item=$(realpath "${item}")
+    pathrm "${item}"
     [[ -n "${item}" ]] && p="${p}:${item}"
   done
   PATH="${p:1}:${PATH}"
