@@ -115,7 +115,7 @@ function pathfront {
   p=
   for item in $@
   do
-    item=$(realpath "${item}")
+    item=$(absolute_path "${item}")
     pathrm "${item}"
     [[ -n "${item}" ]] && p="${p}:${item}"
   done
@@ -175,7 +175,8 @@ PS1='%F{magenta}%B[%T]%b%f %F{green}%B%n@%m%b%f %F{cyan}%B%2~ %#%b%f '
 REPORTTIME=10
 
 # OS specific items
-case "$(uname -s)" in
+os="$(uname -s)"
+case "${os}" in
   (Linux)
     eval $(dircolors)
     alias ls='ls -F --color=auto'
@@ -203,7 +204,7 @@ case "$(uname -s)" in
     export TIME_STYLE='posix-long-iso'
     ;;
 
-  (FreeBSD)
+  (FreeBSD|DragonFly)
     if [[ "${TERM}" =~ "^rxvt" ]]
     then
       TERM=rxvt-unicode-256color
@@ -228,11 +229,11 @@ case "$(uname -s)" in
         ;;
     esac
 
-    export GREP_OPTIONS=--colour=auto
+    [ X"${os}" = X"FreeBSD" ] && export GREP_OPTIONS=--colour=auto
     export IFCONFIG_FORMAT=inet:cidr,inet6:cidr
     ;;
 
-  (NetBSD)
+  (NetBSD|OpenBSD)
     if [[ "${TERM}" =~ "^rxvt" ]]
     then
       TERM=rxvt-256color
