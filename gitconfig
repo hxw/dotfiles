@@ -13,7 +13,7 @@
     pr = pull --rebase
     pnp = !git pull --rebase && git push origin HEAD
     st = status
-    br = branch
+    br = !git -P branch
     praise = blame
     sp = stash pop
     sa = stash apply
