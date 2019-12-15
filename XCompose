@@ -1,0 +1,8 @@
+# .XCompose
+
+include "%L"
+
+#<Multi_key> <minus> <minus> <space>	: "­"   U00ad # SOFT HYPHEN
+<Multi_key> <Z> <Z>			: "ℤ"  # Blackboard bold Z (set of integers)
+<Multi_key> <bar> <bar>			: "∥"  # Concatenate
+<Multi_key> <plus> <plus>		: "⧺"  # Double plus (Haskell Concatenate)

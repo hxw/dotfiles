@@ -20,7 +20,7 @@ fi
 
 
 # Load any Xterm settings
-xrdb ~/.Xresources
+xrdb -merge ~/.Xresources
 
 
 # Fix an issue with large image rendering via mozilla firefox
@@ -39,9 +39,6 @@ export XIM_ARGS="--daemonize --xim"
 
 # start a fresh gpg agent and set environment
 gpgconf --kill gpg-agent
+rm -f "${HOME}/.gnupg/gpg-agent.log"
 eval $(gpg-agent --daemon --sh)
 export GPG_TTY='not a tty'
-
-
-# go
-export GOPATH="${HOME}/gocode"
