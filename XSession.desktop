@@ -1,0 +1,7 @@
+[Desktop Entry]
+Exec=.xsession
+TryExec=start-lumina-desktop
+Icon=application-x-executable.svg
+Type=Application
+Name=Xsession
+Comment=User provided .xsession file

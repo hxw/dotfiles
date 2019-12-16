@@ -8,10 +8,13 @@ export XDG_CONFIG_HOME="${HOME}/.config"
 export XDG_CURRENT_DESKTOP=Xmonad
 export XDG_DATA_DIRS="/usr/local/share:/usr/share"
 export XDG_DATA_HOME="${HOME}/.local/share"
-export XDG_SESSION_COOKIE="$(hostname -s)-$(date +'%s').$$-123456789"
+
+# set cookie if using non-XDG aware display manager
+[ -z "${XDG_SESSION_COOKIE}" ] && export XDG_SESSION_COOKIE="$(hostname -s)-$(date +'%s').$$-123456789"
 
 # start dbus
-eval $(dbus-launch)
+#eval $(dbus-launch)
+[ X"${1}" = X"with-dbus" ] || exec dbus-launch --exit-with-session "$0" with-dbus
 
 # start ibus xim
 ibus-daemon --xim --daemonize --replace
@@ -25,6 +28,7 @@ stalonetray &
 
 # apps
 xscreensaver -no-splash &
+oneko -tomoyo -bg pink -fg purple &
 
 # a power manager
 #xfce4-power-manager &

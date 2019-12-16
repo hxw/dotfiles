@@ -19,7 +19,7 @@ then
 fi
 
 
-# Load any Xterm or other resource settings
+# Load any Xterm settings
 xrdb -merge ~/.Xresources
 
 
