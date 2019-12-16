@@ -5,9 +5,6 @@ xprofile="${HOME}/.xprofile"
 
 [ -x "${xprofile}" ] && . "${xprofile}"
 
-if [ X"${1}" = X"default" ]
-then
-  exec start-lumina-desktop
-fi
+[ X"${1}" = X"default" ] && exec start-lumina-desktop
 
 exec "$@"
