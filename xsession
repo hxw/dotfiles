@@ -29,6 +29,8 @@ stalonetray &
 # apps
 xscreensaver -no-splash &
 oneko -tomoyo -bg pink -fg purple &
+pc-mixer &
+xbindkeys &
 
 # a power manager
 #xfce4-power-manager &
