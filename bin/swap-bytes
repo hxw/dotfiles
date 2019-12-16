@@ -1,0 +1,10 @@
+#!/bin/sh
+# swap le->be of a hex string
+
+bytes=$(printf '%s' "$1" | sed 's/../& /g')
+t=
+for b in ${bytes}
+do
+  t="${b}${t}"
+done
+printf '%s\n' "${t}"

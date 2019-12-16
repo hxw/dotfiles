@@ -1,0 +1,23 @@
+#!/bin/sh
+# resize the terminal to the current rxvt-unicode size
+
+ERROR()
+{
+  printf 'error: '
+  printf "$@"
+  printf '\n'
+  exit 1
+}
+
+the_shell=$(which zsh)
+[ $? -eq 0 ] || the_shell=$(which bash)
+[ $? -ne 0 ] && ERROR 'need either zsh or bash for this script to function'
+
+${the_shell} -c '
+  printf '"'"'\0337\033[r\033[999;999H\033[6n\0338'"'"'
+  read -t 1 -s -d'"'"'R'"'"' pos
+  pos="${pos#*[[]}"
+  lines="${pos%;*}"
+  columns="${pos#*;}"
+  stty rows "${lines}" columns "${columns}"
+'

@@ -1,0 +1,107 @@
+#!/bin/sh
+# push branches and tags out to various repositories
+
+repos='origin'
+branches='master'
+
+ERROR()
+{
+  printf 'error: '
+  printf "$@"
+  printf '\n'
+  exit 1
+}
+
+USAGE()
+{
+  if [ -n "$1" ]
+  then
+    printf 'error: '
+    printf "$@"
+    printf '\n'
+  fi
+  echo usage: $(basename "$0") '<options>' command
+  echo '       --help      -h   this message'
+  echo '       --tags      -t   push all tags'
+  exit 1
+}
+
+
+verbose=no
+tags=no
+
+getopt=/usr/local/bin/getopt
+[ -x "${getopt}" ] || getopt=getopt
+args=$(${getopt} -o hvt --long=help,verbose,tags -- "$@") || exit 1
+# replace the arguments with the parsed values
+eval set -- "${args}"
+
+while :
+do
+  case "$1" in
+    (-v|--verbose)
+      verbose=yes
+      ;;
+
+    (-t|--tags)
+      tags=yes
+      ;;
+
+    (--)
+      shift
+      break
+      ;;
+
+    (-h|--help)
+      USAGE
+      ;;
+
+    (*)
+      USAGE 'invalid option: %s' "$1"
+      ;;
+  esac
+  shift
+done
+
+[ -z "$1" ] || USAGE 'extraneous arguments: %s' "$*"
+
+# rebase
+if ! git pull --rebase
+then
+   echo 'Check modifications in first'
+   exit 1
+fi
+
+# find all tags
+if [ X"${tags}" = X"yes" ]
+then
+  TagList=$(git tag -l)
+  printf 'TAGS: %s\n' "${TagList}"
+fi
+
+# synchonise all repos
+for r_actual in $(git remote show)
+do
+  for repo in ${repos}
+  do
+    if [ X"${repo}" = X"${r_actual}" ]
+    then
+
+      for branch in ${branches}
+      do
+        printf 'branch: %s ==> repo: %s\n' "${branch}" "${repo}"
+        git push "${repo}" "${branch}"
+      done
+
+      if [ X"${tags}" = X"yes" ]
+      then
+        for tag in ${TagList}
+        do
+          printf 'tag: %s ==> repo: %s\n' "${tag}" "${repo}"
+          git push "${repo}" "${tag}"
+        done
+      fi
+      printf '\n'
+    fi
+  done
+done

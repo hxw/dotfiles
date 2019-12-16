@@ -1,0 +1,21 @@
+#!/bin/sh
+# replace sudo with doas
+
+
+ERROR()
+{
+  printf 'error: '
+  printf "$@"
+  printf '\n'
+  exit 1
+}
+
+
+doas=
+for d in /bin/doas /usr/bin/doas /usr/local/bin/doas
+do
+  [ -x "${d}" ] && doas="${d}" && break
+done
+[ -x "${doas}" ] || ERROR 'no suitable doas was found'
+
+exec ${doas} "$@"

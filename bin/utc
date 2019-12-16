@@ -3,15 +3,22 @@
 
 # list of timezones to display
 list='
-Asia/Taipei
-Asia/Ho_Chi_Minh
+America/Vancouver
+America/Los_Angeles
+America/Denver
+America/New_York
 UTC
 Europe/London
+CET
 Europe/Paris
-America/Los_Angeles
-America/New_York
+Europe/Athens
+Asia/Dubai
+Asia/Ho_Chi_Minh
+Asia/Singapore
+Asia/Kuala_Lumpur
+Asia/Taipei
 Asia/Tokyo
-America/Vancouver
+Australia/Sydney
 '
 
 # compute longest title length

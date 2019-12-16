@@ -1,0 +1,13 @@
+#!/bin/sh
+# set the copyright year to current year in *.go files
+
+year=$(date '+%Y')
+
+find . -name '*.go' -print -exec sed -E -i '~' 's@^(//[[:space:]]+Copyright[[:space:]]+[(]c[)][[:space:]]+[[:digit:]]+-)[[:digit:]]+([[:space:]]+Bitmark[[:space:]]+Inc[.])$@\1'"${year}"'\2@' '{}' ';'
+
+# handle non-go files
+for f in LICENSE debian/copyright
+do
+  printf 'file: %s\n' "${f}"
+  sed -E -i '~' 's@^(Copyright[[:space:]]+[(]c[)][[:space:]]+[[:digit:]]+-)[[:digit:]]+([[:space:]]+Bitmark[[:space:]]+Inc[.])$@\1'"${year}"'\2@' "${f}"
+done

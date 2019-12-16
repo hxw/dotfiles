@@ -1,0 +1,125 @@
+#!/bin/sh
+# run in:
+# 1. a port directory to commit that dir with a simple message
+# 2. a program directory containing a debian/changelog
+#    will set commit message to top changelog message
+
+ERROR()
+{
+  printf 'error: '
+  printf "$@"
+  printf '\n'
+  exit 1
+}
+
+# commit from a changelog
+# version string: MAJOR[.MINOR[.PATCH[-PRERELEASE][+BUILD]]]-REVISION
+# example: 0.11.0-alpha.1-1
+# REVISION is the Debian version of the port (i.e. like FreeBSD PORTREVISION)
+debian_commit()
+{
+  local changelog
+  changelog="$1"; shift
+
+  local full major minor patch prerelease build revision version dir rest
+
+  full=$(cat "${changelog}" | head -n 1 | sed -E 's/^[^(]*[(]//;s/[)].*$//')
+
+  rest=$(printf '%s' "${full}" | sed -E 's/^([[:digit:]]+)[.]([[:digit:]]+)[.]([[:digit:]]+)([-]([[:alnum:].-]+))?([+]([[:alnum:].-]+))?-([[:alnum:]]+)$/\1 \2 \3 \5 \7 \8/')
+
+  major="${rest%% *}"
+  rest="${rest#* }"
+  minor="${rest%% *}"
+  rest="${rest#* }"
+  patch="${rest%% *}"
+  rest="${rest#* }"
+  prerelease="${rest%% *}"
+  rest="${rest#* }"
+  build="${rest%% *}"
+  rest="${rest#* }"
+  revision="${rest%% *}"
+
+
+  version="${major}"
+  [ -n "${minor}" ] && version="${version}.${minor}"
+  [ -n "${patch}" ] && version="${version}.${patch}"
+  [ -n "${prerelease}" ] && version="${version}-${prerelease}"
+  [ -n "${build}" ] && version="${version}+${build}"
+  [ -n "${revision}" ] && version="${version}-${revision}"
+
+  [ X"${full}" = X"${version}" ] || ERROR 'unable to parse version as M.N.P-PRE+BUILD-DEB from: "%s"  in: "%s"' "${full}" "${changelog}"
+
+  dir=$(basename "${PWD}")
+
+  local message
+  message=$(awk '
+    BEGIN {
+      dir = "'"${dir}"'"
+      version = "'"${version}"'"
+      state = 0
+      print "[" dir "] update to version " version
+      print
+    }
+    /^[^[:space:]]/ {
+      if (1 == state) {
+        state = 2
+      }
+    }
+    /^[[:space:]]*--/ {
+      state=2
+    }
+    /^[[:space:]]/ {
+      if (state < 2) {
+        state = 1
+        line = $0
+        print line
+      }
+    }
+    /^$/ {
+      if (1 == state) {
+        print $0
+      }
+    }
+  ' "${changelog}")
+
+  git add -u . && git commit -m "${message}"
+
+}
+
+# commit from a Makefile
+makefile_commit()
+{
+  local makefile
+  makefile="$1"; shift
+
+  local version dir
+  version=$(make -V PORTVERSION)
+  revision=$(make -V PORTREVISION)
+  dir=$(basename "${PWD}")
+
+  [ -z "${version}" ] && ERROR 'no version in Makefile'
+  [ -z "${dir}" ] && ERROR 'no current directory'
+
+  if [ "${revision}" -eq 0 ]
+  then
+    revision=''
+  else
+    revision="_${revision}"
+  fi
+  # commit
+  git add -u . && git commit -m 'update '"${dir}"' to '"${version}${revision}"
+}
+
+# main
+
+changelog="debian/changelog"
+
+if [ -f "${changelog}" ]
+then
+  debian_commit "${changelog}"
+elif [ -f Makefile ]
+then
+  makefile_commit Makefile
+else
+  ERROR 'Makefile does not exist'
+fi

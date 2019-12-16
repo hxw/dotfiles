@@ -1,0 +1,6 @@
+#!/bin/sh
+# for Lumina autostart to set mixer configuration
+
+mixer -f /dev/mixer0 vol 50:50 pcm 100:100 speaker 100:100 rec 80:80 ogain 100:100 monitor 100:100 =rec monitor
+mixer -f /dev/mixer1 mic 80:80 rec 80:80 =rec mic
+mixer -f /dev/mixer2 vol 50:50 pcm 100:100

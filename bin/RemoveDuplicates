@@ -2,6 +2,7 @@
 # Remove Duplicate files
 # Copyright 2006 Christopher Hall
 # License GPL2 or later
+# 2019-04-29 MD5 -> SHA256 Christopher Hall
 
 usage()
 {
@@ -121,7 +122,7 @@ REMOVE()
 
 
 # Check for differences, this is called
-# for files with matching MD5 sums
+# for files with matching SHA256 sums
 # i.e. two dissimilar files can have the same
 # sum.  So this uses cmp to be certain
 MultiDiff()
@@ -154,7 +155,7 @@ MultiDiff()
 
 # initialisation
 DetectProgram AWK gawk: awk: nawk:
-DetectProgram MD5 md5:-r md5sum:
+DetectProgram SHA256 sha256:-r sha256sum:
 
 precious=''
 PreciousIndex=1
@@ -186,19 +187,19 @@ done
 
 [ -z "$1" ] && usage Missing arguments
 
-# search all directories and get MD5 sums for files
+# search all directories and get SHA256 sums for files
 # awk is then used to tabulate MD% matches
-find "$@" -type d | ( 
+find "$@" -type d | (
   IFS=''
   while read dir
   do
-    echo Check ${MD5} ${dir}
+    echo Check ${SHA256} ${dir}
     if [ ! -d "${dir}" ]
     then
       echo Something wrong with: "'${dir}'"
       exit 99
     fi
-    eval ${MD5} \"${dir}\"/* 2>/dev/null
+    eval ${SHA256} \"${dir}\"/* 2>/dev/null
   done
   exit 0
 ) | ${AWK} '
@@ -207,12 +208,12 @@ find "$@" -type d | (
     delete k
   }
   /^[0-9a-fA-F]+[[:space:]]/ {
-    md5 = $1
+    sha256 = $1
     sub("^[0-9a-fA-F]*[[:space:]]*", "")
     file = $0
-    h[md5] = h[md5] " \"" file "\""
-    ++k[md5]
-    #print("# " md5 ">" file "<")
+    h[sha256] = h[sha256] " \"" file "\""
+    ++k[sha256]
+    #print("# " sha256 ">" file "<")
   }
 
   END {

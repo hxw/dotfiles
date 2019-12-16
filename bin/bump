@@ -1,0 +1,388 @@
+#!/bin/sh
+# bump up the patch version
+
+ERROR() {
+  printf 'error: '
+  printf "$@"
+  printf '\n'
+  exit 1
+}
+
+USAGE() {
+  if [ -n "$1" ]
+  then
+    printf 'error: '
+    printf "$@"
+    printf '\n'
+  fi
+  echo usage: $(basename "$0") '[options]'
+  echo '       --help             -h            this message'
+  echo '       --verbose          -v            more messages'
+  echo '       --revise           -r            increment port revision'
+  echo '       --no-update        -n            no modification of files'
+  echo '       --use=VERSION      -u VERSION    use this version instead of incrementing'
+  echo '       --debug            -D            debuging messages'
+  exit 1
+}
+
+VERBOSE() {
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "$@"
+  printf '\n'
+}
+
+# version string: MAJOR[.MINOR[.PATCH[-PRERELEASE][+BUILD]]]
+# example: 0.11.0-alpha.1+git-a7fe24
+# split into globals: major minor patch prerelease
+# and canonical:      version
+parse_version() {
+  local full rest
+  full="$1"; shift
+
+  rest=$(printf '%s' "${full}" | sed -E 's/^([[:digit:]]+)[.]([[:digit:]]+)[.]([[:digit:]]+)([-]([[:alnum:].-]+))?([+]([[:alnum:].-]+))?$/\1 \2 \3 \5 \7/')
+
+  major="${rest%% *}"
+  rest="${rest#* }"
+  minor="${rest%% *}"
+  rest="${rest#* }"
+  patch="${rest%% *}"
+  rest="${rest#* }"
+  prerelease="${rest%% *}"
+  rest="${rest#* }"
+  build="${rest%% *}"
+
+  reassemble_version
+
+  [ X"${full}" = X"${version}" ] || ERROR 'unable to parse version as M.N.P-PRE+BUILD from: "%s"' "${full}"
+}
+
+# assemble global "version" from parts
+reassemble_version() {
+  version="${major}"
+  [ -n "${minor}" ] && version="${version}.${minor}"
+  [ -n "${patch}" ] && version="${version}.${patch}"
+  [ -n "${prerelease}" ] && version="${version}-${prerelease}"
+  [ -n "${build}" ] && version="${version}+${build}"
+}
+
+# main program
+verbose=no
+debug=no
+revise=no
+update=yes
+use_version=
+version_file_list='Cargo.toml pom.xml Makefile debian/changelog'
+
+getopt=
+case "$(uname)" in
+  (FreeBSD|DragonFly)
+    getopt=/usr/local/bin/getopt
+    ;;
+  (NetBSD)
+    getopt=/usr/pkg/bin/getopt
+    ;;
+  (OpenBSD)
+    getopt=/usr/local/bin/gnugetopt
+    ;;
+  (Darwin)
+    getopt=/usr/local/opt/gnu-getopt/bin/getopt
+    ;;
+  (Linux)
+    getopt=/usr/bin/getopt
+    ;;
+  (*)
+    ERROR 'OS: %s is not supported' "$(uname)"
+    ;;
+esac
+[ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
+
+args=$(${getopt} -o hvrnu:D --long=help,verbose,revise,no-update,use:,debug -- "$@") || exit 1
+
+# replace the arguments with the parsed values
+eval set -- "${args}"
+
+while :
+do
+  case "$1" in
+    (-v|--verbose)
+      verbose=yes
+      ;;
+
+    (-r|--revise)
+      revise=yes
+      ;;
+
+    (-u|--use)
+      use_version="$2"
+      [ -z "${use_version}" ] && USAGE 'use argument cannot be blank'
+      parse_version "${use_version}"
+      shift
+      ;;
+
+    (-n|--no-update)
+      update=no
+      ;;
+
+    (-D|--debug)
+      debug=yes
+      ;;
+
+    (--)
+      shift
+      break
+      ;;
+
+    (-h|--help)
+      USAGE
+      ;;
+
+    (*)
+      USAGE 'invalid option: %s' "$1"
+      ;;
+  esac
+  shift
+done
+
+# verify arguments
+[ $# -ne 0 ] && USAGE 'extraneous arguments'
+
+# enable debuging
+[ X"${debug}" = X"yes" ] && set -x
+
+version_file=
+for f in ${version_file_list}
+do
+  if [ -f "${f}" ]
+  then
+    version_file="${f}"
+    break
+  fi
+done
+[ -z "${version_file}" ] && ERROR 'missing version_file tried: %s' "${version_file_list}"
+
+VERBOSE 'version file: %s' "${version_file}"
+
+version=
+case "${version_file}" in
+  (*.xml)
+    version=$(xmllint --xpath "/*[name()='project']/*[name()='version']/text()" "${version_file}")
+    ;;
+
+  (Makefile)
+    version=$(make -V DISTVERSION)
+    [ -z "${version}" ] && ERROR 'only FreeBSD port Makefiles are supported'
+    ;;
+
+  (debian/changelog)
+    version=$(head -n 1 debian/changelog | sed -E 's/^[^(]*[(]([^)]+)-([[:alnum:]]+)[)].*$/\1 \2/')
+    debian_revision="${version#* }"
+    version="${version% *}"
+    ;;
+
+    (*.toml)
+     version=$(awk '
+        BEGIN {
+          major = ""
+          minor = ""
+          patch = ""
+          package = 0
+          file = "'"${version_file}"'"
+        }
+        END {
+          if ("" == major || "" == minor || "" == patch) {
+            s = ""
+            if ("" == major) {
+              s = s "major"
+            }
+            if ("" == minor) {
+              if ("" != s) {
+                s = s ", "
+              }
+              s = s "minor"
+            }
+            if ("" == patch) {
+              if ("" != s) {
+                s = s ", "
+              }
+              s = s "patch"
+            }
+            print "invalid version in: \"" file "\"  missing: " s
+            exit 1
+          } else {
+            print major "." minor "." patch
+          }
+        }
+        /^[[:space:]]*\[package\]/ {
+          if (package == 0) {
+            package = 1
+          }
+        }
+        /^[[:space:]]*version[[:space:]]*=[[:space:]]*"[[:digit:].]+"/ {
+           if (package == 1) {
+             split($0, a, "\"")
+             split(a[2], a, ".")
+             if (3 == length(a)) {
+               major = a[1]
+               minor = a[2]
+               patch = a[3]
+             }
+             package = 2
+          }
+        }
+      ' < "${version_file}")
+      [ $? -ne 0 ] && ERROR "${version}"
+      ;;
+
+  (*)
+    ERROR 'unsupported version_file: %s' "${version_file}"
+    ;;
+esac
+
+parse_version "${version}"
+
+VERBOSE 'version from file: %s' "${version}"
+[ -n "${debian_revision}" ] && VERBOSE 'debian revision from file: %s' "${debian_revision}"
+
+if [ -z "${use_version}" ]
+then
+  if [ X"${revise}" = X"no" ]
+  then
+    if [ -n "${prerelease}" ]
+    then
+      n=$(printf '%s' "${prerelease}" | sed -E 's/^(.*)[.]([[:digit:]]+)/\1 \2/')
+      p="${n% *}"
+      n="${n#* }"
+      prerelease="${p}.$((n + 1))"
+    else
+      patch=$((patch + 1))
+    fi
+  fi
+  reassemble_version
+  use_version="${version}"
+fi
+
+VERBOSE 'new version: %s' "${use_version}"
+
+printf 'updating: "%s" to version: %s\n' "${version_file}"  "${use_version}"
+
+case "${version_file}" in
+  (*.xml)
+    #    version=$(xmllint --xpath "/*[name()='project']/*[name()='version']/text()" "${version_file}")
+    ERROR 'cannot handle files like: "%s" yet' "${version_file}"
+    ;;
+
+  (Makefile)
+    revision=$(make -V PORTREVISION)
+    if [ X"${revise}" = X"yes" ]
+    then
+      [ -z "${revision}" ] && revision=0
+      revision=$((revision + 1))
+      printf 'updating revision to: %s\n' "${revision}"
+    else
+      revision=0
+    fi
+    case "${revision}" in
+      (0)
+        sed -i '~' -E 's/^((PORT|DIST)VERSION[[:space:]]*=[[:space:]]*)[^[:space:]].*$/\1'"${use_version}"'/;/^PORTREVISION[[:space:]]*=/d' "${version_file}"
+      ;;
+      (1)
+        sed -i '~' -E 's/^((PORT|DIST)VERSION[[:space:]]*=[[:space:]]*)[^[:space:]].*$/\1'"${use_version}"'/;/^(PORT|DIST)VERSION.*$/{n;n;i\
+PORTREVISION=	'"${revision}"'
+
+}' "${version_file}"
+        ;;
+      (*)
+        sed -i '~' -E 's/^((PORT|DIST)VERSION[[:space:]]*=[[:space:]]*)[^[:space:]].*$/\1'"${use_version}"'/;s/^(PORTREVISION[[:space:]]*=[[:space:]]*)[^[:space:]].*$/\1'"${revision}"'/' "${version_file}"
+        ;;
+    esac
+    ;;
+
+  (*.toml)
+    sed -i '~' -E 's/^([[:space:]]*version[[:space:]]*=[[:space:]]*")[^"]+(".*)$/\1'"${use_version}"'\2/' "${version_file}"
+    if [ -f src/cli.yaml ]
+    then
+      sed -i '~' -E 's/^(version:[[:space:]]*")[^"]*(".*)$/\1'"${use_version}"'\2/' src/cli.yaml
+    fi
+    ;;
+
+  (debian/changelog)
+    # this is done later
+    ;;
+
+  (*)
+    ERROR 'unsupported version_file: %s' "${version_file}"
+    ;;
+esac
+
+# check the debian changelog for correct versioning
+changelog='debian/changelog'
+
+# done if not "debianised"
+[ -f "${changelog}" ] || exit 0
+
+# parse something like: '1.2.3-4ubuntu5'    or: '1.2.3-4'
+#                   to: '1.2.3 4 ubuntu 5'  to: '1.2.3 4 - -'
+debian_full=$(head -n 1 debian/changelog | sed -E 's/^[^(]*[(]([^)]+)-([[:digit:]]+)(([[:alpha:]]+)([[:digit:]]+))?[)].*$/\1 \2 \4 \5 - -/')
+
+debian_version="${debian_full%% *}"
+debian_full="${debian_full#* }"
+debian_revision_1="${debian_full%% *}"
+debian_full="${debian_full#* }"
+debian_revision_2="${debian_full%% *}"
+debian_full="${debian_full#* }"
+debian_revision_3="${debian_full%% *}"
+
+if [ X"${revise}" = X"yes" ]
+then
+  if [ X"${debian_revision_2}" = X"-" ]
+  then
+    debian_revision=$((debian_revision_1 + 1))
+  else
+    debian_revision="${debian_revision_1}${debian_revision_2}$((debian_revision_3 + 1))"
+  fi
+else
+  if [ X"${debian_revision_2}" = X"-" ]
+  then
+    debian_revision=1
+  else
+    debian_revision="1${debian_revision_2}1"
+  fi
+  # done if versions match
+  [ X"${use_version}" = X"${debian_version}" ] && exit 0
+fi
+
+if [ X"${update}" != X"yes" ]
+then
+  printf 'old version:  "%s"\n' "${debian_version}"
+  printf 'use version:  "%s"\n' "${use_version}"
+  printf 'revision:     "%s"\n' "${debian_revision}"
+  printf 'option --no-update in effect exiting\n'
+  exit 1
+fi
+
+# create a new changelog entry with latest revision
+new_changelog="${changelog}.new"
+rm -f "${new_changelog}"
+cat "${changelog}" | head -n 1 | sed -E 's/[(][^)]+-[[:alnum:]]+[)]/('"${use_version}-${debian_revision}"')/' > "${new_changelog}"
+email=$(git config --get user.email)
+[ $? -eq 0 ] || ERROR 'git config --get user.email failed'
+name=$(git config --get user.name)
+[ $? -eq 0 ] || ERROR 'git config --get user.name failed'
+cat >> "${new_changelog}" <<EOF
+
+  * new version from source version: ${use_version}
+
+ -- ${name} <${email}>  $(date -Ru)
+
+EOF
+
+cat "${changelog}" >> "${new_changelog}"
+mv "${changelog}" "${changelog}".old
+mv "${new_changelog}" "${changelog}"
+
+printf '\n****************************************\n'
+printf '** A new changelog entry has been added to the top of: "%s"\n' "${changelog}"
+printf '** Please edit this file to explain the changes\n'
+printf '****************************************\n'
+
+[ -n "${EDITOR}" ] && ${EDITOR} "${changelog}"

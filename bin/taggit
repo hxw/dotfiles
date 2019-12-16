@@ -1,0 +1,407 @@
+#!/bin/sh
+# tag the next version
+
+ERROR()
+{
+  printf 'error: '
+  printf "$@"
+  printf '\n'
+  exit 1
+}
+
+USAGE()
+{
+  if [ -n "$1" ]
+  then
+    printf 'error: '
+    printf "$@"
+    printf '\n'
+  fi
+  echo usage: $(basename "$0") '[options]'
+  echo '       --help             -h            this message'
+  echo '       --verbose          -v            more messages'
+  echo '       --prefix=CHAR      -p CHAR       set the version prefix ['"${version_prefix}"']'
+  echo '       --key-id=HEX       -k HEX        set the signing gpg key ['"${key_id}"']'
+  echo '       --use=VERSION      -u VERSION    use this version instead of seaching for version files'
+  echo '       --bump             -b            equivalent to --use="MAJOR.MINOR+1"'
+  echo '       --debug            -D            debuging messages'
+  exit 1
+}
+
+VERBOSE()
+{
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "$@"
+  printf '\n'
+}
+
+# version string: MAJOR[.MINOR[.PATCH[-PRERELEASE][+BUILD]]]
+# example: 0.11.0-alpha.1+git-a7fe24
+# split into globals: major minor patch prerelease
+# and canonical:      version
+parse_version() {
+  local full rest
+  full="$1"; shift
+
+  rest=$(printf '%s' "${full}" | sed -E 's/^([[:digit:]]+)[.]([[:digit:]]+)[.]([[:digit:]]+)([-]([[:alnum:].-]+))?([+]([[:alnum:].-]+))?$/\1 \2 \3 \5 \7/')
+
+  major="${rest%% *}"
+  rest="${rest#* }"
+  minor="${rest%% *}"
+  rest="${rest#* }"
+  patch="${rest%% *}"
+  rest="${rest#* }"
+  prerelease="${rest%% *}"
+  rest="${rest#* }"
+  build="${rest%% *}"
+
+  reassemble_version
+
+  [ X"${full}" = X"${version}" ] || ERROR 'unable to parse version as M.N.P-PRE+BUILD from: "%s"' "${full}"
+}
+
+# assemble global "version" from parts
+reassemble_version() {
+  version="${major}"
+  [ -n "${minor}" ] && version="${version}.${minor}"
+  [ -n "${patch}" ] && version="${version}.${patch}"
+  [ -n "${prerelease}" ] && version="${version}-${prerelease}"
+  [ -n "${build}" ] && version="${version}+${build}"
+}
+
+# main program
+verbose=no
+debug=no
+key_id=
+use_version=
+bump=no
+version_file_list='debian/changelog Cargo.toml version.go version/version.go pom.xml '"$(basename "${PWD}").cabal"
+version_prefix='v'
+
+# get a default key from git email address
+if [ -d .git ]
+then
+  key_id=$(gpg2 --list-keys --fingerprint --with-colons "$(git config --get user.email)" \
+             | grep '^fpr:' \
+             | head -n 1 \
+             | sed 's/^fpr://;s/://g')
+fi
+
+getopt=
+case "$(uname)" in
+  (FreeBSD|DragonFly)
+    getopt=/usr/local/bin/getopt
+    ;;
+  (NetBSD)
+    getopt=/usr/pkg/bin/getopt
+    ;;
+  (OpenBSD)
+    getopt=/usr/local/bin/gnugetopt
+    ;;
+  (Darwin)
+    getopt=/usr/local/opt/gnu-getopt/bin/getopt
+    ;;
+  (Linux)
+    getopt=/usr/bin/getopt
+    ;;
+  (*)
+    ERROR 'OS: %s is not supported' "$(uname)"
+    ;;
+esac
+[ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
+
+args=$(${getopt} -o hvk:p:u:bD --long=help,verbose,key-id:,prefix:,use:,bump,debug -- "$@") || exit 1
+
+# replace the arguments with the parsed values
+eval set -- "${args}"
+
+while :
+do
+  case "$1" in
+    (-v|--verbose)
+      verbose=yes
+      ;;
+
+    (-k|--key-id)
+      key_id="$2"
+      shift
+      ;;
+    (-p|--prefix)
+      version_prefix="$2"
+      shift
+      ;;
+    (-u|--use)
+      use_version="$2"
+      [ -z "${use_version}" ] && USAGE 'use argument cannot be blank'
+      check_version use_version
+      shift
+      ;;
+
+    (-b|--bump)
+      bump=yes
+      ;;
+
+    (-D|--debug)
+      debug=yes
+      ;;
+
+    (--)
+      shift
+      break
+      ;;
+
+    (-h|--help)
+      USAGE
+      ;;
+
+    (*)
+      USAGE 'invalid option: %s' "$1"
+      ;;
+  esac
+  shift
+done
+
+# verify arguments
+[ $# -ne 0 ] && USAGE 'extraneous arguments'
+
+[ -z "${key_id}" ] && USAGE 'key-id cannot be blank'
+[ -z "${version_prefix}" ] && USAGE 'prefix cannot be blank'
+[ -z "$(printf '%s' "${version_prefix}" | tr -d a-zA-Z)" ] || USAGE 'prefix: "%s"  must only contain upper/lower letters' "${prefix}"
+[ X"${bump}" = X"yes" -a -n "${use_version}" ] && USAGE 'conflicting use and bump versions'
+
+# enable debuging
+[ X"${debug}" = X"yes" ] && set -x
+
+email=$(gpg2 --with-colons --list-keys --list-only --fingerprint "${key_id}" | awk -F: '
+    /^uid:/ {
+        print $10
+    }')
+VERBOSE 'email: %s' "${email}"
+
+
+git_dir=$(git rev-parse --git-dir)
+[ $? -ne 0 ] && ERROR 'cannot determine git directory'
+[ -d "${git_dir}" ] || ERROR 'path name: "%s" is not a directory' "${git_dir}"
+
+VERBOSE 'git directory: %s' "${git_dir}"
+
+repo_dir=$(dirname "${git_dir}")
+[ -d "${repo_dir}" ] || ERROR 'path name "%s" is not a directory' "${repo_dir}"
+
+VERBOSE 'repository directory: %s' "${repo_dir}"
+
+# get the tag from git and extract the version
+last_tag=$(git tag -l | grep "^${version_prefix}" | sort --version-sort | tail -n 1)
+repo_version="${last_tag#${version_prefix}}"
+
+# check if version file - takes priority
+version_file=
+for f in ${version_file_list}
+do
+  f="${repo_dir}/${f}"
+  if [ -f "${f}" ]
+  then
+    version_file="${f}"
+    break
+  fi
+done
+
+# if no version file then allow --use or --bump
+if [ -z "${version_file}" ]
+then
+  if [ X"${bump}" = X"yes" ]
+  then
+    # --bump
+    parse_version "${repo_version#v}"
+    if [ -n "${prerelease}" ]
+    then
+      prerelease=$((prelease + 1))
+    else
+      patch=$((patch + 1))
+    fi
+    reassemble_version
+
+  else
+    # --use
+    [ -z "${use_version}" ] && ERROR 'missing version_file tried: %s' "${version_file_list}"
+    parse_version "${use_version}"
+  fi
+else
+  # have a version file, --use not allowed
+  [ -n "${use_version}" ] && ERROR 'overriding version_file: "%s" is not allowed' "${version_file}"
+
+  VERBOSE 'version file: %s' "${version_file}"
+
+  version=
+  cabal=no
+  case "${version_file}" in
+    (*.toml)
+     version=$(awk '
+        BEGIN {
+          major = ""
+          minor = ""
+          patch = ""
+          package = 0
+          file = "'"${version_file}"'"
+        }
+        END {
+          if ("" == major || "" == minor || "" == patch) {
+            s = ""
+            if ("" == major) {
+              s = s "major"
+            }
+            if ("" == minor) {
+              if ("" != s) {
+                s = s ", "
+              }
+              s = s "minor"
+            }
+            if ("" == patch) {
+              if ("" != s) {
+                s = s ", "
+              }
+              s = s "patch"
+            }
+            print "invalid version in: \"" file "\"  missing: " s
+            exit 1
+          } else {
+            print major "." minor "." patch
+          }
+        }
+        /^[[:space:]]*\[package\]/ {
+          if (package == 0) {
+            package = 1
+          }
+        }
+        /^[[:space:]]*version[[:space:]]*=[[:space:]]*"[[:digit:].]+"/ {
+           if (package == 1) {
+             split($0, a, "\"")
+             split(a[2], a, ".")
+             if (3 == length(a)) {
+               major = a[1]
+               minor = a[2]
+               patch = a[3]
+             }
+             package = 2
+          }
+        }
+      ' < "${version_file}")
+      [ $? -ne 0 ] && ERROR "${version}"
+      ;;
+
+    (*.go)
+      version=$(awk '
+        BEGIN {
+          major = ""
+          minor = ""
+          patch = ""
+          file = "'"${version_file}"'"
+        }
+        END {
+          if ("" == major || "" == minor || "" == patch) {
+            s = ""
+            if ("" == major) {
+              s = s "major"
+            }
+            if ("" == minor) {
+              if ("" != s) {
+                s = s ", "
+              }
+              s = s "minor"
+            }
+            if ("" == patch) {
+              if ("" != s) {
+                s = s ", "
+              }
+              s = s "patch"
+            }
+            print "invalid version in: \"" file "\"  missing: " s
+            exit 1
+          } else {
+            print major "." minor "." patch
+          }
+        }
+        /^[[:space:]]*Major[[:space:]]*=[[:space:]]*"[[:digit:]]+"/ {
+           split($0, a, "\"")
+           major = a[2]
+        }
+        /^[[:space:]]*Minor[[:space:]]*=[[:space:]]*"[[:digit:]]+"/ {
+           split($0, a, "\"")
+           minor = a[2]
+        }
+        /^[[:space:]]*Patch[[:space:]]*=[[:space:]]*"[[:digit:]]+"/ {
+           split($0, a, "\"")
+           patch = a[2]
+        }
+      ' < "${version_file}")
+      [ $? -ne 0 ] && ERROR "${version}"
+      ;;
+
+    (*.xml)
+      version=$(xmllint --xpath "/*[name()='project']/*[name()='version']/text()" "${version_file}")
+      ;;
+
+    (*.cabal)
+      version=$(awk '/^version:/ { print $2 }' "${version_file}")
+      cabal=yes
+      ;;
+
+    (*/changelog)
+      # form can be either: 1.2.3-4  or: 1.2.3-4ubuntu5
+      version=$(head -n 1 debian/changelog | sed -E 's/^[^(]*[(]([^)]+)-[[:alnum:]]+[)].*$/\1/')
+      ;;
+
+    (*)
+      ERROR 'unsupported version_file: %s' "${version_file}"
+  esac
+  [ X"${cabal}" != X"yes" ] && parse_version "${version}"
+fi
+
+# include prefix
+prefixed_version="v${version}"
+
+printf 'previous version: %s  (from highest git tag: %s)\n' "${repo_version}" "${last_tag}"
+if [ -z "${version_file}" ]
+then
+  printf 'current version:  %s  (from --use)\n' "${version}"
+else
+  printf 'current version:  %s  (from version file:    %s)\n' "${version}" "${version_file}"
+fi
+
+[ X"${version}" = X"v." ] && ERROR 'bad current version'
+
+# determine if changes present
+changes=$(git status --porcelain --untracked-files=no)
+
+
+if [ X"${version}" != X"${repo_version}" ]
+then
+  [ -z "${changes}" ] || ERROR 'uncommited changes are present - check-in first'
+  read -p 'Ready to tag and push ? [y/N] ' yorn junk
+  case "${yorn}" in
+    ([yY]|[yY][eE][sE])
+      (
+        set -x
+        git tag -s -u "${key_id}" -m 'release version' -a "${prefixed_version}"
+        [ $? -ne 0 ] && exit 1
+        git push
+        git push origin "${prefixed_version}"
+      )
+      ;;
+    (*)
+      ;;
+  esac
+elif [ -z "${changes}" ]
+then
+  printf 'nothing to do\n'
+else
+  first_part="${version%.*}"
+  second_part="${version##*.}"
+  suggested_new_version="${first_part}.$((${second_part} + 1))"
+
+  printf '\n'
+  printf '* Version match, but there are uncommited changes are present:\n'
+  printf '* Update the version in: %s\n' "${version_file}"
+  printf '* Suggested new version: %s\n' "${suggested_new_version}"
+  printf '* Commit all outstanding changes before running this script again\n'
+fi

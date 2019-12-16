@@ -4,13 +4,20 @@
 
 ERROR()
 {
-  echo error: $*
+  printf 'error: '
+  printf "$@"
+  printf '\n'
   exit 1
 }
 
 USAGE()
 {
-  [ -z "$1" ] || echo error: $*
+  if [ -n "$1" ]
+  then
+    printf 'error: '
+    printf "$@"
+    printf '\n'
+  fi
   echo usage: $(basename "$0")
   echo '       --help           -h         this message'
   echo '       --verbose        -v         more messages'
@@ -20,11 +27,18 @@ USAGE()
   exit 1
 }
 
+VERBOSE()
+{
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "$@"
+  printf '\n'
+}
+
 # main program
 verbose=no
-config=gqg328lc.default
+config=xa3aerai.default
 #session=sessionstore.js
-session=recovery.js
+session=recovery.jsonlz4
 dest_dir="${HOME}/Firefox-Sessions"
 
 debug=no
@@ -72,7 +86,7 @@ do
       ;;
 
     (*)
-      USAGE invalid option: $1
+      USAGE 'invalid option: %s' "$1"
       ;;
   esac
   shift
@@ -86,30 +100,23 @@ done
 #[ $# -ne 2 ] && USAGE 'exactly two arguments are required'
 
 config_dir="${HOME}/.mozilla/firefox/${config}/sessionstore-backups"
-[ -d "${config_dir}" ] || USAGE "not a directory: ${config_dir}"
+[ -d "${config_dir}" ] || USAGE 'not a directory: "%s"' "${config_dir}"
 
 session_file="${config_dir}/${session}"
-[ -f "${session_file}" ] || USAGE "missing file: ${session_file}"
+[ -f "${session_file}" ] || USAGE 'missing file: "%s"' "${session_file}"
 
-[ -d "${dest_dir}" ] || USAGE "not a directory: ${dest_dir}"
+[ -d "${dest_dir}" ] || USAGE 'not a directory: "%s"' "${dest_dir}"
 
 
-# enable debuging
+# enable debugging
 [ X"${debug}" = X"yes" ] && set -x
 
 date=$(date '+%Y-%m-%d-%H%M')
-[ X"${verbose}" = X"yes" ] && printf 'backup on: %s\n', "${date}"
+VERBOSE 'backup on: %s' "${date}"
 
 # backup names
-full_backup="${dest_dir}/${session}.${date}-complete-history.xz"
-active_backup="${dest_dir}/${session}.${date}-active-page.xz"
-base_backup="${dest_dir}/${session}.${date}-first-page.xz"
+full_backup="${dest_dir}/${session}.${date}"
 
 # perform the copy
-xz -z < "${session_file}" > "${full_backup}"
-[ X"${verbose}" = X"yes" ] && printf 'full backup to: %s\n', "${date}"
-
-# create a filtered version that only contains the active pages
-# i.e. all the individual tab histories are removed
-filter-firefox-session --active < "${session_file}" | xz -z > "${active_backup}"
-filter-firefox-session --first < "${session_file}" | xz -z > "${base_backup}"
+cp "${session_file}" "${full_backup}"
+VERBOSE 'full backup to: %s' "${full_backup}"

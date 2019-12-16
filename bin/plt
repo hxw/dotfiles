@@ -1,10 +1,111 @@
 #!/bin/sh
 # call gnuplot
 
+ERROR()
+{
+  printf 'error: '
+  printf "$@"
+  printf '\n'
+  exit 1
+}
+
+USAGE()
+{
+  if [ -n "$1" ]
+  then
+    printf 'error: '
+    printf "$@"
+    printf '\n'
+  fi
+  echo usage: $(basename "$0") '<options> -- <plot-names>'
+  echo '       --help           -h         this message'
+  echo '       --verbose        -v         more messages'
+  echo '       --plot=FILE      -p FILE    specify plot file'
+  echo '       --file=FILE      -f FILE    specify data file (- for stdin)'
+  echo '       --debug          -D         show debug information'
+  exit 1
+}
+
+
+# main program
+
+verbose=no
+debug=no
+plot=
+data=
+
+# autodetect default files
 for f in *.plt
 do
   if [ -f "${f}" ]
   then
-    exec gnuplot -e 'item="'"$*"'"' "${f}"
+    plot="${f}"
+    data="${f%.plt}.data"
+    break
   fi
 done
+
+
+
+getopt=/usr/local/bin/getopt
+[ -x "${getopt}" ] || getopt=getopt
+args=$(${getopt} -o hvp:f:D --long=help,verbose,plot:,file:,debug -- "$@") ||exit 1
+
+# replace the arguments with the parsed values
+eval set -- "${args}"
+
+while :
+do
+  case "$1" in
+    (-v|--verbose)
+      verbose=yes
+      ;;
+
+    (-p|--plot)
+      plot="$2"
+      shift
+      ;;
+
+    (-f|--file)
+      data="$2"
+      shift
+      ;;
+
+    (-D|--debug)
+      debug=yes
+      ;;
+
+    (-h|--help)
+      USAGE
+      ;;
+
+    (--)
+      shift
+      break
+      ;;
+
+    (*)
+      USAGE 'invalid argument: %s' "$1"
+      ;;
+  esac
+  shift
+done
+
+#validate arguments
+[ $# -eq 0 ] && USAGE 'missing arguments'
+[ -z "${plot}" ] && USAGE 'missing plot file'
+[ -f "${plot}" ] || USAGE 'plot file: "%s" does not exist' "${plot}"
+if [ X"-" != X"${data}" ]
+then
+  [ -z "${data}" ] && USAGE 'missing data file'
+  [ -f "${data}" ] || USAGE 'data file: "%s" does not exist' "${data}"
+fi
+
+[ X"${debug}" = X"yes" ] && set -x
+
+if [ -n "${func}" ]
+then
+  exec gnuplot -e 'item="'"$*"'";datafile="<&5"' "${plot}" 5<&0
+else
+  exec gnuplot -e 'item="'"$*"'";datafile="'"${data}"'"' "${plot}"
+fi
