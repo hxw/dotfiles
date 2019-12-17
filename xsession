@@ -1,5 +1,5 @@
 #!/bin/sh
-# .xsession
+# .xsession - startup script for XDM
 
 # setup XDG_*
 export XDG_CACHE_HOME="${HOME}/.cache"
