@@ -16,7 +16,7 @@ main = do
        , handleEventHook    = handleEventHook defaultConfig <+> docksEventHook
        , logHook = dynamicLogWithPP xmobarPP
                    { ppOutput = hPutStrLn xmproc
-                   , ppTitle = xmobarColor "green" "" . shorten 20
+                   , ppTitle = xmobarColor "green" "" . shorten 40
                    , ppHiddenNoWindows = xmobarColor "grey" ""
                    }
        , modMask = mod4Mask     -- Rebind Mod to the Windows key

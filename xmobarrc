@@ -12,12 +12,16 @@ Config { font = "-*-Fixed-Bold-R-Normal-*-16-*-*-*-*-*-*-*"
                     --, Run Cpu ["-L","3","-H","50","--normal","green","--high","red"] 10
                     --, Run Memory ["-t","Mem: <usedratio>%"] 10
                     --, Run Swap [] 10
-                     Run Com "uname" ["-s","-r"] "" 36000
+                    Run Com "uname" ["-s","-r"] "" 36000
+                    , Run Com "apm" ["-l"] "battery" 600
+                    --, Run Volume "default" "Master" [] 10
                     , Run Date "%a %Y-%m-%d %H:%M:%S" "date" 10
                     , Run StdinReader
                     ]
        , sepChar = "%"
        , alignSep = "}{"
        --, template = "%StdinReader% | %cpu% | %memory% * %swap% | %eth0% - %eth1% }{<fc=#ee9a00>%date%</fc> | %uname% | %CYVR% "
-       , template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname%"
+       --, template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname% | %default:Master% "
+       , template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname% | Bat:%battery% "
+       --, template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname% "
        }
