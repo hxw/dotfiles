@@ -37,6 +37,9 @@
     # log just HEAD; can supply optional line count e.g.: git ll 10
     ll = !export n=${1:-$(expr $(tput lines) - 5)} && git --no-pager log --graph --color=always --pretty=format:'%C(bold red)%h%Creset %<(70,trunc)%s %C(bold green)%cd %C(bold ul blue)%aN%Creset %C(bold yellow)%D%Creset' --abbrev-commit --date='format:%F %T' --decorate=short --max-count=${n} HEAD | head -n ${n} && echo && :
 
+    # 12 digit commit hashes for FreeBSD Makefiles
+    lh = !export n=${1:-$(expr $(tput lines) - 5)} && git --no-pager log --graph --color=always --pretty=format:'%C(bold red)%<(14,trunc)%H%Creset %<(70,trunc)%s %C(bold green)%cd %C(bold ul blue)%aN%Creset %C(bold yellow)%D%Creset' --abbrev-commit --date='format:%F %T' --decorate=short --max-count=${n} HEAD | head -n ${n} && echo && :
+
 # git-svn commands
 # ================
 
