@@ -31,4 +31,5 @@ main = do
        , ((mod4Mask, xK_c), runOrRaise "conlecterm" (className =? "Conlecterm"))
        , ((mod4Mask, xK_e), runOrRaise "emacs" (className =? "Emacs"))
        , ((mod4Mask, xK_f), runOrRaise "firefox" (className =? "Firefox"))
+       , ((mod4Mask, xK_h), runOrRaise "hexchat" (className =? "Hexchat"))
        ]
