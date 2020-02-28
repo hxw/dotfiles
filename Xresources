@@ -100,3 +100,9 @@ XTerm*color12: LightBlue
 XTerm*color13: magenta
 XTerm*color14: cyan
 XTerm*color15: white
+
+
+! cursor
+
+Xcursor.theme: redglass
+Xcursor.size: 24
