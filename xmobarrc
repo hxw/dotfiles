@@ -1,10 +1,11 @@
 -- .xmobarrc     -*- mode: haskell -*-
 
-Config { font = "-*-Fixed-Bold-R-Normal-*-16-*-*-*-*-*-*-*"
+-- Config { font = "-*-Fixed-Bold-R-Normal-*-16-*-*-*-*-*-*-*"
+Config { font = "xft:DejaVu Sans:style=bold:size=12,WenQuanYi Zen Hei:size=12"
        , borderColor = "black"
        , border = TopB
-       , bgColor = "black"
-       , fgColor = "grey"
+       , bgColor = "purple4"
+       , fgColor = "grey95"
        , position = TopW L 100
        , commands = [ --Run Weather "CYVR" ["-t","<tempC>C","-L","18","-H","25","--normal","green","--high","red","--low","lightblue"] 36000
                     --, Run Network "eth0" ["-L","0","-H","32","--normal","green","--high","red"] 10
@@ -14,6 +15,7 @@ Config { font = "-*-Fixed-Bold-R-Normal-*-16-*-*-*-*-*-*-*"
                     --, Run Swap [] 10
                     Run Com "uname" ["-s","-r"] "" 36000
                     , Run Com "apm" ["-l"] "battery" 600
+                    , Run Com "apm" ["-a"] "ac" 600
                     --, Run Volume "default" "Master" [] 10
                     , Run Date "%a %Y-%m-%d %H:%M:%S" "date" 10
                     , Run StdinReader
@@ -22,6 +24,6 @@ Config { font = "-*-Fixed-Bold-R-Normal-*-16-*-*-*-*-*-*-*"
        , alignSep = "}{"
        --, template = "%StdinReader% | %cpu% | %memory% * %swap% | %eth0% - %eth1% }{<fc=#ee9a00>%date%</fc> | %uname% | %CYVR% "
        --, template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname% | %default:Master% "
-       , template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname% | Bat:%battery% "
+       , template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname% | <fc=#99aaee>Bat電池:%battery% ⌁:%ac%</fc>"
        --, template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname% "
        }

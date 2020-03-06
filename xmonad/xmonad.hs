@@ -32,4 +32,6 @@ main = do
        , ((mod4Mask, xK_e), runOrRaise "emacs" (className =? "Emacs"))
        , ((mod4Mask, xK_f), runOrRaise "firefox" (className =? "Firefox"))
        , ((mod4Mask, xK_h), runOrRaise "hexchat" (className =? "Hexchat"))
+       , ((mod4Mask, xK_p), spawn "dmenu_run -p 'run>' -fn '-Fixed-Bold-R-Normal-*-16-*-*-*-*-*-*-*' -sb grey25 -sf hotpink -nb blue -nf white")
+       , ((mod4Mask, xK_w), runOrRaise "claws-mail" (className =? "Claws-mail"))
        ]
