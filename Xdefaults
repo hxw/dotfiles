@@ -60,10 +60,10 @@ URxvt.color15 : White
 !URxvt*font: xft:PT Mono:pixelsize=18
 !URxvt*boldFont: xft:PT Mono:pixelsize=18
 
-!!URxvt*font: xft:DejaVu Sans Mono:pixelsize=18
-!!URxvt*boldFont: xft:DejaVu Sans Mono:pixelsize=18
-URxvt*font: xft:DejaVu Sans Mono:pixelsize=24
-URxvt*boldFont: xft:DejaVu Sans Mono:pixelsize=24
+URxvt*font: xft:DejaVu Sans Mono:pixelsize=18
+URxvt*boldFont: xft:DejaVu Sans Mono:pixelsize=18
+!!URxvt*font: xft:DejaVu Sans Mono:pixelsize=20
+!!URxvt*boldFont: xft:DejaVu Sans Mono:pixelsize=20
 
 ! does not actually get undefined chars from second font
 !URxvt*font: xft:Droid Sans Mono:pixelsize=18, \

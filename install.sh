@@ -4,15 +4,18 @@
 
 list_sed=''
 list_copy=''
+list_x11=''
 
-SED()
-{
+SED() {
   list_sed="${list_sed} $*"
 }
 
-COPY()
-{
+COPY() {
   list_copy="${list_copy} $*"
+}
+
+X11() {
+  list_x11="${list_x11} $*"
 }
 
 # list the files to install
@@ -30,8 +33,20 @@ COPY mg
 COPY zshrc
 COPY lesskey
 
+# X11 files to be copied to ${HOME}
+X11 xbindkeysrc
+X11 XCompose
+X11 Xdefaults
+X11 xinitrc
+X11 xmobarrc
+X11 xmonad/xmonad.hs
+X11 xprofile
+X11 Xresources
+X11 xsession
+
 # end of list
 # ===========
+
 
 ERROR()
 {
@@ -47,7 +62,9 @@ USAGE()
   echo '       --verbose          -v         more messages'
   echo '       --prefix=<dir>     -p <dir>   set installation directory ['"${home}"']'
   echo '       --non-interactive  -n         no interactive input'
-  echo '       --debug            -d         show debug information'
+  echo '       --copy             -c         copy files, default is to diff -u'
+  echo '       --x11              -x         also install X11 configs'
+  echo '       --debug            -D         show debug information'
   exit 1
 }
 
@@ -71,6 +88,8 @@ get()
 verbose=no
 prefix="${HOME}"
 interactive=yes
+copy='diff -su'
+x11=no
 wait=yes
 src=$(dirname "$0")
 
@@ -97,7 +116,7 @@ case "$(uname)" in
 esac
 [ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
 
-args=$(${getopt} -o hvp:nd --long=help,verbose,prefix:,non-interactive,debug -- "$@") ||exit 1
+args=$(${getopt} -o hvp:ncxD --long=help,verbose,prefix:,non-interactive,copy,x11,debug -- "$@") ||exit 1
 
 # replace the arguments with the parsed values
 eval set -- "${args}"
@@ -115,12 +134,22 @@ do
       shift
       ;;
 
+    -c|--copy)
+      copy='cp -p'
+      shift
+      ;;
+
     -p|--prefix)
       prefix=$2
       shift 2
       ;;
 
-    -d|--debug)
+    -x|--x11)
+      x11=yes
+      shift
+      ;;
+
+    -D|--debug)
       debug=yes
       shift
       ;;
@@ -172,26 +201,42 @@ have_email=
 [ -z "${name}" ] && have_name='#' && name='Full Name'
 [ -z "${email}" ] && have_email='#' && email='root@localhost'
 
+tempfile=
+cleanup() {
+  [ -z "${tempfile}" ] || rm -f "${tempfile}"
+}
+trap cleanup INT EXIT
+
 # use sed to substitute som @VAR@ by values saved in ${config}
 for f in ${list_sed}
 do
+  tempfile=$(mktemp -q /tmp/${f}.XXXXXXXX)
+  if [ $? -ne 0 ]
+  then
+    ERROR 'cannot create temp file for "%s"' "${f}"
+  fi
+
   d="${prefix}/.${f}"
-  echo Substitute ${f} to ${d}
+
+  printf '\033[1;31mSubstitute "%s" to "%s"\033[0m\n' "${f}" "${d}"
   sed "s,@HOME@,${prefix}/,g;
        s,@HAVE_HOME@,${have_home},g;
        s/@EMAIL@/${email}/g;
        s/@HAVE_EMAIL@/${have_email}/g;
        s/@NAME@/${name}/g;
        s/@HAVE_NAME@/${have_name}/g;
-      " "${src}/${f}" > "${d}"
+      " "${src}/${f}" > "${tempfile}"
+  ${copy} "${tempfile}" "${d}"
+  rm -f "${tempfile}"
+  tempfile=
 done
 
 # file that are just copied
 for f in ${list_copy}
 do
   d="${prefix}/.${f}"
-  echo Copy ${f} to ${d}
-  cp -p "${src}/${f}" "${d}"
+  printf '\033[1;34mCopy "%s" to "%s"\033[0m\n' "${f}" "${d}"
+  ${copy} "${src}/${f}" "${d}"
 done
 
 # desktop files to .local
@@ -203,9 +248,20 @@ do
   bn=$(basename "${f}")
   [ -e "/usr/local/share/applications/${bn}" ] && continue
   [ -e "/usr/share/applications/${bn}" ] && continue
-  echo Copy ${bn} to ${dst}
-  cp -p "${f}" "${dst}"
+  printf '\033[1;35mCopy "%s" to "%s"\033[0m\n' "${bn}" "${dst}"
+  ${copy} "${f}" "${dst}"
 done
 
 # update less configuration
 lesskey
+
+# handle X11 files
+if [ X"${x11}" = X"yes" ]
+then
+  for f in ${list_x11}
+  do
+    d="${prefix}/.${f}"
+    printf '\033[1;32mCopy "%s" to "%s"\033[0m\n' "${f}" "${d}"
+    ${copy} "${src}/${f}" "${d}"
+  done
+fi
