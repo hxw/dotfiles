@@ -71,7 +71,8 @@ debug=no
 revise=no
 update=yes
 use_version=
-version_file_list='Cargo.toml pom.xml Makefile debian/changelog'
+# Makefile should be last as there may be a root Makefile that is not versioned
+version_file_list='Cargo.toml pom.xml debian/changelog Makefile'
 
 getopt=
 case "$(uname)" in

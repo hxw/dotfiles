@@ -381,6 +381,7 @@ then
   case "${yorn}" in
     ([yY]|[yY][eE][sE])
       (
+        [ -n "${SSH_TTY}" ] && export GPG_TTY="${SSH_TTY}"
         set -x
         git tag -s -u "${key_id}" -m 'release version' -a "${prefixed_version}"
         [ $? -ne 0 ] && exit 1
