@@ -54,43 +54,29 @@ URxvt.color7  : Grey60
 URxvt.color15 : White
 
 
-!URxvt*font: xft:Monospace:pixelsize=18
-!URxvt*boldFont: xft:Monospace:pixelsize=18
+!! choose one pair of fonts
+!! ========================
 
-!URxvt*font: xft:PT Mono:pixelsize=18
-!URxvt*boldFont: xft:PT Mono:pixelsize=18
+!! pkg install dejavu
+!URxvt*font: xft:DejaVu Sans Mono:pixelsize=18
+!URxvt*boldFont: xft:DejaVu Sans Mono:style=Bold:pixelsize=18
 
-URxvt*font: xft:DejaVu Sans Mono:pixelsize=18
-URxvt*boldFont: xft:DejaVu Sans Mono:pixelsize=18
-!!URxvt*font: xft:DejaVu Sans Mono:pixelsize=20
-!!URxvt*boldFont: xft:DejaVu Sans Mono:pixelsize=20
+!! pkg install plex-ttf
+!URxvt*font: xft:IBM Plex Mono:pixelsize=18
+!URxvt*boldFont: xft:IBM Plex Mono:style=Bold:pixelsize=18
 
-! does not actually get undefined chars from second font
-!URxvt*font: xft:Droid Sans Mono:pixelsize=18, \
-!            xft:Noto Sans Mono
-!URxvt*boldFont: xft:Droid Sans Mono:pixelsize=18, \
-!                xft:Noto Sans Mono
+!! pkg install jetbrains-mono
+URxvt*font: xft:JetBrains Mono:pixelsize=18
+URxvt*boldFont: xft:JetBrains Mono:style=Bold:pixelsize=18
+
+!! pkg install hack-font
+!URxvt*font: xft:Hack:pixelsize=18
+!URxvt*boldFont: xft:Hack:style=Bold:pixelsize=18
 
 
-
-!URxvt*font: xft:Ubuntu Mono:pixelsize=18
-!URxvt*boldFont: xft:Ubuntu Mono:pixelsize=18
-
-! not nice
-!URxvt*font: xft:Noto Sans Mono:pixelsize=18
-!URxvt*boldFont: xft:Noto Sans Mono:pixelsize=18
-
-!URxvt*font: xft:Luxi Mono:pixelsize=18
-!URxvt*boldFont: xft:Luxi Mono:pixelsize=18
-
-!URxvt*font: xft:Liberation Mono:pixelsize=18
-!URxvt*boldFont: xft:Liberation Mono:pixelsize=18
-
-! not nice
-!URxvt*font: xft:WenQuanYi Zen Hei Mono:pixelsize=18
-!URxvt*boldFont: xft:WenQuanYi Zen Hei Mono:pixelsize=18
-
-URxvt*letterSpace: -1
+!! amount to adjust the computed character width
+!! negative to move characters closer together
+!URxvt*letterSpace: -1
 
 !URxvt.perl-ext-common: default,tabbed,matcher
 URxvt.perl-ext-common : default,matcher
