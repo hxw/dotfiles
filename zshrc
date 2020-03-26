@@ -277,6 +277,15 @@ function zkbd()
   done
 }
 
+# set up GPG_TTY for an ssh connection
+if [ -n "${SSH_TTY}" ] && [ -n "${SSH_CONNECTION}" ]
+then
+  export GPG_TTY="${SSH_TTY}"
+  #s="${HOME}/.gnupg/S.gpg-agent.ssh"
+  #[ -S "${s}" ] && export SSH_AUTH_SOCK="${s}"
+  #unset s
+fi
+
 # turn caps lock into compose (if running inder X)
 if which setxkbmap > /dev/null 2>&1
 then
