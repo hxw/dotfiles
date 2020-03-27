@@ -1,8 +1,8 @@
 # .gitconfig
 
 [user]
-@HAVE_EMAIL@    email = @EMAIL@
-@HAVE_NAME@    name = @NAME@
+    # require repo to have local user config
+    useConfigOnly = true
 
 [push]
     default = simple
@@ -98,21 +98,7 @@
 # ===============
 
     fp = format-patch -C
-@HAVE_EMAIL@    sm = send-email --compose --no-chain-reply-to --suppress-from --bcc @EMAIL@
 
-
-[sendemail]
-#   identity
-#   aliasesfile
-#   aliasfiletype
-#   to = devel@lists.openmoko.org
-#   cccmd
-@HAVE_EMAIL@    bcc = @EMAIL@
-    chainreplyto = false
-#    smtpserver = <smtp>
-#    smtpuser = <user>
-#    smtppass = <password>
-    smtpssl = false
 
 [apply]
     whitespace = strip

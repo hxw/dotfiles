@@ -171,35 +171,10 @@ done
 
 echo this will install the files to: ${prefix}
 
-config="${prefix}/.dotfilesrc"
-
-name=
-email=
-[ -f "${config}" ] && . "${config}"
-
-if [ X"${interactive}" = X"yes" ]
-then
-  echo Ctrl-C to abort
-  echo Enter some data for substitutions
-
-  name=$(get "${name}" Enter full name) || exit 1
-  email=$(get "${email}" Enter email address) || exit 1
-
-  rm -f "${config}"
-  echo '# .dotfilesrc' >> "${config}"
-  echo '' >> "${config}"
-  echo 'email='"'"${email}"'" >> "${config}"
-  echo 'name='"'"${name}"'" >> "${config}"
-fi
-
 # set to an '#' if do not have the item
 # to allow commenting out lines in scripts
 have_home=
-have_name=
-have_email=
 [ -z "${prefix}" ] && have_home='#'
-[ -z "${name}" ] && have_name='#' && name='Full Name'
-[ -z "${email}" ] && have_email='#' && email='root@localhost'
 
 tempfile=
 cleanup() {
@@ -207,7 +182,18 @@ cleanup() {
 }
 trap cleanup INT EXIT
 
-# use sed to substitute som @VAR@ by values saved in ${config}
+interact() {
+  local junk
+  [ X"${interactive}" != X"yes" ] && return
+  read -p 'Enter to "'"${copy}"'" or Ctrl-C to abort: ' junk
+  if [ $? -ne 0 ]
+  then
+    echo
+    exit 1
+  fi
+}
+
+# use sed to substitute some @VAR@ by local values
 for f in ${list_sed}
 do
   tempfile=$(mktemp -q /tmp/${f}.XXXXXXXX)
@@ -219,13 +205,11 @@ do
   d="${prefix}/.${f}"
 
   printf '\033[1;31mSubstitute "%s" to "%s"\033[0m\n' "${f}" "${d}"
+
   sed "s,@HOME@,${prefix}/,g;
        s,@HAVE_HOME@,${have_home},g;
-       s/@EMAIL@/${email}/g;
-       s/@HAVE_EMAIL@/${have_email}/g;
-       s/@NAME@/${name}/g;
-       s/@HAVE_NAME@/${have_name}/g;
       " "${src}/${f}" > "${tempfile}"
+  interact
   ${copy} "${tempfile}" "${d}"
   rm -f "${tempfile}"
   tempfile=
@@ -236,6 +220,7 @@ for f in ${list_copy}
 do
   d="${prefix}/.${f}"
   printf '\033[1;34mCopy "%s" to "%s"\033[0m\n' "${f}" "${d}"
+  interact
   ${copy} "${src}/${f}" "${d}"
 done
 
@@ -249,6 +234,7 @@ do
   [ -e "/usr/local/share/applications/${bn}" ] && continue
   [ -e "/usr/share/applications/${bn}" ] && continue
   printf '\033[1;35mCopy "%s" to "%s"\033[0m\n' "${bn}" "${dst}"
+  interact
   ${copy} "${f}" "${dst}"
 done
 
@@ -262,6 +248,7 @@ then
   do
     d="${prefix}/.${f}"
     printf '\033[1;32mCopy "%s" to "%s"\033[0m\n' "${f}" "${d}"
+    interact
     ${copy} "${src}/${f}" "${d}"
   done
 fi
