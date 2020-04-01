@@ -56,6 +56,15 @@ then
 fi
 unset pager
 
+# to show C definitions
+# cdefs [gcc|clang90|…]
+cdefs() {
+  local c
+  c="${1}"; shift
+  [ -z "${c}" ] && c=cc
+  ${c} -dM -E - < /dev/null
+}
+
 # make a directory and change to it
 function mkcd {
   local dir
