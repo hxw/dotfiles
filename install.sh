@@ -39,7 +39,8 @@ X11 XCompose
 X11 Xdefaults
 X11 xinitrc
 X11 xmobarrc
-X11 xmonad/xmonad.hs
+X11 xmonad/config.hs
+X11 xmonad/build
 X11 xprofile
 X11 Xresources
 X11 xsession

@@ -1,0 +1,53 @@
+#!/bin/sh
+
+# must match "executable" line from xmonad-config.cabal
+executable_name=xmonad-config
+
+# xmonad tells us how it want resulting executable to be named
+output_file="${1}"; shift
+
+configuration_directory="${HOME}/.xmonad"
+
+# error handler
+ERROR() {
+  printf 'error: '
+  printf "$@"
+  printf '\n'
+  exit 1
+}
+
+
+# build the config
+cd "${configuration_directory}" || ERROR 'failed to change to: %s' "${configuration_directory}"
+
+cabal_file="${executable_name}.cabal"
+
+if [ ! -e "${cabal_file}" ]
+then
+  cat > "${cabal_file}" <<EOF
+name:          xmonad-config
+version:       0.0
+synopsis:      XMonad Config File
+homepage:      http://xmonad.org
+category:      Graphics
+build-type:    Simple
+cabal-version: >=1.8
+
+executable xmonad-config
+  main-is: config.hs
+  build-depends: base, xmonad, xmonad-contrib
+EOF
+fi
+
+# configure and download haskell dependencies
+cabal update
+cabal new-configure --enable-optimization --enable-executable-stripping
+cabal new-build
+
+if [ X"${output_file}" != X"" ]
+then
+  # move compiled binary to correct place
+  find "${configuration_directory}/dist-newstyle" -type f -perm +111 -name "${executable_name}" \
+       -exec mv '{}' "${output_file}" ';'
+  [ -x "${output_file}" ] || ERROR 'failed to compile: %s' "${output_file}"
+fi
