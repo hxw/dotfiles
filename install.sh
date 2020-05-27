@@ -18,6 +18,17 @@ X11() {
   list_x11="${list_x11} $*"
 }
 
+CAT() {
+  local f
+  rm -f "${2}"
+  printf '! .%s\n\n' "${2}" >> "${2}"
+  for f in "${1}"/*.res
+  do
+    cat "${f}" >> "${2}"
+    printf '\n\n\n' >> "${2}"
+  done
+}
+
 # list the files to install
 # SED  substitutes @NAME@ type of entries
 # COPY just copies the file
@@ -32,6 +43,15 @@ COPY mg
 #COPY tcshrc
 COPY zshrc
 COPY lesskey
+
+# create temporary files
+cleanup() {
+  rm -f Xresources Xdefaults
+}
+trap cleanup INT EXIT
+
+CAT Xresources.d Xresources
+CAT Xdefaults.d  Xdefaults
 
 # X11 files to be copied to ${HOME}
 X11 xbindkeysrc

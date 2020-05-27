@@ -1,5 +1,3 @@
-! .Xresources
-
 ! screensaver
 
 xscreensaver.splash: false
@@ -39,70 +37,3 @@ xscreensaver.passwd.thermometer.width:       16
 
 !datestamp format--see the strftime(3) manual page for details
 xscreensaver.dateFormat:    %F %T
-
-
-
-! xterm
-
-XTerm*VT100*background: Blue4
-XTerm*VT100*foreground: White
-
-XTerm*cursorColor: DarkOrange
-XTerm*scrollBar: false
-XTerm*locale: UTF-8
-XTerm*utf8: always
-XTerm*boldMode: false
-
-! the following fonts only appear to have is08859 support
-!XTerm*faceName: Terminal
-!XTerm*faceName: Droid Sans Mono
-!XTerm*faceName: DejaVu Sans Mono
-!XTerm*faceName: Luxi Mono
-!XTerm*faceName: Computer Modern
-!XTerm*faceName: Bitstream Vera Sans Mono
-!XTerm*faceName: Courier 10 Pitch
-!XTerm*faceName: Liberation Mono
-!XTerm*faceName: Courier
-!XTerm*faceName: Cursor
-
-!XTerm*faceSize: 12.0
-
-! fonts for utf-8 (has  accents, Greek, Cyrillic & CJK but lacks SE Asia, Indic, Arabic)
-XTerm*VT100.font: -misc-fixed-medium-r-normal--18-120-100-100-c-90-iso10646-1
-XTerm*VT100.utf8Fonts.font: -misc-fixed-medium-r-normal--18-120-100-100-c-90-iso10646-1
-
-XTerm*geometry: 100x30
-
-! keycode (make Backspace key work in mg)
-XTerm*ttyModes: erase ^?
-XTerm*vt100.translations: #override \n\
-	<Key>BackSpace:	string(0x7f)
-
-! normal colours for terminal
-XTerm*color0: black
-XTerm*color1: red3
-XTerm*color2: green3
-!XTerm*color3: yellow3
-XTerm*color3: yellow2
-!XTerm*color4: blue4
-XTerm*color4: SteelBlue3
-XTerm*color5: magenta3
-XTerm*color6: cyan3
-XTerm*color7: gray90
-
-! bold colours for terminal
-XTerm*color8: gray30
-XTerm*color9: red
-XTerm*color10: green
-!XTerm*color11: yellow
-XTerm*color11: LightYellow2
-XTerm*color12: LightBlue
-XTerm*color13: magenta
-XTerm*color14: cyan
-XTerm*color15: white
-
-
-! cursor
-
-Xcursor.theme: redglass
-Xcursor.size: 24
