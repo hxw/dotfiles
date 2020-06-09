@@ -151,14 +151,6 @@ fi
 # put user's main bin directory first
 [[ -d "${HOME}/bin" ]] && pathfront "${HOME}/bin"
 
-# Single history for all open shells
-HISTFILE="${HOME}/.zhistory"
-HISTSIZE=SAVEHIST=10000
-setopt inc_append_history
-setopt share_history
-setopt extended_history
-setopt hist_ignore_all_dups
-
 # Enables all sorts of extended globbing:
 #   ls */.txt       find all text files
 #   ls -d *(D)      show all files including those starting with "."
@@ -182,6 +174,9 @@ PS1='%F{magenta}%B[%T]%b%f %F{green}%B%n@%m%b%f %F{cyan}%B%2~ %#%b%f '
 
 # Display CPU usage stats for commands taking more than 10 seconds
 REPORTTIME=10
+
+# set if system supports jails
+sysctl_jailed=
 
 # OS specific items
 os="$(uname -s)"
@@ -214,6 +209,8 @@ case "${os}" in
     ;;
 
   (FreeBSD|DragonFly)
+    sysctl_jailed=security.jail.jailed
+    [ X"${os}" = X"DragonFly" ] && sysctl_jailed=jail.jailed
     if [[ "${TERM}" =~ "^rxvt" ]]
     then
       TERM=rxvt-unicode-256color
@@ -270,6 +267,22 @@ case "${os}" in
   (*)
     ;;
 esac
+
+# Single history for all open shells
+# but separate history file for jailed shell
+if [ -n "${sysctl_jailed}" ] && [ X"$(sysctl -n "${sysctl_jailed}")" = X"1" ]
+then
+  HISTFILE="${HOME}/.zhistory.$(hostname)"
+else
+  HISTFILE="${HOME}/.zhistory"
+fi
+
+HISTSIZE=SAVEHIST=10000
+setopt inc_append_history
+setopt share_history
+setopt extended_history
+setopt hist_ignore_all_dups
+
 
 # access the zkbd setup since it is in a versioned directory
 function zkbd()

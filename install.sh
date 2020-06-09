@@ -45,11 +45,6 @@ COPY zshrc
 COPY lesskey
 
 # create temporary files
-cleanup() {
-  rm -f Xresources Xdefaults
-}
-trap cleanup INT EXIT
-
 CAT Xresources.d Xresources
 CAT Xdefaults.d  Xdefaults
 
@@ -200,6 +195,7 @@ have_home=
 tempfile=
 cleanup() {
   [ -z "${tempfile}" ] || rm -f "${tempfile}"
+  rm -f Xresources Xdefaults
 }
 trap cleanup INT EXIT
 
