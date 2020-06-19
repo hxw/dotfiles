@@ -27,6 +27,7 @@
     # clbr git@... branch [depth]
     clbr = !git clone --branch "${2:-master}" --depth "${3:-1}" "$1" "$(basename -s .git "$1")-${2:-master}" && :
 
+    resign = !git rebase --exec 'git commit --amend --no-edit -n -S' -i "$1" && :
 
 # graph of tree
 # =============
