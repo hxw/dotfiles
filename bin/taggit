@@ -1,16 +1,14 @@
 #!/bin/sh
 # tag the next version
 
-ERROR()
-{
+ERROR() {
   printf 'error: '
   printf "$@"
   printf '\n'
   exit 1
 }
 
-USAGE()
-{
+USAGE() {
   if [ -n "$1" ]
   then
     printf 'error: '
@@ -28,8 +26,7 @@ USAGE()
   exit 1
 }
 
-VERBOSE()
-{
+VERBOSE() {
   [ X"${verbose}" = X"no" ] && return 0
   printf "$@"
   printf '\n'
