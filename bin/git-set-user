@@ -1,0 +1,198 @@
+#!/bin/sh
+# set local name and email for current git repo
+
+ERROR() {
+  printf 'error: '
+  printf "$@"
+  printf '\n'
+  exit 1
+}
+
+USAGE() {
+  if [ -n "$1" ]
+  then
+    printf 'error: '
+    printf "$@"
+    printf '\n'
+  fi
+  echo usage: $(basename "$0") '[options]'
+  echo '       --help             -h            this message'
+  echo '       --verbose          -v            more messages'
+  echo '       --set              -s            set new settings'
+  echo '       --name=NAME        -n NAME       set full name'
+  echo '       --email=EMAIL      -e EMAIL      set email address'
+  echo '       --key=HEX          -k HEX        set signing key to hex fingerprint'
+  echo '       --debug            -D            debuging messages'
+  exit 1
+}
+
+VERBOSE() {
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "$@"
+  printf '\n'
+}
+
+
+# main program
+verbose=no
+debug=no
+set=no
+name='@NAME@'
+email='@EMAIL@'
+ERROR 'fix name and email and remove this ERROR'
+key=auto
+
+getopt=
+case "$(uname)" in
+  (FreeBSD|DragonFly)
+    getopt=/usr/local/bin/getopt
+    ;;
+  (NetBSD)
+    getopt=/usr/pkg/bin/getopt
+    ;;
+  (OpenBSD)
+    getopt=/usr/local/bin/gnugetopt
+    ;;
+  (Darwin)
+    getopt=/usr/local/opt/gnu-getopt/bin/getopt
+    ;;
+  (Linux)
+    getopt=/usr/bin/getopt
+    ;;
+  (*)
+    ERROR 'OS: %s is not supported' "$(uname)"
+    ;;
+esac
+[ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
+
+args=$(${getopt} -o hvsn:e:k:D --long=help,verbose,show,name,email,key,debug -- "$@") || exit 1
+
+# replace the arguments with the parsed values
+eval set -- "${args}"
+
+while :
+do
+  case "$1" in
+    (-v|--verbose)
+      verbose=yes
+      ;;
+
+    (-s|--set)
+      set=yes
+      ;;
+
+    (-n|--name)
+      name="$2"
+      [ -z "${name}" ] && USAGE 'name argument cannot be blank'
+      shift
+      ;;
+
+    (-e|--email)
+      email="$2"
+      [ -z "${email}" ] && USAGE 'email argument cannot be blank'
+      shift
+      ;;
+
+    (-k|--key)
+      key="$2"
+      [ -z "${key}" ] && USAGE 'key argument cannot be blank'
+      shift
+      ;;
+
+    (-D|--debug)
+      debug=yes
+      ;;
+
+    (--)
+      shift
+      break
+      ;;
+
+    (-h|--help)
+      USAGE
+      ;;
+
+    (*)
+      USAGE 'invalid option: %s' "$1"
+      ;;
+  esac
+  shift
+done
+
+# verify arguments
+[ $# -ne 0 ] && USAGE 'extraneous arguments'
+
+# enable debuging
+[ X"${debug}" = X"yes" ] && set -x
+
+if [ X"${key}" = X"auto" ]
+then
+  key=$(gpg2 --with-colons --fingerprint --list-secret-keys "${email}" | \
+    awk -F: -v email="${email}" '
+      BEGIN {
+        stage = 0
+        fpr = ""
+      }
+      END {
+        if (stage = 4 && fpr != "") {
+          print fpr
+        } else {
+          print "ERROR"
+        }
+      }
+      /^sec:/ {
+        if (stage == 0) {
+          stage = 1
+        } else {
+          stage = 99
+       }
+      }
+      /^fpr:/ {
+        if (stage == 1) {
+          stage = 2
+          fpr = $10
+        } else {
+          stage = 99
+        }
+      }
+      /^uid:/{
+        if (stage == 2) {
+          stage = 3
+          if (match(tolower($10), tolower(email)) != -1) {
+            stage = 4
+          }
+        } else {
+          stage = 99
+        }
+      }
+    ')
+  [ X"${key}" = X"ERROR" ] && ERROR 'no key found for: %1' "${email}"
+fi
+
+if [ X"${set}" = X"yes" ]
+then
+  VERBOSE "setting: %s <%s>" "${name}" "${email}"
+  git config --local user.name "${name}"
+  git config --local user.email "${email}"
+  [ -n "${key}" ] && git config --local user.signingKey "${key}"
+fi
+
+n="$(git config --local --get user.name)"
+e="$(git config --local --get user.email)"
+printf 'user: %s <%s>\n' "${n}" "${e}"
+
+
+# update git hooks
+hooks_dir="${HOME}/dotfiles/git-hooks"
+if [ -d "${hooks_dir}" ]
+then
+  git_dir=$(git rev-parse --git-dir)
+  [ $? -ne 0 ] && ERROR 'cannot determine git directory'
+  [ -d "${git_dir}" ] || ERROR 'path name: "%s" is not a directory' "${git_dir}"
+  VERBOSE 'git directory: %s' "${git_dir}"
+  for hook in "${hooks_dir}"/*
+  do
+    VERBOSE 'copy hook: %s to %s' "${hook}" "${git_dir}/hooks"
+    cp -p "${hook}" "${git_dir}/hooks"
+  done
+fi
