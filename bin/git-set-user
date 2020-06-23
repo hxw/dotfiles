@@ -65,7 +65,7 @@ case "$(uname)" in
 esac
 [ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
 
-args=$(${getopt} -o hvsn:e:k:D --long=help,verbose,show,name,email,key,debug -- "$@") || exit 1
+args=$(${getopt} -o hvsn:e:k:D --long=help,verbose,set,name:,email:,key:,debug -- "$@") || exit 1
 
 # replace the arguments with the parsed values
 eval set -- "${args}"
@@ -125,10 +125,14 @@ done
 # enable debuging
 [ X"${debug}" = X"yes" ] && set -x
 
-if [ X"${key}" = X"auto" ]
+if [ X"${set}" = X"yes" ]
 then
-  key=$(gpg2 --with-colons --fingerprint --list-secret-keys "${email}" | \
-    awk -F: -v email="${email}" '
+  [ X"${key}" = X"no-auto" ] && key=''
+  [ X"${key}" = X"noauto" ] && key=''
+  if [ X"${key}" = X"auto" ]
+  then
+    key=$(gpg2 --with-colons --fingerprint --list-secret-keys "${email}" | \
+      awk -F: -v email="${email}" '
       BEGIN {
         stage = 0
         fpr = ""
@@ -166,20 +170,27 @@ then
         }
       }
     ')
-  [ X"${key}" = X"ERROR" ] && ERROR 'no key found for: %1' "${email}"
-fi
+    [ X"${key}" = X"ERROR" ] && ERROR 'no key found for: %1' "${email}"
+  fi
 
-if [ X"${set}" = X"yes" ]
-then
   VERBOSE "setting: %s <%s>" "${name}" "${email}"
   git config --local user.name "${name}"
   git config --local user.email "${email}"
-  [ -n "${key}" ] && git config --local user.signingKey "${key}"
+  if [ -n "${key}" ]
+  then
+    git config --local user.signingKey "${key}"
+    git config --local push.gpgSign true
+  else
+    git config --local --unset user.signingKey
+    git config --local --unset push.gpgSign
+  fi
 fi
 
 n="$(git config --local --get user.name)"
 e="$(git config --local --get user.email)"
-printf 'user: %s <%s>\n' "${n}" "${e}"
+s="$(git config --local --get push.gpgSign)"
+[ X"${s}" = X"true" ] && s='sign-on-push' || s=''
+printf 'user: %s <%s> %s\n' "${n}" "${e}" "${s}"
 
 
 # update git hooks
