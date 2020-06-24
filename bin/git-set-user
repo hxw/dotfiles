@@ -115,7 +115,7 @@ do
       ;;
 
     (-u|--update)
-      # substtute name/email when updating
+      # substitute name/email when updating
       printf 'current name:  "%s"\n' "${name}"
       printf 'current email: "%s"\n' "${email}"
       # be careful to make sure this sed command
