@@ -108,6 +108,9 @@
     color = auto
     renames = copy
 
+[log]
+    showSignature = true
+
 [color]
     branch = auto
     diff = auto
