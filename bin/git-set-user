@@ -20,8 +20,10 @@ USAGE() {
   echo '       --verbose          -v            more messages'
   echo '       --set              -s            set new settings'
   echo '       --name=NAME        -n NAME       set full name'
-  echo '       --email=EMAIL      -e EMAIL      set email address'
-  echo '       --key=HEX          -k HEX        set signing key to hex fingerprint'
+  echo '       --email=EMAIL      -e EMAIL      set email address (used to locate gpg key)'
+  echo '       --key=HEX          -k HEX        set signing key to hex fingerprint [auto]'
+  echo '       --auto-sign[=no]   -a[no]        set/clear commit.gpgSign [yes]'
+  echo '       --update           -u            update from latest "dotfiles/bin"'
   echo '       --debug            -D            debuging messages'
   exit 1
 }
@@ -41,6 +43,7 @@ name='@NAME@'
 email='@EMAIL@'
 ERROR 'fix name and email and remove this ERROR'
 key=auto
+auto_sign=ignore
 
 getopt=
 case "$(uname)" in
@@ -65,14 +68,14 @@ case "$(uname)" in
 esac
 [ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
 
-args=$(${getopt} -o hvsn:e:k:D --long=help,verbose,set,name:,email:,key:,debug -- "$@") || exit 1
+args=$(${getopt} -o hvsn:e:k:a::uD --long=help,verbose,set,name:,email:,key:auto-sign::,update,debug -- "$@") || exit 1
 
 # replace the arguments with the parsed values
 eval set -- "${args}"
 
 while :
 do
-  case "$1" in
+  case "${1}" in
     (-v|--verbose)
       verbose=yes
       ;;
@@ -82,21 +85,47 @@ do
       ;;
 
     (-n|--name)
-      name="$2"
+      name="${2}"
       [ -z "${name}" ] && USAGE 'name argument cannot be blank'
       shift
       ;;
 
     (-e|--email)
-      email="$2"
+      email="${2}"
       [ -z "${email}" ] && USAGE 'email argument cannot be blank'
       shift
       ;;
 
     (-k|--key)
-      key="$2"
+      key="${2}"
       [ -z "${key}" ] && USAGE 'key argument cannot be blank'
       shift
+      ;;
+
+    (-a|--auto-sign)
+      case "${2}" in
+        ([Yy]|[Yy][Ee][Ss]|[Tt]|[Tt][Rr][Uu][Ee]|"")
+          auto_sign=yes
+          ;;
+        (*)
+          auto_sign=no
+          ;;
+      esac
+      shift
+      ;;
+
+    (-u|--update)
+      # substtute name/email when updating
+      printf 'current name:  "%s"\n' "${name}"
+      printf 'current email: "%s"\n' "${email}"
+      # be careful to make sure this sed command
+      # does not modify or remove itself
+      sed '
+        s/[@]NAME[@]/'"${name}"'/;
+        s/[@]EMAIL[@]/'"${email}"'/;
+        /ERROR[[:space:]].fix/D' < "${HOME}/dotfiles/bin/git-set-user" > "${0}"
+      printf 'updated: "%s"\n' "${0}"
+      exit 0
       ;;
 
     (-D|--debug)
@@ -127,8 +156,6 @@ done
 
 if [ X"${set}" = X"yes" ]
 then
-  [ X"${key}" = X"no-auto" ] && key=''
-  [ X"${key}" = X"noauto" ] && key=''
   if [ X"${key}" = X"auto" ]
   then
     key=$(gpg2 --with-colons --fingerprint --list-secret-keys "${email}" | \
@@ -179,17 +206,26 @@ then
   if [ -n "${key}" ]
   then
     git config --local user.signingKey "${key}"
-    git config --local push.gpgSign true
+    case "${auto_sign}" in
+      (yes)
+        git config --local commit.gpgSign true
+        ;;
+      (no)
+        git config --local --unset commit.gpgSign
+        ;;
+      (ignore)
+        ;;
+    esac
   else
     git config --local --unset user.signingKey
-    git config --local --unset push.gpgSign
+    git config --local --unset commit.gpgSign
   fi
 fi
 
 n="$(git config --local --get user.name)"
 e="$(git config --local --get user.email)"
-s="$(git config --local --get push.gpgSign)"
-[ X"${s}" = X"true" ] && s='sign-on-push' || s=''
+s="$(git config --local --get commit.gpgSign)"
+[ X"${s}" = X"true" ] && s='sign-commits' || s=''
 printf 'user: %s <%s> %s\n' "${n}" "${e}" "${s}"
 
 
