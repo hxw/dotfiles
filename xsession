@@ -19,7 +19,7 @@ export XDG_DATA_HOME="${HOME}/.local/share"
 # start ibus xim
 ibus-daemon --xim --daemonize --replace
 
-# load common X setup 
+# load common X setup
 xprofile="${HOME}/.xprofile"
 [ -x "${xprofile}" ] && . "${xprofile}"
 
@@ -27,9 +27,10 @@ xprofile="${HOME}/.xprofile"
 stalonetray &
 
 # apps
+xmixer -q
 xscreensaver -no-splash &
 oneko -tomoyo -bg pink -fg purple &
-pc-mixer &
+volumeicon &
 xbindkeys &
 
 # a power manager
