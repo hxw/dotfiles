@@ -1,0 +1,28 @@
+#!/bin/sh
+# create gh-tuple.mk
+
+ERROR() {
+  printf 'error: '
+  printf "${@}"
+  printf '\n'
+  exit 1
+}
+
+for f in go.mod go.sum
+do
+  [ -f "${f}" ] || ERROR 'no "%s" file found' "${f}"
+done
+
+tuples=gh-tuple.mk
+
+rm -f "${tuples}"
+
+[ -d vendor ] && rm -rf vendor
+
+go mod vendor
+
+modules2tuple vendor/modules.txt > "${tuples}"
+
+rm -rf vendor
+
+printf 'created: %s\n' "${tuples}"

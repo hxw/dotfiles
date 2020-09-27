@@ -4,14 +4,14 @@
 ERROR()
 {
   printf 'error: '
-  printf "$@"
+  printf "${@}"
   printf '\n'
   exit 1
 }
 
 the_shell=$(which zsh)
-[ $? -eq 0 ] || the_shell=$(which bash)
-[ $? -ne 0 ] && ERROR 'need either zsh or bash for this script to function'
+[ ${?} -eq 0 ] || the_shell=$(which bash)
+[ ${?} -ne 0 ] && ERROR 'need either zsh or bash for this script to function'
 
 ${the_shell} -c '
   printf '"'"'\0337\033[r\033[999;999H\033[6n\0338'"'"'

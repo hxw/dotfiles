@@ -1,0 +1,162 @@
+#!/bin/sh
+# match the faults
+
+ERROR() {
+  printf 'error: '
+  printf "${@}"
+  printf '\n'
+  exit 1
+}
+
+USAGE() {
+  if [ -n "${1}" ]
+  then
+    printf 'error: '
+    printf "${@}"
+    printf '\n'
+  fi
+  echo usage: $(basename "${0}") '[options]'
+  echo '       --help                 -h            this message'
+  echo '       --verbose              -v            more messages'
+  echo '       --fault=FILE           -f FILE       set the fault file ['"${fault_file}"']'
+  echo '       --module=MODULE        -m MODULE     set the module name ['"${fault_module}"']'
+  echo '       --debug                              debuging messages'
+  exit 1
+}
+
+VERBOSE() {
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "${@}"
+  printf '\n'
+}
+
+# main program
+verbose=no
+debug=no
+fault_file=fault/fault.go
+fault_module=fault
+
+getopt=
+case "$(uname)" in
+  (FreeBSD|DragonFly)
+    getopt=/usr/local/bin/getopt
+    ;;
+  (NetBSD)
+    getopt=/usr/pkg/bin/getopt
+    ;;
+  (OpenBSD)
+    getopt=/usr/local/bin/gnugetopt
+    ;;
+  (Darwin)
+    getopt=/usr/local/opt/gnu-getopt/bin/getopt
+    ;;
+  (Linux)
+    getopt=/usr/bin/getopt
+    ;;
+  (*)
+    ERROR 'OS: %s is not supported' "$(uname)"
+    ;;
+esac
+[ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
+
+args=$(${getopt} -o hvf:m:d --long=help,verbose,fault:,module:,debug -- "${@}") || exit 1
+
+# replace the arguments with the parsed values
+eval set -- "${args}"
+
+while :
+do
+  case "${1}" in
+    (-v|--verbose)
+      verbose=yes
+      ;;
+
+    (-f|--fault)
+      fault_file="${2}"
+      shift
+      ;;
+
+    (-m|--module)
+      fault_module="${2}"
+      shift
+      ;;
+
+    (-d|--debug)
+      debug=yes
+      ;;
+
+    (--)
+      shift
+      break
+      ;;
+
+    (-h|--help)
+      USAGE
+      ;;
+
+    (*)
+      USAGE 'invalid option: %s' "${1}"
+      ;;
+  esac
+  shift
+done
+
+# verify arguments
+[ ${#} -ne 0 ] && USAGE 'invalid extraneous arguments'
+
+[ -z "${fault_file}" ] && USAGE 'fault file cannot be blank'
+[ -f "${fault_file}" ] || USAGE 'missing fault file: "%s"' "${fault_file}"
+[ -z "${fault_module}" ] && USAGE 'module name cannot be blank'
+[ -z "$(printf '%s' "${fault_module}" | tr -d 0-9a-z)" ] || USAGE 'module name must only contain lower letters or digits'
+
+# enable debuging
+[ X"${debug}" = X"yes" ] && set -x
+
+VERBOSE 'fault file: %s' "${fault_file}"
+VERBOSE 'fault module: %s' "${fault_module}"
+
+cleanup()
+{
+  rm -f "${defined_errors}"
+  rm -f "${all_errors}"
+  rmdir "${temp_dir}"
+}
+
+
+temp_dir=$(mktemp -d /tmp/faultmatchXXXXXXXXXX)
+defined_errors="${temp_dir}/defined"
+all_errors="${temp_dir}/all"
+trap cleanup INT EXIT
+
+# error definitions
+awk '/^[[:space:]]*Err[[:alnum:]]+[[:space:]]*=/ { print "fault." $1 }' "${fault_file}" | sort -u > "${defined_errors}"
+
+# extract all unique errors used
+find . -name '*.go' -exec awk '
+  BEGIN {
+    fault = "'"${fault_module}"'[.]Err[[:alnum:]]+"
+  }
+  $0 ~ fault {
+    #print $0
+    if (match($0, "//")) {
+      s = substr($0, 0, RSTART)
+    } else {
+      s = $0
+    }
+    for (;;) {
+      if (match(s, fault)) {
+        print substr(s, RSTART, RLENGTH)
+        s = substr(s, RSTART + RLENGTH)
+      } else {
+        break
+      }
+    }
+  }
+' '{}' ';' | sort -u > "${all_errors}"
+
+
+echo unused errors:
+diff -u "${defined_errors}" "${all_errors}" | egrep '^-[[:alnum:]]'
+
+echo undefined errors:
+diff -u "${defined_errors}" "${all_errors}" | egrep '^[+][[:alnum:]]'

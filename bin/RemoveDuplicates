@@ -6,11 +6,11 @@
 
 usage()
 {
-  if [ -n "$1" ]
+  if [ -n "${1}" ]
   then
     echo error: $*
   fi
-  echo usage: $(basename "$0") '[--yes] [--precious=prefix]...' list-of-directories
+  echo usage: $(basename "${0}") '[--yes] [--precious=prefix]...' list-of-directories
   exit 1
 }
 
@@ -29,10 +29,10 @@ NewTemp()
 {
   local TempName TempFile
 
-  [ -z "$1" ] && usage INTERNAL ERROR: NewTemp requires argument
+  [ -z "${1}" ] && usage INTERNAL ERROR: NewTemp requires argument
 
-  TempName="$1"; shift
-  TempFile=$(mktemp /tmp/$(basename "$0").XXXXXX)
+  TempName="${1}"; shift
+  TempFile=$(mktemp /tmp/$(basename "${0}").XXXXXX)
   TempList="${TempList} '${TempFile}'"
   eval "${TempName}=\"\${TempFile}\""
 }
@@ -43,9 +43,9 @@ DetectProgram()
 {
   local ProgramName prog PathProg
 
-  ProgramName="$1"; shift
+  ProgramName="${1}"; shift
 
-  for prog in "$@"
+  for prog in "${@}"
   do
     PathProg=$(which "${prog%%:*}" 2>/dev/null)
     [ -n "${PathProg}" ] && break
@@ -61,7 +61,7 @@ DetectProgram()
 IsPrecious()
 {
   local i file p q
-  file="$1"; shift
+  file="${1}"; shift
 
   i=1
   while [ ${i} -lt ${PreciousIndex} ]
@@ -86,7 +86,7 @@ REMOVE()
   local f
 
   echo "-----"
-  for f in "$@"
+  for f in "${@}"
   do
     if ! IsPrecious "${f}"
     then
@@ -128,12 +128,12 @@ REMOVE()
 MultiDiff()
 {
   local first f differ
-  first="$1"; shift
+  first="${1}"; shift
 
   differ=NO
   echo
   echo '*'File: "${first}"
-  for f in "$@"
+  for f in "${@}"
   do
     if cmp "${first}" "${f}"
     then
@@ -146,7 +146,7 @@ MultiDiff()
 
   if [ X"${differ}" = X"NO" ]
   then
-    REMOVE "${first}" "$@"
+    REMOVE "${first}" "${@}"
   else
     echo CANNOT REMOVE
   fi
@@ -166,7 +166,7 @@ NewTemp outfile
 # scan arguments
 while :
 do
-  case "$1" in
+  case "${1}" in
     --precious=*)
       eval "precious_${PreciousIndex}='${1#--precious=}'"
       PreciousIndex=$((${PreciousIndex} + 1))
@@ -177,7 +177,7 @@ do
       shift
       ;;
     -*)
-      usage invalid option $1
+      usage invalid option ${1}
       ;;
     *)
       break
@@ -185,11 +185,11 @@ do
   esac
 done
 
-[ -z "$1" ] && usage Missing arguments
+[ -z "${1}" ] && usage Missing arguments
 
 # search all directories and get SHA256 sums for files
 # awk is then used to tabulate MD% matches
-find "$@" -type d | (
+find "${@}" -type d | (
   IFS=''
   while read dir
   do
@@ -221,12 +221,12 @@ find "$@" -type d | (
     {
       if (k[i] > 1)
       {
-        print("MultiDiff",h[i]," || exit $?")
+        print("MultiDiff",h[i]," || exit ${?}")
       }
     }
   }
 ' | sort >> "${outfile}"
-[ $? -ne 0 ] && usage find/${AWK} Process failed
+[ ${?} -ne 0 ] && usage find/${AWK} Process failed
 
 # outfile is a script to run the REMOVE routine above
 [ -r "${outfile}" ] && . "${outfile}"

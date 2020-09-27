@@ -4,29 +4,29 @@
 ERROR()
 {
   printf 'error: '
-  printf "$@"
+  printf "${@}"
   printf '\n'
   exit 1
 }
 
 USAGE()
 {
-  if [ -n "$1" ]
+  if [ -n "${1}" ]
   then
     printf 'error: '
-    printf "$@"
+    printf "${@}"
     printf '\n'
   fi
-  echo usage: $(basename "$0") '<options> <host>'
-  echo '       --help           -h         this message'
-  echo '       --verbose        -v         more messages'
-  echo '       --debug          -D         show debug information'
+  echo usage: $(basename "${0}") '<options> <host>'
+  echo '       --help                 -h            this message'
+  echo '       --verbose              -v            more messages'
+  echo '       --debug                -D            show debugging messages'
   exit 1
 }
 
 VERBOSE() {
   [ X"${verbose}" = X"no" ] && return 0
-  printf "$@"
+  printf "${@}"
   printf '\n'
 }
 
@@ -57,14 +57,14 @@ case "$(uname)" in
 esac
 [ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
 
-args=$(${getopt} -o hvrnu:D --long=help,verbose,revise,no-update,use:,debug -- "$@") || exit 1
+args=$(${getopt} -o hvrnu:D --long=help,verbose,revise,no-update,use:,debug -- "${@}") || exit 1
 
 # replace the arguments with the parsed values
 eval set -- "${args}"
 
 while :
 do
-  case "$1" in
+  case "${1}" in
     (-v|--verbose)
       verbose=yes
       ;;
@@ -83,14 +83,14 @@ do
       ;;
 
     (*)
-      USAGE 'invalid option: %s' "$1"
+      USAGE 'invalid option: %s' "${1}"
       ;;
   esac
   shift
 done
 
 # verify arguments
-[ $# -ne 1 ] && USAGE 'exactly one argument is required'
+[ ${#} -ne 1 ] && USAGE 'exactly one argument is required'
 host="${1}"
 
 # enable debuging

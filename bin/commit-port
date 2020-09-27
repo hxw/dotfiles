@@ -7,7 +7,7 @@
 ERROR()
 {
   printf 'error: '
-  printf "$@"
+  printf "${@}"
   printf '\n'
   exit 1
 }
@@ -19,7 +19,7 @@ ERROR()
 debian_commit()
 {
   local changelog
-  changelog="$1"; shift
+  changelog="${1}"; shift
 
   local full major minor patch prerelease build revision version dir rest
 
@@ -90,7 +90,7 @@ debian_commit()
 makefile_commit()
 {
   local makefile
-  makefile="$1"; shift
+  makefile="${1}"; shift
 
   local version dir
   version=$(make -V PORTVERSION)

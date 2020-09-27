@@ -3,32 +3,32 @@
 
 ERROR() {
   printf 'error: '
-  printf "$@"
+  printf "${@}"
   printf '\n'
   exit 1
 }
 
 USAGE() {
-  if [ -n "$1" ]
+  if [ -n "${1}" ]
   then
     printf 'error: '
-    printf "$@"
+    printf "${@}"
     printf '\n'
   fi
-  echo usage: $(basename "$0") '[options]'
-  echo '       --help             -h            this message'
-  echo '       --verbose          -v            more messages'
-  echo '       --prefix=CHAR      -p CHAR       set the version prefix ['"${version_prefix}"']'
-  echo '       --key-id=HEX       -k HEX        set the signing gpg key ['"${key_id}"']'
-  echo '       --use=VERSION      -u VERSION    use this version instead of seaching for version files'
-  echo '       --bump             -b            equivalent to --use="MAJOR.MINOR+1"'
-  echo '       --debug            -D            debuging messages'
+  echo usage: $(basename "${0}") '[options]'
+  echo '       --help                 -h            this message'
+  echo '       --verbose              -v            more messages'
+  echo '       --prefix=CHAR          -p CHAR       set the version prefix ['"${version_prefix}"']'
+  echo '       --key-id=HEX           -k HEX        set the signing gpg key ['"${key_id}"']'
+  echo '       --use=VERSION          -u VERSION    use this version instead of seaching for version files'
+  echo '       --bump                 -b            equivalent to --use="MAJOR.MINOR+1"'
+  echo '       --debug                -D            debuging messages'
   exit 1
 }
 
 VERBOSE() {
   [ X"${verbose}" = X"no" ] && return 0
-  printf "$@"
+  printf "${@}"
   printf '\n'
 }
 
@@ -38,7 +38,7 @@ VERBOSE() {
 # and canonical:      version
 parse_version() {
   local full rest
-  full="$1"; shift
+  full="${1}"; shift
 
   rest=$(printf '%s' "${full}" | sed -E 's/^([[:digit:]]+)[.]([[:digit:]]+)[.]([[:digit:]]+)([-]([[:alnum:].-]+))?([+]([[:alnum:].-]+))?$/\1 \2 \3 \5 \7/')
 
@@ -107,28 +107,28 @@ case "$(uname)" in
 esac
 [ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
 
-args=$(${getopt} -o hvk:p:u:bD --long=help,verbose,key-id:,prefix:,use:,bump,debug -- "$@") || exit 1
+args=$(${getopt} -o hvk:p:u:bD --long=help,verbose,key-id:,prefix:,use:,bump,debug -- "${@}") || exit 1
 
 # replace the arguments with the parsed values
 eval set -- "${args}"
 
 while :
 do
-  case "$1" in
+  case "${1}" in
     (-v|--verbose)
       verbose=yes
       ;;
 
     (-k|--key-id)
-      key_id="$2"
+      key_id="${2}"
       shift
       ;;
     (-p|--prefix)
-      version_prefix="$2"
+      version_prefix="${2}"
       shift
       ;;
     (-u|--use)
-      use_version="$2"
+      use_version="${2}"
       [ -z "${use_version}" ] && USAGE 'use argument cannot be blank'
       check_version use_version
       shift
@@ -152,14 +152,14 @@ do
       ;;
 
     (*)
-      USAGE 'invalid option: %s' "$1"
+      USAGE 'invalid option: %s' "${1}"
       ;;
   esac
   shift
 done
 
 # verify arguments
-[ $# -ne 0 ] && USAGE 'extraneous arguments'
+[ ${#} -ne 0 ] && USAGE 'extraneous arguments'
 
 [ -z "${key_id}" ] && USAGE 'key-id cannot be blank'
 [ -z "${version_prefix}" ] && USAGE 'prefix cannot be blank'
@@ -177,7 +177,7 @@ VERBOSE 'email: %s' "${email}"
 
 
 git_dir=$(git rev-parse --git-dir)
-[ $? -ne 0 ] && ERROR 'cannot determine git directory'
+[ ${?} -ne 0 ] && ERROR 'cannot determine git directory'
 [ -d "${git_dir}" ] || ERROR 'path name: "%s" is not a directory' "${git_dir}"
 
 VERBOSE 'git directory: %s' "${git_dir}"
@@ -283,7 +283,7 @@ else
           }
         }
       ' < "${version_file}")
-      [ $? -ne 0 ] && ERROR "${version}"
+      [ ${?} -ne 0 ] && ERROR "${version}"
       ;;
 
     (*.go)
@@ -331,7 +331,7 @@ else
            patch = a[2]
         }
       ' < "${version_file}")
-      [ $? -ne 0 ] && ERROR "${version}"
+      [ ${?} -ne 0 ] && ERROR "${version}"
       ;;
 
     (*.xml)
@@ -381,7 +381,7 @@ then
         [ -n "${SSH_TTY}" ] && export GPG_TTY="${SSH_TTY}"
         set -x
         git tag -s -u "${key_id}" -m 'release version' -a "${prefixed_version}"
-        [ $? -ne 0 ] && exit 1
+        [ ${?} -ne 0 ] && exit 1
         git push
         git push origin "${prefixed_version}"
       )

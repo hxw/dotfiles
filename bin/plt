@@ -4,25 +4,25 @@
 ERROR()
 {
   printf 'error: '
-  printf "$@"
+  printf "${@}"
   printf '\n'
   exit 1
 }
 
 USAGE()
 {
-  if [ -n "$1" ]
+  if [ -n "${1}" ]
   then
     printf 'error: '
-    printf "$@"
+    printf "${@}"
     printf '\n'
   fi
-  echo usage: $(basename "$0") '<options> -- <plot-names>'
-  echo '       --help           -h         this message'
-  echo '       --verbose        -v         more messages'
-  echo '       --plot=FILE      -p FILE    specify plot file'
-  echo '       --file=FILE      -f FILE    specify data file (- for stdin)'
-  echo '       --debug          -D         show debug information'
+  echo usage: $(basename "${0}") '<options> -- <plot-names>'
+  echo '       --help                 -h            this message'
+  echo '       --verbose              -v            more messages'
+  echo '       --plot=FILE            -p FILE       specify plot file'
+  echo '       --file=FILE            -f FILE       specify data file (- for stdin)'
+  echo '       --debug                -D            show debug information'
   exit 1
 }
 
@@ -47,27 +47,48 @@ done
 
 
 
-getopt=/usr/local/bin/getopt
-[ -x "${getopt}" ] || getopt=getopt
-args=$(${getopt} -o hvp:f:D --long=help,verbose,plot:,file:,debug -- "$@") ||exit 1
+getopt=
+case "$(uname)" in
+  (FreeBSD|DragonFly)
+    getopt=/usr/local/bin/getopt
+    ;;
+  (NetBSD)
+    getopt=/usr/pkg/bin/getopt
+    ;;
+  (OpenBSD)
+    getopt=/usr/local/bin/gnugetopt
+    ;;
+  (Darwin)
+    getopt=/usr/local/opt/gnu-getopt/bin/getopt
+    ;;
+  (Linux)
+    getopt=/usr/bin/getopt
+    ;;
+  (*)
+    ERROR 'OS: %s is not supported' "$(uname)"
+    ;;
+esac
+[ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
+
+args=$(${getopt} -o hvp:f:D --long=help,verbose,plot:,file:,debug -- "${@}") ||exit 1
 
 # replace the arguments with the parsed values
 eval set -- "${args}"
 
 while :
 do
-  case "$1" in
+  case "${1}" in
     (-v|--verbose)
       verbose=yes
       ;;
 
     (-p|--plot)
-      plot="$2"
+      plot="${2}"
       shift
       ;;
 
     (-f|--file)
-      data="$2"
+      data="${2}"
       shift
       ;;
 
@@ -85,14 +106,14 @@ do
       ;;
 
     (*)
-      USAGE 'invalid argument: %s' "$1"
+      USAGE 'invalid argument: %s' "${1}"
       ;;
   esac
   shift
 done
 
 #validate arguments
-[ $# -eq 0 ] && USAGE 'missing arguments'
+[ ${#} -eq 0 ] && USAGE 'missing arguments'
 [ -z "${plot}" ] && USAGE 'missing plot file'
 [ -f "${plot}" ] || USAGE 'plot file: "%s" does not exist' "${plot}"
 if [ X"-" != X"${data}" ]

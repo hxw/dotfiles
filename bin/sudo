@@ -5,7 +5,7 @@
 ERROR()
 {
   printf 'error: '
-  printf "$@"
+  printf "${@}"
   printf '\n'
   exit 1
 }
@@ -18,4 +18,4 @@ do
 done
 [ -x "${doas}" ] || ERROR 'no suitable doas was found'
 
-exec ${doas} "$@"
+exec ${doas} "${@}"

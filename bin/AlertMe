@@ -1,0 +1,12 @@
+#!/bin/sh
+# alert sound
+
+sound="${HOME}/Sounds/alert.ogg"
+
+vol=$(mixer vol | awk '{print $7}')
+
+new_vol='60:60'
+
+mixer vol "${new_vol}" > /dev/null
+mplayer -quiet -vo null -volume 100 "${sound}" > /dev/null 2>&1
+mixer vol "${vol}" > /dev/null

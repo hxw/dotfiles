@@ -1,0 +1,146 @@
+#!/bin/sh
+# update all jails
+
+ERROR() {
+  printf 'error: '
+  printf "${@}"
+  printf '\n'
+  exit 1
+}
+
+USAGE() {
+  if [ -n "${1}" ]
+  then
+    printf 'error: '
+    printf "${@}"
+    printf '\n'
+  fi
+  echo usage: "$(basename "${0}")" '<options...>'
+  echo '       --help                 -h            this message'
+  echo '       --verbose              -v            more messages'
+  echo '       --freebsd              -f            update the base system'
+  echo '       --pkg=ACTION           -p ACTION     run a package action in all jails'
+  echo '       --dry-run              -n            dry run for pkg actions'
+  echo '       --debug                -D            debugging messages'
+  exit 1
+}
+
+# main program
+# ------------
+
+verbose=no
+freebsd=no
+pkg_action=
+dry_run='-y'
+debug=no
+
+getopt=
+case "$(uname)" in
+  (FreeBSD|DragonFly)
+    getopt=/usr/local/bin/getopt
+    ;;
+  (NetBSD)
+    getopt=/usr/pkg/bin/getopt
+    ;;
+  (OpenBSD)
+    getopt=/usr/local/bin/gnugetopt
+    ;;
+  (Darwin)
+    getopt=/usr/local/opt/gnu-getopt/bin/getopt
+    ;;
+  (Linux)
+    getopt=/usr/bin/getopt
+    ;;
+  (*)
+    ERROR 'OS: %s is not supported' "$(uname)"
+    ;;
+esac
+[ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
+
+args=$(${getopt} -o hvfp:nD --long=help,verbose,freebsd,pkg:,dry-run,debug -- "${@}") ||exit 1
+
+# replace the arguments with the parsed values
+eval set -- "${args}"
+
+while :
+do
+  case "${1}" in
+    (-v|--verbose)
+      verbose=yes
+      ;;
+
+    (-f|--freebsd)
+      freebsd=yes
+      ;;
+
+    (-p|--pkg)
+      pkg="${2}"
+      case "${pkg}" in
+        ("")
+          USAGE 'pkg action cannot be empty'
+          ;;
+        (pkg|upgrade|clean|autoremove)
+          ;;
+        (*)
+          USAGE 'pkg action "%s" is not supported' "${pkg}"
+          ;;
+      esac
+      shift
+      ;;
+
+    (-n|--dry-run)
+      dry_run='-n'
+      ;;
+
+    (-D|--debug)
+      debug=yes
+      ;;
+
+    (--)
+      shift
+      break
+      ;;
+
+    (-h|--help)
+      USAGE
+      ;;
+
+    (*)
+      USAGE 'invalid argument: "%s"' "${1}"
+      ;;
+  esac
+  shift
+done
+
+[ ${#} -ne 0 ] && USAGE 'extraneous arguments'
+
+[ X"${debug}" = X"yes" ] && set -x
+
+[ -z "${pkg}" ] && [ X"${freebsd}" = X"no" ] && USAGE 'missing options'
+[ -n "${pkg}" ] && [ X"${freebsd}" = X"yes" ] && USAGE 'conflictiong options'
+
+# execute base system updata
+if [ X"${freebsd}" = X"yes" ]
+then
+  jls -q host.hostuuid | xargs -n 1 -J % iocage update %
+  exit 0
+fi
+
+# execute pkg action
+case "${pkg}" in
+  (clean)
+    jls -q host.hostuuid | xargs -n 1 -J % iocage pkg % -- clean -a ${dry_run}
+    ;;
+  (autoremove)
+    jls -q host.hostuuid | xargs -n 1 -J % iocage pkg % -- autoremove ${dry_run}
+    ;;
+  (pkg)
+    jls -q host.hostuuid | xargs -n 1 -J % iocage pkg % -- upgrade ${dry_run} pkg
+    ;;
+  (upgrade)
+    jls -q host.hostuuid | xargs -n 1 -J % iocage pkg % -- upgrade ${dry_run}
+    ;;
+  (*)
+    ERROR 'pkg action "%s" is not implemented' "${pkg}"
+    ;;
+esac

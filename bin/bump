@@ -3,31 +3,31 @@
 
 ERROR() {
   printf 'error: '
-  printf "$@"
+  printf "${@}"
   printf '\n'
   exit 1
 }
 
 USAGE() {
-  if [ -n "$1" ]
+  if [ -n "${1}" ]
   then
     printf 'error: '
-    printf "$@"
+    printf "${@}"
     printf '\n'
   fi
-  echo usage: $(basename "$0") '[options]'
-  echo '       --help             -h            this message'
-  echo '       --verbose          -v            more messages'
-  echo '       --revise           -r            increment port revision'
-  echo '       --no-update        -n            no modification of files'
-  echo '       --use=VERSION      -u VERSION    use this version instead of incrementing'
-  echo '       --debug            -D            debuging messages'
+  echo usage: $(basename "${0}") '[options]'
+  echo '       --help                 -h            this message'
+  echo '       --verbose              -v            more messages'
+  echo '       --revise               -r            increment port revision'
+  echo '       --no-update            -n            no modification of files'
+  echo '       --use=VERSION          -u VERSION    use this version instead of incrementing'
+  echo '       --debug                -D            debugging messages'
   exit 1
 }
 
 VERBOSE() {
   [ X"${verbose}" = X"no" ] && return 0
-  printf "$@"
+  printf "${@}"
   printf '\n'
 }
 
@@ -37,7 +37,7 @@ VERBOSE() {
 # and canonical:      version
 parse_version() {
   local full rest
-  full="$1"; shift
+  full="${1}"; shift
 
   rest=$(printf '%s' "${full}" | sed -E 's/^([[:digit:]]+)[.]([[:digit:]]+)[.]([[:digit:]]+)([-]([[:alnum:].-]+))?([+]([[:alnum:].-]+))?$/\1 \2 \3 \5 \7/')
 
@@ -97,14 +97,14 @@ case "$(uname)" in
 esac
 [ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
 
-args=$(${getopt} -o hvrnu:D --long=help,verbose,revise,no-update,use:,debug -- "$@") || exit 1
+args=$(${getopt} -o hvrnu:D --long=help,verbose,revise,no-update,use:,debug -- "${@}") || exit 1
 
 # replace the arguments with the parsed values
 eval set -- "${args}"
 
 while :
 do
-  case "$1" in
+  case "${1}" in
     (-v|--verbose)
       verbose=yes
       ;;
@@ -114,7 +114,7 @@ do
       ;;
 
     (-u|--use)
-      use_version="$2"
+      use_version="${2}"
       [ -z "${use_version}" ] && USAGE 'use argument cannot be blank'
       parse_version "${use_version}"
       shift
@@ -138,14 +138,14 @@ do
       ;;
 
     (*)
-      USAGE 'invalid option: %s' "$1"
+      USAGE 'invalid option: %s' "${1}"
       ;;
   esac
   shift
 done
 
 # verify arguments
-[ $# -ne 0 ] && USAGE 'extraneous arguments'
+[ ${#} -ne 0 ] && USAGE 'extraneous arguments'
 
 # enable debuging
 [ X"${debug}" = X"yes" ] && set -x
@@ -231,7 +231,7 @@ case "${version_file}" in
           }
         }
       ' < "${version_file}")
-      [ $? -ne 0 ] && ERROR "${version}"
+      [ ${?} -ne 0 ] && ERROR "${version}"
       ;;
 
   (*)
@@ -366,9 +366,9 @@ new_changelog="${changelog}.new"
 rm -f "${new_changelog}"
 cat "${changelog}" | head -n 1 | sed -E 's/[(][^)]+-[[:alnum:]]+[)]/('"${use_version}-${debian_revision}"')/' > "${new_changelog}"
 email=$(git config --get user.email)
-[ $? -eq 0 ] || ERROR 'git config --get user.email failed'
+[ ${?} -eq 0 ] || ERROR 'git config --get user.email failed'
 name=$(git config --get user.name)
-[ $? -eq 0 ] || ERROR 'git config --get user.name failed'
+[ ${?} -eq 0 ] || ERROR 'git config --get user.name failed'
 cat >> "${new_changelog}" <<EOF
 
   * new version from source version: ${use_version}

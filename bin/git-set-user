@@ -3,34 +3,34 @@
 
 ERROR() {
   printf 'error: '
-  printf "$@"
+  printf "${@}"
   printf '\n'
   exit 1
 }
 
 USAGE() {
-  if [ -n "$1" ]
+  if [ -n "${1}" ]
   then
     printf 'error: '
-    printf "$@"
+    printf "${@}"
     printf '\n'
   fi
-  echo usage: $(basename "$0") '[options]'
-  echo '       --help             -h            this message'
-  echo '       --verbose          -v            more messages'
-  echo '       --set              -s            set new settings'
-  echo '       --name=NAME        -n NAME       set full name'
-  echo '       --email=EMAIL      -e EMAIL      set email address (used to locate gpg key)'
-  echo '       --key=HEX          -k HEX        set signing key to hex fingerprint [auto]'
-  echo '       --auto-sign[=no]   -a[no]        set/clear commit.gpgSign [yes]'
-  echo '       --update           -u            update from latest "dotfiles/bin"'
-  echo '       --debug            -D            debuging messages'
+  echo usage: $(basename "${0}") '[options]'
+  echo '       --help                 -h            this message'
+  echo '       --verbose              -v            more messages'
+  echo '       --set                  -s            set new settings'
+  echo '       --name=NAME            -n NAME       set full name'
+  echo '       --email=EMAIL          -e EMAIL      set email address (used to locate gpg key)'
+  echo '       --key=HEX              -k HEX        set signing key to hex fingerprint [auto]'
+  echo '       --auto-sign[=no]       -a[no]        set/clear commit.gpgSign [yes]'
+  echo '       --update               -u            update from latest "dotfiles/bin"'
+  echo '       --debug                -D            debugging messages'
   exit 1
 }
 
 VERBOSE() {
   [ X"${verbose}" = X"no" ] && return 0
-  printf "$@"
+  printf "${@}"
   printf '\n'
 }
 
@@ -39,9 +39,8 @@ VERBOSE() {
 verbose=no
 debug=no
 set=no
-name='@NAME@'
-email='@EMAIL@'
-ERROR 'fix name and email and remove this ERROR'
+name='Christopher Hall'
+email='hsw@bitmark.com'
 key=auto
 auto_sign=ignore
 
@@ -68,7 +67,7 @@ case "$(uname)" in
 esac
 [ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
 
-args=$(${getopt} -o hvsn:e:k:a::uD --long=help,verbose,set,name:,email:,key:auto-sign::,update,debug -- "$@") || exit 1
+args=$(${getopt} -o hvsn:e:k:a::uD --long=help,verbose,set,name:,email:,key:auto-sign::,update,debug -- "${@}") || exit 1
 
 # replace the arguments with the parsed values
 eval set -- "${args}"
@@ -142,14 +141,14 @@ do
       ;;
 
     (*)
-      USAGE 'invalid option: %s' "$1"
+      USAGE 'invalid option: %s' "${1}"
       ;;
   esac
   shift
 done
 
 # verify arguments
-[ $# -ne 0 ] && USAGE 'extraneous arguments'
+[ ${#} -ne 0 ] && USAGE 'extraneous arguments'
 
 # enable debuging
 [ X"${debug}" = X"yes" ] && set -x
@@ -234,7 +233,7 @@ hooks_dir="${HOME}/dotfiles/git-hooks"
 if [ -d "${hooks_dir}" ]
 then
   git_dir=$(git rev-parse --git-dir)
-  [ $? -ne 0 ] && ERROR 'cannot determine git directory'
+  [ ${?} -ne 0 ] && ERROR 'cannot determine git directory'
   [ -d "${git_dir}" ] || ERROR 'path name: "%s" is not a directory' "${git_dir}"
   VERBOSE 'git directory: %s' "${git_dir}"
   for hook in "${hooks_dir}"/*
