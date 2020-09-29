@@ -30,8 +30,13 @@ stalonetray &
 xmixer -q
 xscreensaver -no-splash &
 oneko -tomoyo -bg pink -fg purple &
-volumeicon &
 xbindkeys &
+
+# microphone in Firefox need pulseaudio started
+command -v pulseaudio > /dev/null && pulseaudio --start
+
+# for system tray
+volumeicon &
 
 # a power manager
 #xfce4-power-manager &
