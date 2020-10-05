@@ -13,3 +13,5 @@ include "%L"
 <Multi_key> <v> <underscore>		: "⊻"  # Logical Or operator
 <Multi_key> <underscore> <v>		: "⊻"  # Logical Or operator
 <Multi_key> <V> <V>			: "⊻"  # Logical Or operator
+<Multi_key> <C> <M>			: "✔"  # Check Mark
+<Multi_key> <c> <m>			: "✔"  # Check Mark
