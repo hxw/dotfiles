@@ -8,6 +8,12 @@ ERROR() {
   exit 1
 }
 
+VERBOSE() {
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "${@}"
+  printf '\n'
+}
+
 USAGE() {
   if [ -n "${1}" ]
   then
@@ -15,21 +21,15 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: $(basename "${0}") '[options]'
+  echo usage: "${0##*/}" '[options]'
   echo '       --help                 -h            this message'
   echo '       --verbose              -v            more messages'
   echo '       --prefix=CHAR          -p CHAR       set the version prefix ['"${version_prefix}"']'
   echo '       --key-id=HEX           -k HEX        set the signing gpg key ['"${key_id}"']'
   echo '       --use=VERSION          -u VERSION    use this version instead of seaching for version files'
   echo '       --bump                 -b            equivalent to --use="MAJOR.MINOR+1"'
-  echo '       --debug                -D            debuging messages'
+  echo '       --debug                -D            show debug information'
   exit 1
-}
-
-VERBOSE() {
-  [ X"${verbose}" = X"no" ] && return 0
-  printf "${@}"
-  printf '\n'
 }
 
 # version string: MAJOR[.MINOR[.PATCH[-PRERELEASE][+BUILD]]]
@@ -72,7 +72,7 @@ debug=no
 key_id=
 use_version=
 bump=no
-version_file_list='debian/changelog Cargo.toml version.go version/version.go pom.xml '"$(basename "${PWD}").cabal"
+version_file_list='debian/changelog Cargo.toml version.go version/version.go pom.xml '"${PWD##*/}.cabal"
 version_prefix='v'
 
 # get a default key from git email address
@@ -84,82 +84,65 @@ then
              | sed 's/^fpr://;s/://g')
 fi
 
-getopt=
-case "$(uname)" in
-  (FreeBSD|DragonFly)
-    getopt=/usr/local/bin/getopt
-    ;;
-  (NetBSD)
-    getopt=/usr/pkg/bin/getopt
-    ;;
-  (OpenBSD)
-    getopt=/usr/local/bin/gnugetopt
-    ;;
-  (Darwin)
-    getopt=/usr/local/opt/gnu-getopt/bin/getopt
-    ;;
-  (Linux)
-    getopt=/usr/bin/getopt
-    ;;
-  (*)
-    ERROR 'OS: %s is not supported' "$(uname)"
-    ;;
-esac
-[ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
-
-args=$(${getopt} -o hvk:p:u:bD --long=help,verbose,key-id:,prefix:,use:,bump,debug -- "${@}") || exit 1
-
-# replace the arguments with the parsed values
-eval set -- "${args}"
-
-while :
+# parse options
+while getopts :hvk:p:u:bD-: option
 do
-  case "${1}" in
-    (-v|--verbose)
+  # convert long options
+  if [ X"${option}" = X"-" ]
+  then
+    option="${OPTARG%%=*}"
+    OPTARG="${OPTARG#${option}}"
+    OPTARG="${OPTARG#=}"
+  fi
+  case "${option}" in
+    (v|verbose)
       verbose=yes
       ;;
 
-    (-k|--key-id)
-      key_id="${2}"
-      shift
-      ;;
-    (-p|--prefix)
-      version_prefix="${2}"
-      shift
-      ;;
-    (-u|--use)
-      use_version="${2}"
-      [ -z "${use_version}" ] && USAGE 'use argument cannot be blank'
-      check_version use_version
-      shift
+    (k|key-id)
+      key_id="${OPTARG}"
       ;;
 
-    (-b|--bump)
+    (p|prefix)
+      version_prefix="${OPTARG}"
+      ;;
+
+    (u|use)
+      use_version="${OPTARG}"
+      [ -z "${use_version}" ] && USAGE 'use argument cannot be blank'
+      check_version use_version
+      ;;
+
+    (b|bump)
       bump=yes
       ;;
 
-    (-D|--debug)
-      debug=yes
-      ;;
-
     (--)
-      shift
       break
       ;;
 
-    (-h|--help)
+    (D|debug)
+      debug=yes
+      ;;
+
+    (h|help)
       USAGE
       ;;
 
+    ('?')
+      USAGE 'invalid option: -%s' "${OPTARG}"
+      ;;
+
     (*)
-      USAGE 'invalid option: %s' "${1}"
+      USAGE 'invalid option: --%s' "${option}"
       ;;
   esac
-  shift
 done
 
+shift $((OPTIND - 1))
+
 # verify arguments
-[ ${#} -ne 0 ] && USAGE 'extraneous arguments'
+[ ${#} -ne 0 ] && USAGE 'extraneous arguments: %s' "${*}"
 
 [ -z "${key_id}" ] && USAGE 'key-id cannot be blank'
 [ -z "${version_prefix}" ] && USAGE 'prefix cannot be blank'

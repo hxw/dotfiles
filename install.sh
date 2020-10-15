@@ -22,7 +22,7 @@ CAT() {
   local f
   rm -f "${2}"
   printf '! .%s\n\n' "${2}" >> "${2}"
-  for f in "${1}"/*.res
+  for f in "${src}/${1}"/*.res
   do
     cat "${f}" >> "${2}"
     printf '\n\n\n' >> "${2}"
@@ -44,10 +44,6 @@ COPY mg
 COPY zshrc
 COPY lesskey
 
-# create temporary files
-CAT Xresources.d Xresources
-CAT Xdefaults.d  Xdefaults
-
 # X11 files to be copied to ${HOME}
 X11 xbindkeysrc
 X11 XCompose
@@ -64,125 +60,117 @@ X11 xsession
 # ===========
 
 
-ERROR()
-{
-  echo error: $*
+ERROR() {
+  printf 'error: '
+  printf "${@}"
+  printf '\n'
   exit 1
 }
 
-USAGE()
-{
-  [ -z "$1" ] || echo error: $*
-  echo usage: $(basename "$0") '<options>'
+VERBOSE() {
+  [ X"${verbose}" = X"yes" ] && printf "$@"
+}
+
+USAGE() {
+  if [ -n "${1}" ]
+  then
+    printf 'error: '
+    printf "${@}"
+    printf '\n'
+  fi
+  echo usage: "${0##*/}" '<options>'
   echo '       --help             -h         this message'
   echo '       --verbose          -v         more messages'
   echo '       --prefix=<dir>     -p <dir>   set installation directory ['"${home}"']'
   echo '       --non-interactive  -n         no interactive input'
+  echo '       --bin              -b         also include bin/* to ${HOME}/bin'
   echo '       --copy             -c         copy files, default is to diff -u'
+  echo '       --suppress         -s         suppress dotfiles'
   echo '       --x11              -x         also install X11 configs'
   echo '       --debug            -D         show debug information'
   exit 1
 }
 
 
-# get a string escaping / & for later sed substitution
-# usage:  var=$(get prompt message here) || exit 1
-# note: need the exit as the ERROR only terminates the $() sub-shell
-get()
-{
-  local default prompt data
-  default="$1"; shift
-
-  read -p "$* [${default}]: " -r data
-  [ -z "${data}" ] && data="${default}"
-  printf '%s' "${data}" | sed 's/\\/\\\\/g;s,/,\\/,g;s,&,\\\&,g'
-}
-
-
 # main program
-
 verbose=no
+debug=no
 prefix="${HOME}"
 interactive=yes
+dotfiles=yes
+bin=no
 copy='diff -su'
 x11=no
 wait=yes
 src=$(dirname "$0")
 
-getopt=
-case "$(uname)" in
-  (FreeBSD|DragonFly)
-    getopt=/usr/local/bin/getopt
-    ;;
-  (NetBSD)
-    getopt=/usr/pkg/bin/getopt
-    ;;
-  (OpenBSD)
-    getopt=/usr/local/bin/gnugetopt
-    ;;
-  (Darwin)
-    getopt=/usr/local/opt/gnu-getopt/bin/getopt
-    ;;
-  (Linux)
-    getopt=/usr/bin/getopt
-    ;;
-  (*)
-    ERROR 'OS: %s is not supported' "$(uname)"
-    ;;
-esac
-[ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
-
-args=$(${getopt} -o hvp:ncxD --long=help,verbose,prefix:,non-interactive,copy,x11,debug -- "$@") ||exit 1
-
-# replace the arguments with the parsed values
-eval set -- "${args}"
-
-while :
+# parse options
+while getopts :hvnbcp:sxD-: option
 do
-  case "$1" in
-    -v|--verbose)
+  # convert long options
+  if [ X"${option}" = X"-" ]
+  then
+    option="${OPTARG%%=*}"
+    OPTARG="${OPTARG#${option}}"
+    OPTARG="${OPTARG#=}"
+  fi
+  case "${option}" in
+    (v|verbose)
       verbose=yes
-      shift
       ;;
 
-    -n|--non-interactive)
+    (n|non-interactive)
       interactive=no
-      shift
       ;;
 
-    -c|--copy)
+    (b|bin)
+      bin=yes
+      ;;
+
+    (c|copy)
       copy='cp -p'
-      shift
       ;;
 
-    -p|--prefix)
-      prefix=$2
-      shift 2
+    (p|prefix)
+      prefix="${OPTARG}"
       ;;
 
-    -x|--x11)
+    (s|suppress)
+      dotfiles=no
+      ;;
+
+    (x|x11)
       x11=yes
-      shift
       ;;
 
-    -D|--debug)
-      debug=yes
-      shift
-      ;;
-
-    --)
-      shift
+    (--)
       break
       ;;
 
-    *)
-      USAGE invalid argument $1
+    (D|debug)
+      debug=yes
+      ;;
+
+    (h|help)
+      USAGE
+      ;;
+
+    ('?')
+      USAGE 'invalid option: -%s' "${OPTARG}"
+      ;;
+
+    (*)
+      USAGE 'invalid option: --%s' "${option}"
       ;;
   esac
 done
 
-[ $# -eq 0 ] || USAGE extraneous arguments
+shift $((OPTIND - 1))
 
+# verify arguments
+[ ${#} -ne 0 ] && USAGE 'extraneous arguments: %s' "${*}"
+
+# enable debugging
 [ X"${debug}" = X"yes" ] && set -x
 
 echo this will install the files to: ${prefix}
@@ -198,6 +186,10 @@ cleanup() {
   rm -f Xresources Xdefaults
 }
 trap cleanup INT EXIT
+
+# create temporary files
+CAT Xresources.d Xresources
+CAT Xdefaults.d  Xdefaults
 
 interact() {
   local junk
@@ -232,28 +224,32 @@ do
   tempfile=
 done
 
-# file that are just copied
-for f in ${list_copy}
-do
-  d="${prefix}/.${f}"
-  printf '\033[1;34mCopy "%s" to "%s"\033[0m\n' "${f}" "${d}"
-  interact
-  ${copy} "${src}/${f}" "${d}"
-done
+if [ X"${dotfiles}" = X"yes" ]
+then
 
-# desktop files to .local
-dst="${HOME}/.local/share/applications/"
-mkdir -p "${dst}"
+  # files that are just copied
+  for f in ${list_copy}
+  do
+    d="${prefix}/.${f}"
+    printf '\033[1;34mCopy "%s" to "%s"\033[0m\n' "${f}" "${d}"
+    interact
+    ${copy} "${src}/${f}" "${d}"
+  done
 
-for f in "${src}"/*.desktop
-do
-  bn=$(basename "${f}")
-  [ -e "/usr/local/share/applications/${bn}" ] && continue
-  [ -e "/usr/share/applications/${bn}" ] && continue
-  printf '\033[1;35mCopy "%s" to "%s"\033[0m\n' "${bn}" "${dst}"
-  interact
-  ${copy} "${f}" "${dst}"
+  # desktop files to .local
+  dst="${HOME}/.local/share/applications/"
+  mkdir -p "${dst}"
+
+  for f in "${src}"/*.desktop
+  do
+    bn="${f##*/}"
+    [ -e "/usr/local/share/applications/${bn}" ] && continue
+    [ -e "/usr/share/applications/${bn}" ] && continue
+    printf '\033[1;35mCopy "%s" to "%s"\033[0m\n' "${bn}" "${dst}"
+    interact
+    ${copy} "${f}" "${dst}"
 done
+fi
 
 # update less configuration
 lesskey
@@ -265,6 +261,19 @@ then
   do
     d="${prefix}/.${f}"
     printf '\033[1;32mCopy "%s" to "%s"\033[0m\n' "${f}" "${d}"
+    interact
+    ${copy} "${src}/${f}" "${d}"
+  done
+fi
+
+# handle bin files
+if [ X"${bin}" = X"yes" ]
+then
+  for f in "${src}/bin"/[a-zA-Z0-9]*
+  do
+    d="${prefix}/bin/${f##*/}"
+    [ -f "${d}" ] || continue
+    printf '\033[1;34mCopy "%s" to "%s"\033[0m\n' "${f}" "${d}"
     interact
     ${copy} "${src}/${f}" "${d}"
   done

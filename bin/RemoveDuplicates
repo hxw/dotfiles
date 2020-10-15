@@ -1,6 +1,6 @@
 #!/bin/sh
 # Remove Duplicate files
-# Copyright 2006 Christopher Hall
+# Copyright 2006-2020 Christopher Hall
 # License GPL2 or later
 # 2019-04-29 MD5 -> SHA256 Christopher Hall
 
@@ -10,7 +10,7 @@ usage()
   then
     echo error: $*
   fi
-  echo usage: $(basename "${0}") '[--yes] [--precious=prefix]...' list-of-directories
+  echo usage: "${0##*/}" '[--yes] [--precious=prefix]...' list-of-directories
   exit 1
 }
 
@@ -32,7 +32,7 @@ NewTemp()
   [ -z "${1}" ] && usage INTERNAL ERROR: NewTemp requires argument
 
   TempName="${1}"; shift
-  TempFile=$(mktemp /tmp/$(basename "${0}").XXXXXX)
+  TempFile="$(mktemp "/tmp/${0##*/}.XXXXXX")"
   TempList="${TempList} '${TempFile}'"
   eval "${TempName}=\"\${TempFile}\""
 }

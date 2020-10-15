@@ -1,85 +1,37 @@
 #!/bin/sh
 
-ERROR()
-{
-  echo error: $*
+ERROR() {
+  printf 'error: '
+  printf "${@}"
+  printf '\n'
   exit 1
 }
 
-USAGE()
-{
-  [ -z "$1" ] || echo error: $*
-  echo usage: $(basename "$0") '<src> <dest>'
+VERBOSE() {
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "${@}"
+  printf '\n'
+}
+
+USAGE() {
+  if [ -n "${1}" ]
+  then
+    printf 'error: '
+    printf "${@}"
+    printf '\n'
+  fi
+  echo usage: "${0##*/" '<src> <dest>'
   echo '       --help           -h         this message'
   echo '       --verbose        -v         more messages'
   echo '       --yes            -y         answer yes to all prompts'
   exit 1
 }
 
-# main program
-verbose=no
-prompt=yes
-
-debug=no
-
-getopt=/usr/local/bin/getopt
-[ -x "${getopt}" ] || getopt=getopt
-args=$(${getopt} -o hvy --long=help,verbose,yes,debug -- "$@") ||exit 1
-
-# replace the arguments with the parsed values
-eval set -- "${args}"
-
-while :
-do
-  case "$1" in
-    (-v|--verbose)
-      verbose=yes
-      ;;
-
-    (-y|--yes)
-      prompt=no
-      ;;
-
-    (--debug)
-      debug=yes
-      ;;
-
-    (--)
-      shift
-      break
-      ;;
-
-    (-h|--help)
-      USAGE
-      ;;
-
-    (*)
-      USAGE invalid option: $1
-      ;;
-  esac
-  shift
-done
-
-# verify arguments
-[ -z "${prompt}" ] && USAGE prompt is not set
-#[ $# -eq 0 ] && USAGE missing arguments
-[ $# -ne 2 ] && USAGE exactly two arguments are required
-
-[ X"${debug}" = X"yes" ] && set -x
-
-# extract arguments
-src="$1"; shift
-dest="$1"; shift
-
-temp=$(mktemp --tmpdir patchit-XXXXX)
-
-trap 'rm -f "${temp}"' EXIT INT
-
-GetYN()
-{
+GetYN() {
+  local yorn junk
   while :
   do
-    read -p "$* [y/n] ? " yorn junk
+    read -p "${*} [y/n] ? " yorn junk
     case "${yorn}" in
       [yY]|[yY][eE][sS])
         return 0
@@ -90,17 +42,80 @@ GetYN()
       *)
         echo Please answer yes or no
         ;;
-      esac
-    done
+    esac
+  done
 }
 
-apply()
-{
+
+# main program
+verbose=no
+debug=no
+prompt=yes
+
+# parse options
+while getopts :hvyD-: option
+do
+  # convert long options
+  if [ X"${option}" = X"-" ]
+  then
+    option="${OPTARG%%=*}"
+    OPTARG="${OPTARG#${option}}"
+    OPTARG="${OPTARG#=}"
+  fi
+  case "${option}" in
+    (v|verbose)
+      verbose=yes
+      ;;
+
+    (y|yes)
+      prompt=no
+      ;;
+
+    (--)
+      break
+      ;;
+
+    (D|debug)
+      debug=yes
+      ;;
+
+    (h|help)
+      USAGE
+      ;;
+
+    ('?')
+      USAGE 'invalid option: -%s' "${OPTARG}"
+      ;;
+
+    (*)
+      USAGE 'invalid option: --%s' "${option}"
+      ;;
+  esac
+done
+
+shift $((OPTIND - 1))
+
+# verify arguments
+#[ ${#} -ne 0 ] && USAGE 'extraneous arguments: %s' "${*}"
+[ -z "${prompt}" ] && USAGE 'prompt is not set'
+[ ${#} -ne 2 ] && USAGE 'exactly two arguments are required'
+
+# enable debugging
+[ X"${debug}" = X"yes" ] && set -x
+
+# extract arguments
+src="${1}"
+dest="${2}"
+
+temp=$(mktemp --tmpdir patchit-XXXXX)
+
+trap 'rm -f "${temp}"' EXIT INT
+
+apply() {
   patch "${dest}" "${temp}"
 }
 
-main()
-{
+main() {
   diff -uw "${dest}" "${src}" > "${temp}"
 
   case "${prompt}" in

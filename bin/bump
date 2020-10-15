@@ -8,6 +8,12 @@ ERROR() {
   exit 1
 }
 
+VERBOSE() {
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "${@}"
+  printf '\n'
+}
+
 USAGE() {
   if [ -n "${1}" ]
   then
@@ -15,20 +21,14 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: $(basename "${0}") '[options]'
+  echo usage: "${0##*/}" '[options]'
   echo '       --help                 -h            this message'
   echo '       --verbose              -v            more messages'
   echo '       --revise               -r            increment port revision'
   echo '       --no-update            -n            no modification of files'
   echo '       --use=VERSION          -u VERSION    use this version instead of incrementing'
-  echo '       --debug                -D            debugging messages'
+  echo '       --debug                -D            show debug information'
   exit 1
-}
-
-VERBOSE() {
-  [ X"${verbose}" = X"no" ] && return 0
-  printf "${@}"
-  printf '\n'
 }
 
 # version string: MAJOR[.MINOR[.PATCH[-PRERELEASE][+BUILD]]]
@@ -74,78 +74,61 @@ use_version=
 # Makefile should be last as there may be a root Makefile that is not versioned
 version_file_list='Cargo.toml pom.xml debian/changelog Makefile'
 
-getopt=
-case "$(uname)" in
-  (FreeBSD|DragonFly)
-    getopt=/usr/local/bin/getopt
-    ;;
-  (NetBSD)
-    getopt=/usr/pkg/bin/getopt
-    ;;
-  (OpenBSD)
-    getopt=/usr/local/bin/gnugetopt
-    ;;
-  (Darwin)
-    getopt=/usr/local/opt/gnu-getopt/bin/getopt
-    ;;
-  (Linux)
-    getopt=/usr/bin/getopt
-    ;;
-  (*)
-    ERROR 'OS: %s is not supported' "$(uname)"
-    ;;
-esac
-[ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
-
-args=$(${getopt} -o hvrnu:D --long=help,verbose,revise,no-update,use:,debug -- "${@}") || exit 1
-
-# replace the arguments with the parsed values
-eval set -- "${args}"
-
-while :
+# parse options
+while getopts :hvkrnu:D-: option
 do
-  case "${1}" in
-    (-v|--verbose)
+  # convert long options
+  if [ X"${option}" = X"-" ]
+  then
+    option="${OPTARG%%=*}"
+    OPTARG="${OPTARG#${option}}"
+    OPTARG="${OPTARG#=}"
+  fi
+  case "${option}" in
+    (v|verbose)
       verbose=yes
       ;;
 
-    (-r|--revise)
+    (r|revise)
       revise=yes
       ;;
 
-    (-u|--use)
-      use_version="${2}"
+    (u|use)
+      use_version="${OPTARG}"
       [ -z "${use_version}" ] && USAGE 'use argument cannot be blank'
       parse_version "${use_version}"
-      shift
       ;;
 
-    (-n|--no-update)
+    (n|no-update)
       update=no
       ;;
 
-    (-D|--debug)
-      debug=yes
-      ;;
-
     (--)
-      shift
       break
       ;;
 
-    (-h|--help)
+    (D|debug)
+      debug=yes
+      ;;
+
+    (h|help)
       USAGE
       ;;
 
+    ('?')
+      USAGE 'invalid option: -%s' "${OPTARG}"
+      ;;
+
     (*)
-      USAGE 'invalid option: %s' "${1}"
+      USAGE 'invalid option: --%s' "${option}"
       ;;
   esac
-  shift
 done
 
+shift $((OPTIND - 1))
+
 # verify arguments
-[ ${#} -ne 0 ] && USAGE 'extraneous arguments'
+[ ${#} -ne 0 ] && USAGE 'extraneous arguments: %s' "${*}"
 
 # enable debuging
 [ X"${debug}" = X"yes" ] && set -x

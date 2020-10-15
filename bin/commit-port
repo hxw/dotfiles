@@ -4,8 +4,7 @@
 # 2. a program directory containing a debian/changelog
 #    will set commit message to top changelog message
 
-ERROR()
-{
+ERROR() {
   printf 'error: '
   printf "${@}"
   printf '\n'
@@ -16,8 +15,7 @@ ERROR()
 # version string: MAJOR[.MINOR[.PATCH[-PRERELEASE][+BUILD]]]-REVISION
 # example: 0.11.0-alpha.1-1
 # REVISION is the Debian version of the port (i.e. like FreeBSD PORTREVISION)
-debian_commit()
-{
+debian_commit() {
   local changelog
   changelog="${1}"; shift
 
@@ -49,7 +47,7 @@ debian_commit()
 
   [ X"${full}" = X"${version}" ] || ERROR 'unable to parse version as M.N.P-PRE+BUILD-DEB from: "%s"  in: "%s"' "${full}" "${changelog}"
 
-  dir=$(basename "${PWD}")
+  dir="${PWD##*/}"
 
   local message
   message=$(awk '
@@ -87,15 +85,14 @@ debian_commit()
 }
 
 # commit from a Makefile
-makefile_commit()
-{
+makefile_commit() {
   local makefile
   makefile="${1}"; shift
 
   local version dir
   version=$(make -V PORTVERSION)
   revision=$(make -V PORTREVISION)
-  dir=$(basename "${PWD}")
+  dir="${PWD##*/}"
 
   [ -z "${version}" ] && ERROR 'no version in Makefile'
   [ -z "${dir}" ] && ERROR 'no current directory'

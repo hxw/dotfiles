@@ -9,6 +9,12 @@ ERROR()
   exit 1
 }
 
+VERBOSE() {
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "${@}"
+  printf '\n'
+}
+
 USAGE()
 {
   if [ -n "${1}" ]
@@ -17,79 +23,59 @@ USAGE()
     printf "${@}"
     printf '\n'
   fi
-  echo usage: $(basename "${0}") '<options> <host>'
+  echo usage: "${0##*/}" '<options> <host>'
   echo '       --help                 -h            this message'
   echo '       --verbose              -v            more messages'
-  echo '       --debug                -D            show debugging messages'
+  echo '       --debug                -D            show debug information'
   exit 1
 }
 
-VERBOSE() {
-  [ X"${verbose}" = X"no" ] && return 0
-  printf "${@}"
-  printf '\n'
-}
 
 # main program
 verbose=no
 debug=no
 
-getopt=
-case "$(uname)" in
-  (FreeBSD|DragonFly)
-    getopt=/usr/local/bin/getopt
-    ;;
-  (NetBSD)
-    getopt=/usr/pkg/bin/getopt
-    ;;
-  (OpenBSD)
-    getopt=/usr/local/bin/gnugetopt
-    ;;
-  (Darwin)
-    getopt=/usr/local/opt/gnu-getopt/bin/getopt
-    ;;
-  (Linux)
-    getopt=/usr/bin/getopt
-    ;;
-  (*)
-    ERROR 'OS: %s is not supported' "$(uname)"
-    ;;
-esac
-[ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
-
-args=$(${getopt} -o hvrnu:D --long=help,verbose,revise,no-update,use:,debug -- "${@}") || exit 1
-
-# replace the arguments with the parsed values
-eval set -- "${args}"
-
-while :
+# parse options
+while getopts :hvD-: option
 do
-  case "${1}" in
-    (-v|--verbose)
+  # convert long options
+  if [ X"${option}" = X"-" ]
+  then
+    option="${OPTARG%%=*}"
+    OPTARG="${OPTARG#${option}}"
+    OPTARG="${OPTARG#=}"
+  fi
+  case "${option}" in
+    (v|verbose)
       verbose=yes
       ;;
 
-    (-D|--debug)
-      debug=yes
-      ;;
-
     (--)
-      shift
       break
       ;;
 
-    (-h|--help)
+    (D|debug)
+      debug=yes
+      ;;
+
+    (h|help)
       USAGE
       ;;
 
+    ('?')
+      USAGE 'invalid option: -%s' "${OPTARG}"
+      ;;
+
     (*)
-      USAGE 'invalid option: %s' "${1}"
+      USAGE 'invalid option: --%s' "${option}"
       ;;
   esac
-  shift
 done
 
+shift $((OPTIND - 1))
+
 # verify arguments
+#[ ${#} -ne 0 ] && USAGE 'extraneous arguments: %s' "${*}"
 [ ${#} -ne 1 ] && USAGE 'exactly one argument is required'
 host="${1}"
 

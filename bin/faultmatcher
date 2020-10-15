@@ -8,6 +8,12 @@ ERROR() {
   exit 1
 }
 
+VERBOSE() {
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "${@}"
+  printf '\n'
+}
+
 USAGE() {
   if [ -n "${1}" ]
   then
@@ -15,20 +21,15 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: $(basename "${0}") '[options]'
+  echo usage: "${0##*/}" '[options]'
   echo '       --help                 -h            this message'
   echo '       --verbose              -v            more messages'
   echo '       --fault=FILE           -f FILE       set the fault file ['"${fault_file}"']'
   echo '       --module=MODULE        -m MODULE     set the module name ['"${fault_module}"']'
-  echo '       --debug                              debuging messages'
+  echo '       --debug                              show debug information'
   exit 1
 }
 
-VERBOSE() {
-  [ X"${verbose}" = X"no" ] && return 0
-  printf "${@}"
-  printf '\n'
-}
 
 # main program
 verbose=no
@@ -36,73 +37,55 @@ debug=no
 fault_file=fault/fault.go
 fault_module=fault
 
-getopt=
-case "$(uname)" in
-  (FreeBSD|DragonFly)
-    getopt=/usr/local/bin/getopt
-    ;;
-  (NetBSD)
-    getopt=/usr/pkg/bin/getopt
-    ;;
-  (OpenBSD)
-    getopt=/usr/local/bin/gnugetopt
-    ;;
-  (Darwin)
-    getopt=/usr/local/opt/gnu-getopt/bin/getopt
-    ;;
-  (Linux)
-    getopt=/usr/bin/getopt
-    ;;
-  (*)
-    ERROR 'OS: %s is not supported' "$(uname)"
-    ;;
-esac
-[ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
-
-args=$(${getopt} -o hvf:m:d --long=help,verbose,fault:,module:,debug -- "${@}") || exit 1
-
-# replace the arguments with the parsed values
-eval set -- "${args}"
-
-while :
+# parse options
+while getopts :hvf:m:D-: option
 do
-  case "${1}" in
-    (-v|--verbose)
+  # convert long options
+  if [ X"${option}" = X"-" ]
+  then
+    option="${OPTARG%%=*}"
+    OPTARG="${OPTARG#${option}}"
+    OPTARG="${OPTARG#=}"
+  fi
+  case "${option}" in
+    (v|verbose)
       verbose=yes
       ;;
 
-    (-f|--fault)
-      fault_file="${2}"
-      shift
+    (f|fault)
+      fault_file="${OPTARG}"
       ;;
 
-    (-m|--module)
-      fault_module="${2}"
-      shift
-      ;;
-
-    (-d|--debug)
-      debug=yes
+    (m|module)
+      fault_module="${OPTARG}"
       ;;
 
     (--)
-      shift
       break
       ;;
 
-    (-h|--help)
+    (D|debug)
+      debug=yes
+      ;;
+
+    (h|help)
       USAGE
       ;;
 
+    ('?')
+      USAGE 'invalid option: -%s' "${OPTARG}"
+      ;;
+
     (*)
-      USAGE 'invalid option: %s' "${1}"
+      USAGE 'invalid option: --%s' "${option}"
       ;;
   esac
-  shift
 done
 
+shift $((OPTIND - 1))
+
 # verify arguments
-[ ${#} -ne 0 ] && USAGE 'invalid extraneous arguments'
+[ ${#} -ne 0 ] && USAGE 'extraneous arguments: %s' "${*}"
 
 [ -z "${fault_file}" ] && USAGE 'fault file cannot be blank'
 [ -f "${fault_file}" ] || USAGE 'missing fault file: "%s"' "${fault_file}"

@@ -8,6 +8,12 @@ ERROR() {
   exit 1
 }
 
+VERBOSE() {
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "${@}"
+  printf '\n'
+}
+
 USAGE() {
   if [ -n "${1}" ]
   then
@@ -15,23 +21,17 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: $(basename "${0}") '[options]'
+  echo usage: "${0##*/}" '[options]'
   echo '       --help                 -h            this message'
   echo '       --verbose              -v            more messages'
   echo '       --set                  -s            set new settings'
   echo '       --name=NAME            -n NAME       set full name'
   echo '       --email=EMAIL          -e EMAIL      set email address (used to locate gpg key)'
   echo '       --key=HEX              -k HEX        set signing key to hex fingerprint [auto]'
-  echo '       --auto-sign[=no]       -a[no]        set/clear commit.gpgSign [yes]'
+  echo '       --auto-sign=yes|no     -a yes|no     set/clear commit.gpgSign [yes]'
   echo '       --update               -u            update from latest "dotfiles/bin"'
-  echo '       --debug                -D            debugging messages'
+  echo '       --debug                -D            show debug information'
   exit 1
-}
-
-VERBOSE() {
-  [ X"${verbose}" = X"no" ] && return 0
-  printf "${@}"
-  printf '\n'
 }
 
 
@@ -39,43 +39,22 @@ VERBOSE() {
 verbose=no
 debug=no
 set=no
-name='Christopher Hall'
-email='hsw@bitmark.com'
+name='@NAME@'
+email='@EMAIL@'
 key=auto
 auto_sign=ignore
 
-getopt=
-case "$(uname)" in
-  (FreeBSD|DragonFly)
-    getopt=/usr/local/bin/getopt
-    ;;
-  (NetBSD)
-    getopt=/usr/pkg/bin/getopt
-    ;;
-  (OpenBSD)
-    getopt=/usr/local/bin/gnugetopt
-    ;;
-  (Darwin)
-    getopt=/usr/local/opt/gnu-getopt/bin/getopt
-    ;;
-  (Linux)
-    getopt=/usr/bin/getopt
-    ;;
-  (*)
-    ERROR 'OS: %s is not supported' "$(uname)"
-    ;;
-esac
-[ -x "${getopt}" ] || ERROR 'getopt: "%s" is not executable or not installed' "${getopt}"
-
-args=$(${getopt} -o hvsn:e:k:a::uD --long=help,verbose,set,name:,email:,key:auto-sign::,update,debug -- "${@}") || exit 1
-
-# replace the arguments with the parsed values
-eval set -- "${args}"
-
-while :
+while getopts :hvsn:e:k:a:uD-: option
 do
-  case "${1}" in
-    (-v|--verbose)
+  # convert long options
+  if [ X"${option}" = X"-" ]
+  then
+    option="${OPTARG%%=*}"
+    OPTARG="${OPTARG#${option}}"
+    OPTARG="${OPTARG#=}"
+  fi
+  case "${option}" in
+    (v|verbose)
       verbose=yes
       ;;
 
@@ -84,25 +63,22 @@ do
       ;;
 
     (-n|--name)
-      name="${2}"
+      name="${OPTARG}"
       [ -z "${name}" ] && USAGE 'name argument cannot be blank'
-      shift
       ;;
 
     (-e|--email)
-      email="${2}"
+      email="${OPTARG}"
       [ -z "${email}" ] && USAGE 'email argument cannot be blank'
-      shift
       ;;
 
-    (-k|--key)
-      key="${2}"
+    (k|key)
+      key="${OPTARG}"
       [ -z "${key}" ] && USAGE 'key argument cannot be blank'
-      shift
       ;;
 
-    (-a|--auto-sign)
-      case "${2}" in
+    (a|auto-sign)
+      case "${OPTARG}" in
         ([Yy]|[Yy][Ee][Ss]|[Tt]|[Tt][Rr][Uu][Ee]|"")
           auto_sign=yes
           ;;
@@ -110,10 +86,9 @@ do
           auto_sign=no
           ;;
       esac
-      shift
       ;;
 
-    (-u|--update)
+    (u|update)
       # substitute name/email when updating
       printf 'current name:  "%s"\n' "${name}"
       printf 'current email: "%s"\n' "${email}"
@@ -122,37 +97,42 @@ do
       sed '
         s/[@]NAME[@]/'"${name}"'/;
         s/[@]EMAIL[@]/'"${email}"'/;
-        /ERROR[[:space:]].fix/D' < "${HOME}/dotfiles/bin/git-set-user" > "${0}"
+        /ERROR[[:space:]].fix/D' < "${HOME}/Code/sh/dotfiles/bin/git-set-user" > "${0}"
       printf 'updated: "%s"\n' "${0}"
       exit 0
       ;;
 
-    (-D|--debug)
-      debug=yes
-      ;;
-
     (--)
-      shift
       break
       ;;
 
-    (-h|--help)
+    (D|debug)
+      debug=yes
+      ;;
+
+    (h|help)
       USAGE
       ;;
 
+    ('?')
+      USAGE 'invalid option: -%s' "${OPTARG}"
+      ;;
+
     (*)
-      USAGE 'invalid option: %s' "${1}"
+      USAGE 'invalid option: --%s' "${option}"
       ;;
   esac
-  shift
 done
 
-# verify arguments
-[ ${#} -ne 0 ] && USAGE 'extraneous arguments'
+shift $((OPTIND - 1))
 
-# enable debuging
+# verify arguments
+[ ${#} -ne 0 ] && USAGE 'extraneous arguments: %s' "${*}"
+
+# enable debugging
 [ X"${debug}" = X"yes" ] && set -x
 
+# set name/email
 if [ X"${set}" = X"yes" ]
 then
   if [ X"${key}" = X"auto" ]
