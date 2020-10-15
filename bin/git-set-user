@@ -29,7 +29,7 @@ USAGE() {
   echo '       --email=EMAIL          -e EMAIL      set email address (used to locate gpg key)'
   echo '       --key=HEX              -k HEX        set signing key to hex fingerprint [auto]'
   echo '       --auto-sign=yes|no     -a yes|no     set/clear commit.gpgSign [yes]'
-  echo '       --update               -u            update from latest "dotfiles/bin"'
+  echo '       --update               -u            update default name/email in: '"${rc_file}"
   echo '       --debug                -D            show debug information'
   exit 1
 }
@@ -39,11 +39,15 @@ USAGE() {
 verbose=no
 debug=no
 set=no
-name='@NAME@'
-email='@EMAIL@'
+name=
+email=
 key=auto
 auto_sign=ignore
+rc_file="${0}.rc"
 
+[ -f "${rc_file}" ] && . "${rc_file}"
+
+# parse options
 while getopts :hvsn:e:k:a:uD-: option
 do
   # convert long options
@@ -89,16 +93,16 @@ do
       ;;
 
     (u|update)
-      # substitute name/email when updating
       printf 'current name:  "%s"\n' "${name}"
       printf 'current email: "%s"\n' "${email}"
-      # be careful to make sure this sed command
-      # does not modify or remove itself
-      sed '
-        s/[@]NAME[@]/'"${name}"'/;
-        s/[@]EMAIL[@]/'"${email}"'/;
-        /ERROR[[:space:]].fix/D' < "${HOME}/Code/sh/dotfiles/bin/git-set-user" > "${0}"
-      printf 'updated: "%s"\n' "${0}"
+
+      new="${rc_file}.new"
+      printf '# %s\n' "${rc_file}" >> "${new}"
+      printf 'name="%s"\n' "${name}" >> "${new}"
+      printf 'email="%s"\n' "${email}" >> "${new}"
+
+      mv -f "${new}" "${rc_file}"
+      printf 'updated: "%s"\n' "${rc_file}"
       exit 0
       ;;
 
@@ -128,6 +132,9 @@ shift $((OPTIND - 1))
 
 # verify arguments
 [ ${#} -ne 0 ] && USAGE 'extraneous arguments: %s' "${*}"
+
+[ -z "${name}" ] && USAGE 'name is not set, use --update to set it'
+[ -z "${email}" ] && USAGE 'email is not set, use --update to set it'
 
 # enable debugging
 [ X"${debug}" = X"yes" ] && set -x
