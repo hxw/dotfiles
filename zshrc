@@ -270,9 +270,10 @@ esac
 
 # Single history for all open shells
 # but separate history file for jailed shell
+# use short hostname as domain may be changed by DHCP
 if [ -n "${sysctl_jailed}" ] && [ X"$(sysctl -n "${sysctl_jailed}")" = X"1" ]
 then
-  HISTFILE="${HOME}/.zhistory.$(hostname)"
+  HISTFILE="${HOME}/.zhistory.$(hostname -s)"
 else
   HISTFILE="${HOME}/.zhistory"
 fi
