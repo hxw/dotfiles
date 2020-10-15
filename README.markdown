@@ -1,27 +1,32 @@
 # Configuration files for shells, editors and others
 
 These files are text configuration file for various programs, that
-usually exist in ${HOME} and mostly begin with a '.'.
+usually exist in ${HOME} and mostly begin with a `.`.
 
 # install.sh
 
-A script to install only the dot files and desktop files
+A script to install only the dot files, desktop files and optionally bin files.
 
 # bin
 
 A collection of the utilities to install on a fresh system
-pick and choose as required
+pick and choose as required.
+
+# [jail](jail/README.markdown)
+
+Sample configuration and instructions to set up a FreeBSD jail. Include
+simple script for jail user-land update or upgrade.
 
 # License
 
 These are in the public domain, but if any copyright system lacks such
-a feature the consider them under a two clause BSD license
+a feature the consider them under a two clause BSD license.
 
 # FreeBSD Audio
 
 The pcmX devices often are setup wrongly on FreeBSD with two separate devices created
-often with swapped I/O i.e., headphones + interal mic, and speaker + headset mic
-so nothing is usable at leats on: T420s, T580, E495.
+with swapped I/O i.e., headphones + internal mic, and speaker + headset mic
+so nothing is usable at least on: T420s, T580, E495.
 
 The configuration is to set: (separate associations for in and out, seq=15 for 1/8" jack items)
 ~~~
@@ -52,4 +57,3 @@ that auto switches on plugging a headset.
 hint.hdac.0.cad0.nid18.config="as=2 seq=0"
 hint.hdac.0.cad0.nid25.config="as=2 seq=15"
 ~~~
-
