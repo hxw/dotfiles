@@ -45,7 +45,7 @@ case "${appname}" in
     ma=$(printf '%s' "${summary}" | sed -E 's/New message (from|in) //')
     mb=$(printf '%s' "${body}" | sed -E 's/a message from //')
     opts='-background black -fill white -page 128x64 -size 128x64'
-    image=$(convert ${opts} -font Noto-Sans-CJK-TC-Regular -pointsize 16 label:"${ma}"'\n'"${mb}" xbm:-)
+    image="$(convert ${opts} -font Noto-Sans-CJK-TC-Regular -pointsize 16 label:"${ma}"'\n'"${mb}" xbm:-)"
     inc_index
 
     cat <<EOF > "${tty}"
@@ -60,7 +60,7 @@ EOF
     ;;
   (*)
     opts='-background black -fill white -page 128x64 -size 128x64'
-    image=$(convert ${opts} -font Noto-Sans-CJK-TC-Regular -pointsize 16 label:"${appname}"'\n'"${icon}" xbm:-)
+    image="$(convert ${opts} -font Noto-Sans-CJK-TC-Regular -pointsize 16 label:"${appname}"'\n'"${icon}" xbm:-)"
     inc_index
 
     cat <<EOF > "${tty}"

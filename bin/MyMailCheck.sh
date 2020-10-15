@@ -5,7 +5,7 @@ n="${1}"
 
 printenv >/tmp/eee
 date '+%F %T' >> /tmp/eee
-echo n=${n} >> /tmp/eee
+echo "n=${n}" >> /tmp/eee
 
 [ -z "${n}" ] && exit 0
 [ X"0" = X"${n}" ] && exit 0

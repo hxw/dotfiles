@@ -213,8 +213,7 @@ case "${version_file}" in
              package = 2
           }
         }
-      ' < "${version_file}")
-      [ ${?} -ne 0 ] && ERROR "${version}"
+      ' < "${version_file}") || ERROR "${version}"
       ;;
 
   (*)
@@ -347,11 +346,9 @@ fi
 # create a new changelog entry with latest revision
 new_changelog="${changelog}.new"
 rm -f "${new_changelog}"
-cat "${changelog}" | head -n 1 | sed -E 's/[(][^)]+-[[:alnum:]]+[)]/('"${use_version}-${debian_revision}"')/' > "${new_changelog}"
-email=$(git config --get user.email)
-[ ${?} -eq 0 ] || ERROR 'git config --get user.email failed'
-name=$(git config --get user.name)
-[ ${?} -eq 0 ] || ERROR 'git config --get user.name failed'
+head -n 1 "${changelog}" | sed -E 's/[(][^)]+-[[:alnum:]]+[)]/('"${use_version}-${debian_revision}"')/' > "${new_changelog}"
+email=$(git config --get user.email) || ERROR 'git config --get user.email failed'
+name=$(git config --get user.name) || ERROR 'git config --get user.name failed'
 cat >> "${new_changelog}" <<EOF
 
   * new version from source version: ${use_version}

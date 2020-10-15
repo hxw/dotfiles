@@ -146,8 +146,8 @@ shift $((OPTIND - 1))
 
 [ -z "${key_id}" ] && USAGE 'key-id cannot be blank'
 [ -z "${version_prefix}" ] && USAGE 'prefix cannot be blank'
-[ -z "$(printf '%s' "${version_prefix}" | tr -d a-zA-Z)" ] || USAGE 'prefix: "%s"  must only contain upper/lower letters' "${prefix}"
-[ X"${bump}" = X"yes" -a -n "${use_version}" ] && USAGE 'conflicting use and bump versions'
+[ -z "$(printf '%s' "${version_prefix}" | tr -d a-zA-Z)" ] || USAGE 'prefix: "%s"  must only contain upper/lower letters' "${version_prefix}"
+[ X"${bump}" = X"yes" ] && [ -n "${use_version}" ] && USAGE 'conflicting use and bump versions'
 
 # enable debuging
 [ X"${debug}" = X"yes" ] && set -x
@@ -159,8 +159,7 @@ email=$(gpg2 --with-colons --list-keys --list-only --fingerprint "${key_id}" | a
 VERBOSE 'email: %s' "${email}"
 
 
-git_dir=$(git rev-parse --git-dir)
-[ ${?} -ne 0 ] && ERROR 'cannot determine git directory'
+git_dir=$(git rev-parse --git-dir) || ERROR 'cannot determine git directory'
 [ -d "${git_dir}" ] || ERROR 'path name: "%s" is not a directory' "${git_dir}"
 
 VERBOSE 'git directory: %s' "${git_dir}"
@@ -195,7 +194,7 @@ then
     parse_version "${repo_version#v}"
     if [ -n "${prerelease}" ]
     then
-      prerelease=$((prelease + 1))
+      prerelease=$((prerelease + 1))
     else
       patch=$((patch + 1))
     fi
@@ -265,8 +264,7 @@ else
              package = 2
           }
         }
-      ' < "${version_file}")
-      [ ${?} -ne 0 ] && ERROR "${version}"
+      ' < "${version_file}") || ERROR "${version}"
       ;;
 
     (*.go)
@@ -313,8 +311,7 @@ else
            split($0, a, "\"")
            patch = a[2]
         }
-      ' < "${version_file}")
-      [ ${?} -ne 0 ] && ERROR "${version}"
+      ' < "${version_file}") || ERROR "${version}"
       ;;
 
     (*.xml)
@@ -363,8 +360,7 @@ then
       (
         [ -n "${SSH_TTY}" ] && export GPG_TTY="${SSH_TTY}"
         set -x
-        git tag -s -u "${key_id}" -m 'release version' -a "${prefixed_version}"
-        [ ${?} -ne 0 ] && exit 1
+        git tag -s -u "${key_id}" -m 'release version' -a "${prefixed_version}" || exit 1
         git push
         git push origin "${prefixed_version}"
       )
@@ -378,7 +374,7 @@ then
 else
   first_part="${version%.*}"
   second_part="${version##*.}"
-  suggested_new_version="${first_part}.$((${second_part} + 1))"
+  suggested_new_version="${first_part}.$((second_part + 1))"
 
   printf '\n'
   printf '* Version match, but there are uncommited changes are present:\n'

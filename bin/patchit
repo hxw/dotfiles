@@ -20,7 +20,7 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: "${0##*/" '<src> <dest>'
+  echo usage: "${0##*/}" '<src> <dest>'
   echo '       --help           -h         this message'
   echo '       --verbose        -v         more messages'
   echo '       --yes            -y         answer yes to all prompts'
@@ -123,7 +123,7 @@ main() {
       if [ -s "${temp}" ]
       then
         ${PAGER:-less} "${temp}"
-        if GetYN Apply patch to ${dest}
+        if GetYN "Apply patch to ${dest}"
         then
           apply
         fi

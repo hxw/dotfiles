@@ -68,21 +68,21 @@ cdefs() {
 # make a directory and change to it
 function mkcd {
   local dir
-  dir="$1"; shift
+  dir="${1}"; shift
 
   if [[ -z "${dir}" ]]
   then
     pwd
   elif [[ -d "${dir}" ]]
   then
-    cd "${dir}"
+    cd "${dir}" || return 1
   elif [[ -f "${dir}" ]]
   then
    echo A file of that name already exists
    return 1
   else
     mkdir -p "${dir}"
-    cd "${dir}"
+    cd "${dir}" || return 1
   fi
   return 0
 }
@@ -92,7 +92,7 @@ function pathrm {
   local item p pa
 
   pa=(${(s/:/)PATH})
-  for item in "$@"
+  for item in "${@}"
   do
     pa=("${pa[@]:#${item}}")
   done
@@ -107,9 +107,9 @@ function pathrm {
 
 # convert a directory to an absolute path
 function absolute_path {
-  if [[ -d "$1" ]]
+  if [[ -d "${1}" ]]
   then
-    (cd "$1" ; pwd)
+    (cd "${1}" ; pwd)
   else
     echo ""
   fi
@@ -119,10 +119,10 @@ function absolute_path {
 # move existing items to front of PATH
 function pathfront {
   local item p
-  pathrm "$@"
+  pathrm "${@}"
 
   p=
-  for item in $@
+  for item in "${@}"
   do
     item=$(absolute_path "${item}")
     pathrm "${item}"
@@ -286,17 +286,18 @@ setopt hist_ignore_all_dups
 
 
 # access the zkbd setup since it is in a versioned directory
-function zkbd()
-{
+function zkbd() {
   local p f
   for p in /usr /usr/local
   do
     for f in "${p}/share/zsh/${ZSH_VERSION}/functions/Misc/zkbd" "${p}/share/zsh/functions/Misc/zkbd"
-    if [[ -f "${f}" ]]
-    then
-      zsh "${f}"
-      break
-    fi
+    do
+      if [[ -f "${f}" ]]
+      then
+        zsh "${f}"
+        break
+      fi
+    done
   done
 }
 

@@ -212,8 +212,7 @@ printf 'user: %s <%s> %s\n' "${n}" "${e}" "${s}"
 hooks_dir="${HOME}/dotfiles/git-hooks"
 if [ -d "${hooks_dir}" ]
 then
-  git_dir=$(git rev-parse --git-dir)
-  [ ${?} -ne 0 ] && ERROR 'cannot determine git directory'
+  git_dir=$(git rev-parse --git-dir) || ERROR 'cannot determine git directory'
   [ -d "${git_dir}" ] || ERROR 'path name: "%s" is not a directory' "${git_dir}"
   VERBOSE 'git directory: %s' "${git_dir}"
   for hook in "${hooks_dir}"/*

@@ -81,7 +81,7 @@ USAGE() {
   echo usage: "${0##*/}" '<options>'
   echo '       --help             -h         this message'
   echo '       --verbose          -v         more messages'
-  echo '       --prefix=<dir>     -p <dir>   set installation directory ['"${home}"']'
+  echo '       --prefix=<dir>     -p <dir>   set installation directory ['"${prefix}"']'
   echo '       --non-interactive  -n         no interactive input'
   echo '       --bin              -b         also include bin/* to ${HOME}/bin'
   echo '       --copy             -c         copy files, default is to diff -u'
@@ -101,7 +101,6 @@ dotfiles=yes
 bin=no
 copy='diff -su'
 x11=no
-wait=yes
 src=$(dirname "$0")
 
 # parse options
@@ -173,7 +172,7 @@ shift $((OPTIND - 1))
 # enable debugging
 [ X"${debug}" = X"yes" ] && set -x
 
-echo this will install the files to: ${prefix}
+printf 'this will install the files to: %s\n' "${prefix}"
 
 # set to an '#' if do not have the item
 # to allow commenting out lines in scripts
@@ -194,8 +193,7 @@ CAT Xdefaults.d  Xdefaults
 interact() {
   local junk
   [ X"${interactive}" != X"yes" ] && return
-  read -p 'Enter to "'"${copy}"'" or Ctrl-C to abort: ' junk
-  if [ $? -ne 0 ]
+  if ! read -p 'Enter to "'"${copy}"'" or Ctrl-C to abort: ' junk
   then
     echo
     exit 1
@@ -205,8 +203,7 @@ interact() {
 # use sed to substitute some @VAR@ by local values
 for f in ${list_sed}
 do
-  tempfile=$(mktemp -q /tmp/${f}.XXXXXXXX)
-  if [ $? -ne 0 ]
+  if ! tempfile=$(mktemp -q "/tmp/${f}.XXXXXXXX")
   then
     ERROR 'cannot create temp file for "%s"' "${f}"
   fi

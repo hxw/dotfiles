@@ -139,7 +139,7 @@ find . -name '*.go' -exec awk '
 
 
 echo unused errors:
-diff -u "${defined_errors}" "${all_errors}" | egrep '^-[[:alnum:]]'
+diff -u "${defined_errors}" "${all_errors}" | grep -E '^-[[:alnum:]]'
 
 echo undefined errors:
-diff -u "${defined_errors}" "${all_errors}" | egrep '^[+][[:alnum:]]'
+diff -u "${defined_errors}" "${all_errors}" | grep -E '^[+][[:alnum:]]'

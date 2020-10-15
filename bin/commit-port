@@ -21,9 +21,9 @@ debian_commit() {
 
   local full major minor patch prerelease build revision version dir rest
 
-  full=$(cat "${changelog}" | head -n 1 | sed -E 's/^[^(]*[(]//;s/[)].*$//')
+  full="$(head -n 1 "${changelog}" | sed -E 's/^[^(]*[(]//;s/[)].*$//')"
 
-  rest=$(printf '%s' "${full}" | sed -E 's/^([[:digit:]]+)[.]([[:digit:]]+)[.]([[:digit:]]+)([-]([[:alnum:].-]+))?([+]([[:alnum:].-]+))?-([[:alnum:]]+)$/\1 \2 \3 \5 \7 \8/')
+  rest="$(printf '%s' "${full}" | sed -E 's/^([[:digit:]]+)[.]([[:digit:]]+)[.]([[:digit:]]+)([-]([[:alnum:].-]+))?([+]([[:alnum:].-]+))?-([[:alnum:]]+)$/\1 \2 \3 \5 \7 \8/')"
 
   major="${rest%% *}"
   rest="${rest#* }"

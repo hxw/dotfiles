@@ -26,8 +26,8 @@ n=0
 for tz_full in ${list}
 do
   tz="${tz_full##*/}"
-  l=${#tz}
-  [ ${l} -gt ${n} ] && n=${l}
+  l="${#tz}"
+  [ "${l}" -gt "${n}" ] && n="${l}"
 done
 
 base_date=
@@ -36,7 +36,7 @@ for tz_full in ${list}
 do
   tz="${tz_full##*/}"
   printf "%-${n}s  " "${tz}"
-  d=$(env TZ="${tz_full}" date '+%F')
+  d="$(env TZ="${tz_full}" date '+%F')"
   if [ X"${d}" != X"${base_date}" ]
   then
     env TZ="${tz_full}" date '+%F %T%z'
