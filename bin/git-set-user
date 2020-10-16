@@ -21,16 +21,18 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: "${0##*/}" '[options]'
-  echo '       --help                 -h            this message'
-  echo '       --verbose              -v            more messages'
-  echo '       --set                  -s            set new settings'
-  echo '       --name=NAME            -n NAME       set full name'
-  echo '       --email=EMAIL          -e EMAIL      set email address (used to locate gpg key)'
-  echo '       --key=HEX              -k HEX        set signing key to hex fingerprint [auto]'
-  echo '       --auto-sign=yes|no     -a yes|no     set/clear commit.gpgSign [yes]'
-  echo '       --update               -u            update default name/email in: '"${rc_file}"
-  echo '       --debug                -D            show debug information'
+  cat <<EOF
+usage: ${0##*/} [options]
+       --help                 -h            this message
+       --verbose              -v            more messages
+       --set                  -s            set new settings
+       --name=NAME            -n NAME       set full name
+       --email=EMAIL          -e EMAIL      set email address (used to locate gpg key)
+       --key=HEX              -k HEX        set signing key to hex fingerprint [auto]
+       --auto-sign=yes|no     -a yes|no     set/clear commit.gpgSign [yes]
+       --update               -u            update default name/email in: ${rc_file}"
+       --debug                -D            show debug information
+EOF
   exit 1
 }
 

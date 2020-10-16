@@ -21,13 +21,15 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: "${0##*/}" '[options]'
-  echo '       --help                 -h            this message'
-  echo '       --verbose              -v            more messages'
-  echo '       --revise               -r            increment port revision'
-  echo '       --no-update            -n            no modification of files'
-  echo '       --use=VERSION          -u VERSION    use this version instead of incrementing'
-  echo '       --debug                -D            show debug information'
+  cat <<EOF
+usage: ${0##*/} [options]
+       --help                 -h            this message
+       --verbose              -v            more messages
+       --revise               -r            increment port revision
+       --no-update            -n            no modification of files
+       --use=VERSION          -u VERSION    use this version instead of incrementing
+       --debug                -D            show debug information
+EOF
   exit 1
 }
 

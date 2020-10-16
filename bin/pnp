@@ -24,11 +24,13 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: "${0##*/}" '<options>' command
-  echo '       --help                 -h            this message'
-  echo '       --verbose              -v            more messages'
-  echo '       --tags                 -t            push all tags'
-  echo '       --debug                -D            show debug information'
+  cat <<EOF
+usage: ${0##*/} <options> command
+       --help                 -h            this message
+       --verbose              -v            more messages
+       --tags                 -t            push all tags
+       --debug                -D            show debug information
+EOF
   exit 1
 }
 

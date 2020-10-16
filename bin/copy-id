@@ -23,10 +23,12 @@ USAGE()
     printf "${@}"
     printf '\n'
   fi
-  echo usage: "${0##*/}" '<options> <host>'
-  echo '       --help                 -h            this message'
-  echo '       --verbose              -v            more messages'
-  echo '       --debug                -D            show debug information'
+  cat <<EOF
+usage: ${0##*/} <options> <host>
+       --help                 -h            this message
+       --verbose              -v            more messages
+       --debug                -D            show debug information
+EOF
   exit 1
 }
 

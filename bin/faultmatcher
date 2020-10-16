@@ -21,12 +21,14 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: "${0##*/}" '[options]'
-  echo '       --help                 -h            this message'
-  echo '       --verbose              -v            more messages'
-  echo '       --fault=FILE           -f FILE       set the fault file ['"${fault_file}"']'
-  echo '       --module=MODULE        -m MODULE     set the module name ['"${fault_module}"']'
-  echo '       --debug                              show debug information'
+  cat <<EOF
+usage: ${0##*/} [options]
+       --help                 -h            this message
+       --verbose              -v            more messages
+       --fault=FILE           -f FILE       set the fault file [${fault_file}]
+       --module=MODULE        -m MODULE     set the module name [${fault_module}]
+       --debug                              show debug information
+EOF
   exit 1
 }
 

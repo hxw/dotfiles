@@ -21,14 +21,16 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: "${0##*/}" '[options]'
-  echo '       --help                 -h            this message'
-  echo '       --verbose              -v            more messages'
-  echo '       --prefix=CHAR          -p CHAR       set the version prefix ['"${version_prefix}"']'
-  echo '       --key-id=HEX           -k HEX        set the signing gpg key ['"${key_id}"']'
-  echo '       --use=VERSION          -u VERSION    use this version instead of seaching for version files'
-  echo '       --bump                 -b            equivalent to --use="MAJOR.MINOR+1"'
-  echo '       --debug                -D            show debug information'
+  cat <<EOF
+usage: ${0##*/} [options]
+       --help                 -h            this message
+       --verbose              -v            more messages
+       --prefix=CHAR          -p CHAR       set the version prefix [${version_prefix}]
+       --key-id=HEX           -k HEX        set the signing gpg key [${key_id}]
+       --use=VERSION          -u VERSION    use this version instead of seaching for version files
+       --bump                 -b            equivalent to --use="MAJOR.MINOR+1"
+       --debug                -D            show debug information
+EOF
   exit 1
 }
 

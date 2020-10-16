@@ -78,16 +78,18 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: "${0##*/}" '<options>'
-  echo '       --help             -h         this message'
-  echo '       --verbose          -v         more messages'
-  echo '       --prefix=<dir>     -p <dir>   set installation directory ['"${prefix}"']'
-  echo '       --non-interactive  -n         no interactive input'
-  echo '       --bin              -b         also include bin/* to ${HOME}/bin'
-  echo '       --copy             -c         copy files, default is to diff -u'
-  echo '       --suppress         -s         suppress dotfiles'
-  echo '       --x11              -x         also install X11 configs'
-  echo '       --debug            -D         show debug information'
+  cat <<EOF
+usage: ${0##*/} <options>
+       --help             -h         this message
+       --verbose          -v         more messages
+       --prefix=<dir>     -p <dir>   set installation directory [${prefix}]
+       --non-interactive  -n         no interactive input
+       --bin              -b         also include bin/* to ${HOME}/bin
+       --copy             -c         copy files, default is to diff -u
+       --suppress         -s         suppress dotfiles
+       --x11              -x         also install X11 configs
+       --debug            -D         show debug information
+EOF
   exit 1
 }
 

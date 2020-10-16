@@ -23,12 +23,14 @@ USAGE()
     printf "${@}"
     printf '\n'
   fi
-  echo usage: "${0##*/}" '<options> -- <plot-names>'
-  echo '       --help                 -h            this message'
-  echo '       --verbose              -v            more messages'
-  echo '       --plot=FILE            -p FILE       specify plot file'
-  echo '       --file=FILE            -f FILE       specify data file (- for stdin)'
-  echo '       --debug                -D            show debug information'
+  cat <<EOF
+usage: ${0##*/} <options> -- <plot-names>
+       --help                 -h            this message
+       --verbose              -v            more messages
+       --plot=FILE            -p FILE       specify plot file
+       --file=FILE            -f FILE       specify data file (- for stdin)
+       --debug                -D            show debug information
+EOF
   exit 1
 }
 

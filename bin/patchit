@@ -20,10 +20,12 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: "${0##*/}" '<src> <dest>'
-  echo '       --help           -h         this message'
-  echo '       --verbose        -v         more messages'
-  echo '       --yes            -y         answer yes to all prompts'
+  cat <<EOF
+usage: ${0##*/} <src> <dest>
+       --help           -h         this message
+       --verbose        -v         more messages
+       --yes            -y         answer yes to all prompts
+EOF
   exit 1
 }
 

@@ -21,11 +21,13 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: "${0##*/}" '<options> <ip-net-24>...'
-  echo '       --help                 -h            this message'
-  echo '       --verbose              -v            more messages'
-  echo '       --debug                -D            show debug information'
-  echo '       <ip-net-24>                          e.g. 192.168.0'
+  cat <<EOF
+usage: ${0##*/} <options> <ip-net-24>...
+       --help                 -h            this message
+       --verbose              -v            more messages
+       --debug                -D            show debug information
+       <ip-net-24>                          e.g. 192.168.0
+EOF
   exit 1
 }
 
