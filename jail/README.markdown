@@ -53,7 +53,7 @@ ZROOTFS=$j/$name/poudriere
 
 ## Sample jail /etc/rc.conf
 
-Substitute @NAME@ appropriately to the name of the jain in `/etc/jail.conf`
+Substitute @NAME@ appropriately to the name of the jail from `/etc/jail.conf`
 (Other uses of '$' are real shell variables, so do not substitute)
 
 ~~~~~
@@ -96,6 +96,8 @@ clear_tmp_enable="YES"
 sshd_enable="YES"
 ~~~~~
 
+Note: when using static IPs copy the host's /etc/resolv.conf into the jail
+and modify if necessary.
 
 ## Optional sample fstab for inside the jail
 

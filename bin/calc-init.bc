@@ -167,7 +167,7 @@ define p_r(r1, r2) {
 
 
 print "r_p(rd, rc) = resistor to put in parallel with rc to get rd\n"
-print "  rd = desired resitance\n"
+print "  rd = desired resistance\n"
 print "  rc = current value\n"
 
 define r_p(rd, rc) {
