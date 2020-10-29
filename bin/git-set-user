@@ -64,16 +64,16 @@ do
       verbose=yes
       ;;
 
-    (-s|--set)
+    (s|set)
       set=yes
       ;;
 
-    (-n|--name)
+    (n|name)
       name="${OPTARG}"
       [ -z "${name}" ] && USAGE 'name argument cannot be blank'
       ;;
 
-    (-e|--email)
+    (e|email)
       email="${OPTARG}"
       [ -z "${email}" ] && USAGE 'email argument cannot be blank'
       ;;
