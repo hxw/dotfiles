@@ -131,7 +131,6 @@ do
 
   [ -d "${j}" ] || ERROR 'missing jail chroot: %s' "${j}"
 
-  #version="$(jexec -l "${name}" freebsd-version)"
   version="$(chroot "${j}" freebsd-version)"
 
   printf 'current version: %s\n' "${version}"
@@ -165,5 +164,8 @@ do
     [ X"${prompt}" = X"no" ] && opts='--not-running-from-cron'
     freebsd-update -f "${conf}" -b "${j}" --currently-running "${version}" ${opts} fetch install
   fi
+
+  version="$(chroot "${j}" freebsd-version)"
+  printf 'upgraded to version: %s\n' "${version}"
 
 done
