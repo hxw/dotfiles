@@ -30,11 +30,11 @@ myLayoutHook = avoidStruts (Full ||| tiled ||| Mirror tiled ||| spiral (1 % 1) |
 main = do
     xmproc <- spawnPipe "xmobar"
 
-    xmonad $ defaultConfig
-       { manageHook = manageDocks <+> manageHook defaultConfig
-       --, layoutHook = avoidStruts  $  layoutHook defaultConfig
+    xmonad $ def
+       { manageHook = manageDocks <+> manageHook def
+       --, layoutHook = avoidStruts $ layoutHook def
        , layoutHook = myLayoutHook
-       , handleEventHook    = handleEventHook defaultConfig <+> docksEventHook
+       , handleEventHook = handleEventHook def <+> docksEventHook
        , logHook = dynamicLogWithPP xmobarPP
                    { ppOutput = hPutStrLn xmproc
                    , ppTitle = xmobarColor "green" "" . shorten 40
