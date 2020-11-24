@@ -32,8 +32,12 @@ xscreensaver -no-splash &
 oneko -tomoyo -bg pink -fg purple &
 xbindkeys &
 
-# microphone in Firefox need pulseaudio started
-command -v pulseaudio > /dev/null && pulseaudio --start
+# check if using sndio
+if ! command -v sndioctl > /dev/null
+then
+  # microphone in Firefox needs pulseaudio if no sndiod available
+  command -v pulseaudio > /dev/null && pulseaudio --start
+fi
 
 # for system tray
 volumeicon &
