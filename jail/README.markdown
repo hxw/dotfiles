@@ -128,13 +128,16 @@ Allows null mounts to host file systems
 
 ## Append the following to hosts /etc/devfs.rules (access to bpf for dhclient)
 
-also allows jail access to /dev/bpf in order to use DHCP
+* allows jail access to /dev/bpf in order to use DHCP
+* allows jail access to /dev/zfs in order to use zfs commands
 
 ~~~~~
 [devfsrules_jail=11]
 add include $devfsrules_hide_all
 add include $devfsrules_unhide_basic
 add include $devfsrules_unhide_login
+add path fuse unhide
+add path zfs unhide
 add path 'bpf*' unhide
 ~~~~~
 
