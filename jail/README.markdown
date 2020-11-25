@@ -132,12 +132,21 @@ Allows null mounts to host file systems
 * allows jail access to /dev/zfs in order to use zfs commands
 
 ~~~~~
+# for jails to use fuse, zfs and DHCP
 [devfsrules_jail=11]
 add include $devfsrules_hide_all
 add include $devfsrules_unhide_basic
 add include $devfsrules_unhide_login
 add path fuse unhide
 add path zfs unhide
+add path 'bpf*' unhide
+~~~~~
+
+or if devfsrules_jail already exists in /etc/devfs.rules a simpler value is:
+~~~~~
+# for jails to use DHCP
+[devfsrules_jail_extra=11]
+add include $devfsrules_jail
 add path 'bpf*' unhide
 ~~~~~
 
