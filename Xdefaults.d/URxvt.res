@@ -1,3 +1,5 @@
+! .Xdefaults
+
 ! rxvt-unicode scheme
 
 URxvt*geometry: 100x30
@@ -77,12 +79,16 @@ URxvt.color15 : White
 !URxvt*boldFont: xft:IBM Plex Mono:style=Bold:pixelsize=18
 
 !! pkg install jetbrains-mono
-URxvt*font: xft:JetBrains Mono:pixelsize=18
-URxvt*boldFont: xft:JetBrains Mono:style=Bold:pixelsize=18
+!URxvt*font: xft:Jet Brains Mono:pixelsize=18
+!URxvt*boldFont: xft:Jet Brains Mono:style=Bold:pixelsize=18
 
 !! pkg install hack-font
 !URxvt*font: xft:Hack:pixelsize=18
 !URxvt*boldFont: xft:Hack:style=Bold:pixelsize=18
+
+!! combination get better Unicode coverage
+URxvt*font: xft:Jet Brains Mono:pixelsize=18,xft:DejaVu Sans Mono:pixelsize=18
+URxvt*boldFont: xft:Jet Brains Mono:style=Bold:pixelsize=18,xft:DejaVu Sans Mono:style=Bold:pixelsize=18
 
 
 ! miscellaneous
