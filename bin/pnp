@@ -2,7 +2,7 @@
 # push branches and tags out to various repositories
 
 repos='origin'
-branches='master'
+branches='main'
 
 ERROR() {
   printf 'error: '
