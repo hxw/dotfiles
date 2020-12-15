@@ -1,0 +1,13 @@
+#!/bin/sh
+# jail list freebsd-version -u
+
+(
+  printf 'jid name kernel userland\n'
+  jls jid name | (
+    while read jid name
+    do
+      v="$(jexec -l "${name}" freebsd-version -ru | tr '\n' ' ')"
+      printf '%s %s %s\n' "${jid}" "${name}" "${v}"
+    done
+  )
+) | column -t
