@@ -150,7 +150,7 @@ add include $devfsrules_jail
 add path 'bpf*' unhide
 ~~~~~
 
-## For the update-jail script
+## For the jail-update script
 
 Create `/etc/jail-update.conf`
 
