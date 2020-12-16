@@ -1,5 +1,5 @@
 #!/bin/sh
-# jail list freebsd-version -u
+# jail list freebsd-version -ru
 
 (
   printf 'jid name kernel userland\n'

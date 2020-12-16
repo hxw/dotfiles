@@ -1,0 +1,27 @@
+#!/bin/sh
+# jail list vnet ifconfig (epair devices)
+
+(
+  printf 'jid name inet inet6\n'
+  jls jid name | (
+    while read jid name
+    do
+      jexec -l "${name}" ifconfig -a -f inet:cidr,inet6:cidr -g epair | (
+        inet=
+        inet6=
+        while read t a junk
+        do
+          [ X"${t}" = X"inet" ] && inet="${inet}${a},"
+          if [ X"${t}" = X"inet6" ]
+          then
+            if [ "X${a}" = X"${a#fe80:}" ]
+            then
+              inet6="${inet6}${a},"
+            fi
+          fi
+        done
+        printf '%s %s %s %s\n' "${jid}" "${name}" "${inet%,}" "${inet6%,}"
+      )
+    done
+  )
+) | column -t

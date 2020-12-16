@@ -1,0 +1,35 @@
+#!/bin/sh
+# jail-X driver
+
+cmd=help
+case "${1}" in
+  (list|ls)
+    cmd=list
+    ;;
+  (ifconfig|if|ip)
+    cmd=ifconfig
+    ;;
+  (update|up)
+    cmd=update
+    ;;
+  (version|ver)
+    cmd=version
+    ;;
+  (*)
+    ;;
+esac
+
+if [ X"${cmd}" = X"help" ]
+then
+  cat <<EOF
+supported commands:
+  list       (ls)    list running jails
+  ifconfig   (ip)    list jail ipaddresses
+  update     (up)    update/upgrade a jail
+  version    (ver)   list running jail userland version
+EOF
+  exit 1
+fi
+
+shift
+exec "jail-${cmd}" "${@}"
