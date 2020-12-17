@@ -20,6 +20,8 @@
             fi
           fi
         done
+        [ -z "${inet}" ] && inet='-'
+        [ -z "${inet6}" ] && inet6='-'
         printf '%s %s %s %s\n' "${jid}" "${name}" "${inet%,}" "${inet6%,}"
       )
     done
