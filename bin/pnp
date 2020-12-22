@@ -1,9 +1,6 @@
 #!/bin/sh
 # push branches and tags out to various repositories
 
-repos='origin'
-branches='main'
-
 ERROR() {
   printf 'error: '
   printf "${@}"
@@ -29,6 +26,8 @@ usage: ${0##*/} <options> command
        --help                 -h            this message
        --verbose              -v            more messages
        --tags                 -t            push all tags
+       --repos=LIST           -r LIST       list of repos [${repos}]
+       --branches=LIST        -b LIST       list of branches [${branches}]
        --debug                -D            show debug information
 EOF
   exit 1
@@ -39,9 +38,11 @@ EOF
 verbose=no
 debug=no
 tags=no
+repos='origin'
+branches='main'
 
 # parse options
-while getopts :hvtD-: option
+while getopts :hvtr:b:D-: option
 do
   # convert long options
   if [ X"${option}" = X"-" ]
@@ -57,6 +58,16 @@ do
 
     (t|tag)
       tags=no
+      ;;
+
+    (r|repos)
+      repos="$(printf '%s' "${OPTARG}" | sed 's/,/ /g')"
+      [ -z "${repos}" ] && USAGE 'repos cannot be blank'
+      ;;
+
+    (b|branches)
+      branches="$(printf '%s' "${OPTARG}" | sed 's/,/ /g')"
+      [ -z "${branches}" ] && USAGE 'branches cannot be blank'
       ;;
 
     (--)
