@@ -7,6 +7,7 @@ import XMonad.Util.Run(spawnPipe)
 import XMonad.Layout.Circle
 import XMonad.Layout.Spiral
 import XMonad.Actions.WindowGo
+import qualified XMonad.StackSet as W
 import XMonad.Util.EZConfig(additionalKeys)
 import System.IO
 import Data.Ratio
@@ -26,12 +27,22 @@ myLayoutHook = avoidStruts (Full ||| tiled ||| Mirror tiled ||| spiral (1 % 1) |
      -- Percent of screen to increment by when resizing panes
      delta = 3/100
 
+myManageHook :: ManageHook
+myManageHook = composeAll
+    [ (role =? "gimp-toolbox"
+       <||> role =? "gimp-image-window"
+       <||> role =? "gimp-toolbox-color-dialog"
+       <||> role =? "gimp-message-dialog"
+      ) --> doFloat
+--      ) --> (ask >>= doF . W.sink)
+    ]
+  where role = stringProperty "WM_WINDOW_ROLE"
 
 main = do
     xmproc <- spawnPipe "xmobar"
 
     xmonad $ def
-       { manageHook = manageDocks <+> manageHook def
+       { manageHook = myManageHook <+> manageDocks <+> manageHook def
        --, layoutHook = avoidStruts $ layoutHook def
        , layoutHook = myLayoutHook
        , handleEventHook = handleEventHook def <+> docksEventHook
