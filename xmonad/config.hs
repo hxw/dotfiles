@@ -33,10 +33,13 @@ myManageHook = composeAll
        <||> role =? "gimp-image-window"
        <||> role =? "gimp-toolbox-color-dialog"
        <||> role =? "gimp-message-dialog"
+       <||> name =? "Delete message"
       ) --> doFloat
 --      ) --> (ask >>= doF . W.sink)
     ]
   where role = stringProperty "WM_WINDOW_ROLE"
+        name = stringProperty "WM_NAME"
+
 
 main = do
     xmproc <- spawnPipe "xmobar"
