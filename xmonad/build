@@ -7,6 +7,8 @@ executable_name=xmonad-config
 output_file="${1}"; shift
 
 configuration_directory="${HOME}/.xmonad"
+flag_file="${configuration_directory}/update.flag"
+error_log="${configuration_directory}/xmonad.errors"
 
 # error handler
 ERROR() {
@@ -39,15 +41,36 @@ executable xmonad-config
 EOF
 fi
 
-# configure and download haskell dependencies
-cabal update
+# see how old the flag file is
+st_mtime=0
+eval "$(stat -s "${flag_file}" 2> /dev/null)"
+now="$(date '+%s')"
+tdiff=$((now - st_mtime))
+
+# if flag older than limit then update
+limit=$((24 * 3600))
+
+if [ ${tdiff} -ge ${limit} ]
+then
+  # download haskell dependencies
+  cabal update || exit 1
+  touch "${flag_file}"
+fi
+
+# configure and build
 cabal new-configure --enable-optimization --enable-executable-stripping
 cabal new-build
+
+if [ -s "${error_log}" ]
+then
+  cat "${error_log}"
+  ERROR 'compilation failed'
+fi
 
 if [ X"${output_file}" != X"" ]
 then
   # move compiled binary to correct place
   find "${configuration_directory}/dist-newstyle" -type f -perm +111 -name "${executable_name}" \
-       -exec mv '{}' "${output_file}" ';'
+       -exec mv -f '{}' "${output_file}" ';'
   [ -x "${output_file}" ] || ERROR 'failed to compile: %s' "${output_file}"
 fi

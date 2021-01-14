@@ -29,16 +29,24 @@ myLayoutHook = avoidStruts (Full ||| tiled ||| Mirror tiled ||| spiral (1 % 1) |
 
 myManageHook :: ManageHook
 myManageHook = composeAll
-    [ (role =? "gimp-toolbox"
+    [ (    role =? "gimp-toolbox"
+       <||> (roleN 9) =? "gimp-dock"
        <||> role =? "gimp-image-window"
        <||> role =? "gimp-toolbox-color-dialog"
        <||> role =? "gimp-message-dialog"
-       <||> name =? "Delete message"
+      ) --> doFloat -- ) --> (ask >>= doF . W.sink)
+    , (    (nameN 14) =? "Delete message"
+       <||> (nameN 14) =? "Upcoming event"
       ) --> doFloat
---      ) --> (ask >>= doF . W.sink)
     ]
   where role = stringProperty "WM_WINDOW_ROLE"
+        roleN n = do
+          p <- stringProperty "WM_WINDOW_ROLE"
+          return $ take n p
         name = stringProperty "WM_NAME"
+        nameN n = do
+          p <- stringProperty "WM_NAME"
+          return $ take n p
 
 
 main = do
