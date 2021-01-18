@@ -37,6 +37,7 @@ myManageHook = composeAll
       ) --> doFloat -- ) --> (ask >>= doF . W.sink)
     , (    (nameN 14) =? "Delete message"
        <||> (nameN 14) =? "Upcoming event"
+       <||> (nameN 11) =? "New meeting"
       ) --> doFloat
     ]
   where role = stringProperty "WM_WINDOW_ROLE"
