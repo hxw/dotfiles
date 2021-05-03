@@ -38,6 +38,8 @@ myManageHook = composeAll
     , (    (nameN 14) =? "Delete message"
        <||> (nameN 14) =? "Upcoming event"
        <||> (nameN 11) =? "New meeting"
+       <||> (nameN  9) =? "Overwrite"
+       <||> (nameN 19) =? "Rebuild folder tree"
       ) --> doFloat
     ]
   where role = stringProperty "WM_WINDOW_ROLE"
@@ -77,6 +79,7 @@ main = do
        , ((mod4Mask, xK_h), runOrRaise "hexchat" (className =? "Hexchat"))
        , ((mod4Mask, xK_p), spawn "dmenu_run -p 'run>' -fn '-Fixed-Bold-R-Normal-*-16-*-*-*-*-*-*-*' -sb grey25 -sf hotpink -nb blue -nf white")
        , ((mod4Mask, xK_u), runOrRaise "urxvt" (className =? "URxvt"))
+       , ((mod4Mask, xK_v), raise (className =? "Ssvnc"))
        , ((mod4Mask, xK_w), runOrRaise "claws-mail" (className =? "Claws-mail"))
        , ((mod4Mask, xK_x), runOrRaise "xterm" (className =? "XTerm"))
        ]
