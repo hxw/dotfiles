@@ -15,6 +15,9 @@ case "${1}" in
   (version|ver)
     cmd=version
     ;;
+  (package|pkg)
+    cmd=package
+    ;;
   (*)
     ;;
 esac
@@ -27,6 +30,7 @@ supported commands:
   ifconfig   (ip)    list jail ipaddresses
   update     (up)    update/upgrade a jail
   version    (ver)   list running jail userland version
+  package    (pkg)   upgrade packages in a jail
 EOF
   exit 1
 fi
