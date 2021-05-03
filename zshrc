@@ -158,9 +158,44 @@ fi
 setopt extendedglob
 unsetopt caseglob
 
-# Save comments in history
-# This is useful to remember command in your history without executing them
+# save comments in history / ignore space prefixed commands
 setopt interactivecomments
+setopt histignorespace
+
+# remove history lines by number
+# -1 to remove the most recent command
+# bigs: cannot remove multi-line commands
+rmh() {
+  local line_number HISTORY_IGNORE replace
+
+  line_number="${1}"
+
+  # backslashes quote the resulting command '(b)'
+  HISTORY_IGNORE="${(b)$(fc -l -n "${line_number}" "${line_number}")}"
+
+  # fiilter shell history file and rewrite
+  fc -W
+
+  # replace history command and run in current shell
+  replace="fc -p '${HISTFILE}' '${HISTSIZE}' '${SAVEHIST}'"
+  eval ${replace}
+
+  printf 'run this command in shells associated with this one: %s\n' "${replace}"
+}
+
+# prevent certain commands from being written to history
+zshaddhistory() {
+  case "${1}" in
+    (rmh *)
+      return 1
+      ;;
+    (*)
+      return 0
+      ;;
+  esac
+}
+
+
 
 # Type ".." instead of "cd ..", "/usr/include" instead of "cd /usr/include"
 setopt auto_cd
