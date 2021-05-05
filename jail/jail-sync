@@ -135,7 +135,7 @@ do
   case "${action}" in
     (install)
       mv "${cmd_new}" "${cmd_old}"
-      chmod a+x "${cmd_new}"
+      chmod a+x "${cmd_old}"
       ;;
     (*)
       diff -u "${cmd_old}" "${cmd_new}"
