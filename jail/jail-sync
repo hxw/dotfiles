@@ -1,0 +1,145 @@
+#!/bin/sh
+# sync the jl and jail-* from a git repository
+
+ERROR() {
+  printf 'error: '
+  printf "${@}"
+  printf '\n'
+  exit 1
+}
+
+VERBOSE() {
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "${@}"
+  printf '\n'
+}
+
+USAGE() {
+  if [ -n "${1}" ]
+  then
+    printf 'error: '
+    printf "${@}"
+    printf '\n'
+  fi
+  echo usage: "${0##*/}" '<options>' base-url
+  echo '       --help                 -h            this message'
+  echo '       --verbose              -v            more messages'
+  echo '       --install              -i            install update, default is diff'
+  echo '       --debug                -D            show debug information'
+  exit 1
+}
+
+
+# main program
+verbose=no
+debug=no
+action=diff
+
+# parse options
+while getopts :hviD-: option
+do
+  # convert long options
+  if [ X"${option}" = X"-" ]
+  then
+    option="${OPTARG%%=*}"
+    OPTARG="${OPTARG#${option}}"
+    OPTARG="${OPTARG#=}"
+  fi
+  case "${option}" in
+    (v|verbose)
+      verbose=yes
+      ;;
+
+    (i|install)
+      action=install
+      ;;
+
+    (--)
+      break
+      ;;
+
+    (D|debug)
+      debug=yes
+      ;;
+
+    (h|help)
+      USAGE
+      ;;
+
+    ('?')
+      USAGE 'invalid option: -%s' "${OPTARG}"
+      ;;
+
+    (*)
+      USAGE 'invalid option: --%s' "${option}"
+      ;;
+  esac
+done
+
+shift $((OPTIND - 1))
+
+# verify arguments
+#[ ${#} -ne 0 ] && USAGE 'extraneous arguments: %s' "${*}"
+[ "${#}" -eq 0 ] && USAGE 'missing base-url arguments: %s' "$*"
+
+# enable debugging
+[ X"${debug}" = X"yes" ] && set -x
+
+base_url="${1}"
+root_url="${base_url}/jl"
+root_dir="${0%/*}"
+root_file="${root_dir}/jl"
+root_tmp="${root_file}.tmp"
+
+[ -x "${root_file}" ] || ERROR 'cannot local root script: %s' "${root_file}"
+
+clean_list=''
+cleanup() {
+  for f in ${clean_list}
+  do
+    printf 'clean: %s\n' "${f}"
+    rm -f "${f}"
+  done
+}
+clean() {
+  clean_list="${clean_list} ${*}"
+  printf 'clean list: %s\n' "${clean_list}"
+  rm -f "${@}"
+}
+trap cleanup INT EXIT
+
+tmp="$(mktemp "${root_dir}/jl.sync.XXXXXXXXXX.tmp")"
+clean_list="${tmp}"
+
+clean "${root_tmp}"
+fetch --output="${root_tmp}" "${root_url}" || ERROR 'cannot fetch: %s' "${root_url}"
+list=jl
+
+egrep '^[[:space:]]+cmd=' "${root_tmp}" > "${tmp}"
+
+while read cmd junk
+do
+  cmd="jail-${cmd##*=}"
+  printf 'cmd: "%s"\n' "${cmd}"
+  list="${list} ${cmd}"
+
+  cmd_tmp="${root_dir}/${cmd}.tmp"
+  clean "${cmd_tmp}"
+  fetch --output="${cmd_tmp}" "${base_url}/${cmd}" || ERROR 'cannot fetch: %s' "${base_url}/${cmd}"
+
+done < "${tmp}"
+
+for cmd in ${list}
+do
+  printf '%s: %s\n' "${action}" "${cmd}"
+  cmd_old="${root_dir}/${cmd}"
+  cmd_new="${root_dir}/${cmd}.tmp"
+  case "${action}" in
+    (install)
+      echo mv "${cmd_old}" "${cmd_new}"
+      ;;
+    (*)
+      diff -u "${cmd_old}" "${cmd_new}"
+      ;;
+  esac
+done

@@ -18,7 +18,11 @@ case "${1}" in
   (package|pkg)
     cmd=package
     ;;
+  (sync|syn)
+    cmd=sync
+    ;;
   (*)
+    printf 'invalid command: %s\n' "${1}"
     ;;
 esac
 
@@ -31,6 +35,7 @@ supported commands:
   update     (up)    update/upgrade a jail
   version    (ver)   list running jail userland version
   package    (pkg)   upgrade packages in a jail
+  sync       (syn)   update jl and associated scripts from repository
 EOF
   exit 1
 fi
