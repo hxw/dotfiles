@@ -97,13 +97,11 @@ clean_list=''
 cleanup() {
   for f in ${clean_list}
   do
-    printf 'clean: %s\n' "${f}"
     rm -f "${f}"
   done
 }
 clean() {
   clean_list="${clean_list} ${*}"
-  printf 'clean list: %s\n' "${clean_list}"
   rm -f "${@}"
 }
 trap cleanup INT EXIT
@@ -136,7 +134,8 @@ do
   cmd_new="${root_dir}/${cmd}.tmp"
   case "${action}" in
     (install)
-      echo mv "${cmd_old}" "${cmd_new}"
+      mv "${cmd_new}" "${cmd_old}"
+      chmod a+x "${cmd_new}"
       ;;
     (*)
       diff -u "${cmd_old}" "${cmd_new}"
