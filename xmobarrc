@@ -14,6 +14,7 @@ Config { font = "xft:DejaVu Sans:style=bold:size=12,WenQuanYi Zen Hei:size=12"
                     --, Run Memory ["-t","Mem: <usedratio>%"] 10
                     --, Run Swap [] 10
                     Run Com "uname" ["-s","-r"] "" 36000
+                    , Run Com "tcpu" [] "" 100
                     --, Run Com "apm" ["-l"] "battery" 600
                     --, Run Com "apm" ["-a"] "xac" 600
                     , Run Battery ["-t","<left>%⌁<acstatus>","-L","50","-H","75","-h","green","-n","yellow","-l","red"] 20
@@ -25,6 +26,6 @@ Config { font = "xft:DejaVu Sans:style=bold:size=12,WenQuanYi Zen Hei:size=12"
        , alignSep = "}{"
        --, template = "%StdinReader% | %cpu% | %memory% * %swap% | %eth0% - %eth1% }{<fc=#ee9a00>%date%</fc> | %uname% | %CYVR% "
        --, template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname% | %default:Master% "
-       , template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname% | <fc=#99aaee>Bat電池:%battery%</fc>"
+       , template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname% | %tcpu% | <fc=#99aaee>Bat電池:%battery%</fc>"
        --, template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname% "
        }

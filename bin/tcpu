@@ -1,0 +1,22 @@
+#!/bin/sh
+# show CPU temperature
+
+sysctl dev.cpu | awk '
+  BEGIN {
+    max = 0
+    count = 0
+    sum = 0
+  }
+  END {
+    avg = sum / count
+    printf("%4.1f°C/%4.1f°C\n", max, avg)
+  }
+  /temperature/ {
+    t = $2 + 0
+    if (t > max) {
+      max = t
+    }
+    count = count + 1
+    sum = sum + t
+  }
+'
