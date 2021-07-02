@@ -37,12 +37,13 @@ EOF
 # main program
 verbose=no
 debug=no
+prune=no
 tags=no
 repos='origin'
 branches='main'
 
 # parse options
-while getopts :hvtr:b:D-: option
+while getopts :hvptr:b:D-: option
 do
   # convert long options
   if [ X"${option}" = X"-" ]
@@ -56,8 +57,12 @@ do
       verbose=yes
       ;;
 
+    (p|prune)
+      prune=yes
+      ;;
+
     (t|tag)
-      tags=no
+      tags=yes
       ;;
 
     (r|repos)
@@ -100,8 +105,12 @@ shift $((OPTIND - 1))
 # enable debugging
 [ X"${debug}" = X"yes" ] && set -x
 
+# pull options
+pull_opts='--rebase'
+[ X"${prune}" = X"yes" ] && pull_opts="${pull_opts} --prune"
+
 # rebase
-if ! git pull --rebase
+if ! git pull ${pull_opts}
 then
    echo 'Check modifications in first'
    exit 1
