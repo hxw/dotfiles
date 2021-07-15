@@ -1,4 +1,38 @@
 #!/bin/sh
 # simple jail list with more details
 
-jls -h jid name host.hostname path osrelease osreldate securelevel | column -t
+(
+  names="$(jls name)"
+
+  jls -h jid name host.hostname path osrelease osreldate securelevel
+
+  awk -v names="${names}" '
+  BEGIN {
+    root = "/jails/z"
+    split(names, n, "[[:space:]]+")
+    for (i in n) {
+      running[n[i]] = 1
+    }
+  }
+
+  /\$j[[:space:]]*=[[:space:]]*"[^"]+";/ {
+    r = $0
+    sub("^[^\"]*\"", "", r)
+    sub("\"[^\"]*$", "", r)
+    root = r
+  }
+
+  /^[[:space:]]*[a-z0-9_-]+[[:space:]]*[{]/ {
+    if (!running[$1]) {
+    jid = "-"
+    name = $1
+    hostname = "-"
+    path = root "/" $1
+    osrelease = "-"
+    osreldate = "-"
+    securelevel = "-"
+    print jid, name, hostname, path, osrelease, osreldate, securelevel
+  }
+  }
+  ' /etc/jail.conf
+) | column -t

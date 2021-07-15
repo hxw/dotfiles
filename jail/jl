@@ -21,6 +21,18 @@ case "${1}" in
   (sync|syn)
     cmd=sync
     ;;
+  (console|c)
+    shift
+    exec jexec -l "${@}"
+    ;;
+  (start|s)
+    shift
+    exec service jail onestart "${@}"
+    ;;
+  (stop|stp)
+    shift
+    exec service jail onestop "${@}"
+    ;;
   (*)
     printf 'invalid command: %s\n' "${1}"
     ;;
