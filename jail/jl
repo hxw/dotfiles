@@ -33,6 +33,25 @@ case "${1}" in
     shift
     exec service jail onestop "${@}"
     ;;
+  (enable|e)
+    shift
+    for j in "${@}"
+    do
+      sysrc -q jail_list+="${j}" > /dev/null
+    done
+    printf 'enabled: '
+    exec sysrc jail_list
+    ;;
+  (disable|d)
+    shift
+    for j in "${@}"
+    do
+      sysrc -q jail_list-="${j}" > /dev/null
+    done
+    printf 'enabled: '
+    exec sysrc jail_list
+    ;;
+
   (*)
     printf 'invalid command: %s\n' "${1}"
     ;;
@@ -48,6 +67,11 @@ supported commands:
   version    (ver)   list running jail userland version
   package    (pkg)   upgrade packages in a jail
   sync       (syn)   update jl and associated scripts from repository
+  console    (c)     open a console into a jail
+  start      (s)     start one or more jails
+  stop       (stp)   stop one or more jails
+  enable     (e)     enable one or more jails to start at boot
+  disable    (d)     disable one or more jails from starting at boot
 EOF
   exit 1
 fi

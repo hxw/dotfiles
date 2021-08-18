@@ -2,7 +2,7 @@
 # simple jail list with more details
 
 (
-  names="$(jls name)"
+  names="$(jls name | tr '\n' ' ')"
 
   jls -h jid name host.hostname path osrelease osreldate securelevel
 
