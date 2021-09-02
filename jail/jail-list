@@ -3,16 +3,52 @@
 
 (
   names="$(jls name | tr '\n' ' ')"
+  enabled="$(sysrc -n jail_list)"
 
-  jls -h jid name host.hostname path osrelease osreldate securelevel
+  jls -h jid name host.hostname path osrelease osreldate securelevel | awk -v enabled="${enabled}" '
+  BEGIN {
+    split(enabled, e, "[[:space:]]+")
+    for (i in e) {
+      bootable[e[i]] = "yes"
+    }
+  }
 
-  awk -v names="${names}" '
+  function is_bootable(name) {
+    boot = bootable[name]
+    if ("" == boot) {
+      boot = "-"
+    }
+    return boot
+  }
+
+  /^jid/ {
+    print $0 " bootable"
+  }
+
+  !/^jid/ {
+    print $0 " " is_bootable($2)
+  }
+'
+
+  awk -v names="${names}" -v enabled="${enabled}" '
   BEGIN {
     root = "/jails/z"
     split(names, n, "[[:space:]]+")
     for (i in n) {
       running[n[i]] = 1
     }
+    split(enabled, e, "[[:space:]]+")
+    for (i in e) {
+      bootable[e[i]] = "yes"
+    }
+  }
+
+  function is_bootable(name) {
+    boot = bootable[name]
+    if ("" == boot) {
+      boot = "-"
+    }
+    return boot
   }
 
   /\$j[[:space:]]*=[[:space:]]*"[^"]+";/ {
@@ -31,7 +67,7 @@
     osrelease = "-"
     osreldate = "-"
     securelevel = "-"
-    print jid, name, hostname, path, osrelease, osreldate, securelevel
+    print jid, name, hostname, path, osrelease, osreldate, securelevel, is_bootable(name)
   }
   }
   ' /etc/jail.conf
