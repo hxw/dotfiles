@@ -218,7 +218,7 @@ printf 'user: %s <%s> %s\n' "${n}" "${e}" "${s}"
 
 
 # update git hooks
-hooks_dir="${HOME}/dotfiles/git-hooks"
+hooks_dir="${HOME}/Code/sh/dotfiles/git-hooks"
 if [ -d "${hooks_dir}" ]
 then
   git_dir=$(git rev-parse --git-dir) || ERROR 'cannot determine git directory'
@@ -229,4 +229,6 @@ then
     VERBOSE 'copy hook: %s to %s' "${hook}" "${git_dir}/hooks"
     cp -p "${hook}" "${git_dir}/hooks"
   done
+else
+  ERROR 'git hooks source directory: %s does not exist' "${hooks_dir}"
 fi
