@@ -112,7 +112,8 @@
     renames = copy
 
 [log]
-    showSignature = true
+    # arc diff --create does not handle signatures
+    showSignature = false
 
 [color]
     branch = auto
