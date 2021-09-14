@@ -23,6 +23,8 @@
     sc = stash clear
     ss = stash save
 
+    dw = diff --word-diff=color
+
     k = !gitk HEAD
     ka = !gitk --all
 
@@ -110,6 +112,8 @@
 [diff]
     color = auto
     renames = copy
+    colorMovedWS = no
+    wordRegex = .
 
 [log]
     # arc diff --create does not handle signatures
@@ -137,7 +141,7 @@
     #meta = white
     frag = ul bold blue
     #func = white
-    old = bold red
+    old = red
     new = bold green
     commit = yellow
     #whitespace = white
