@@ -14,6 +14,7 @@
     ci = commit --signoff
     co = checkout
     pr = pull --rebase
+    prp = pull --rebase --prune
     pnp = !git pull --rebase && git push origin HEAD
     st = status
     br = !git -P branch
@@ -22,6 +23,7 @@
     sa = stash apply
     sc = stash clear
     ss = stash save
+    sw = switch
 
     dw = diff --word-diff=color
 
