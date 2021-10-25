@@ -210,13 +210,14 @@ PS1='%F{magenta}%B[%T]%b%f %F{green}%B%n@%m%b%f %F{cyan}%B%2~ %#%b%f '
 # Display CPU usage stats for commands taking more than 10 seconds
 REPORTTIME=10
 
-# set if system supports jails
-sysctl_jailed=
+# set if system supports jails or in VM
+in_jail=no
 
 # OS specific items
 os="$(uname -s)"
 case "${os}" in
   (Linux)
+    [ X"$(grep -c hypervisor /proc/cpuinfo)" != X"0" ] && in_jail=yes
     eval $(dircolors)
     alias ls='ls -F --color=auto'
     alias ll='ls -l'
@@ -246,6 +247,7 @@ case "${os}" in
   (FreeBSD|DragonFly)
     sysctl_jailed=security.jail.jailed
     [ X"${os}" = X"DragonFly" ] && sysctl_jailed=jail.jailed
+    [ -n "${sysctl_jailed}" ] && [ X"$(sysctl -n "${sysctl_jailed}")" = X"1" ] && in_jail=yes
     if [[ "${TERM}" =~ "^rxvt" ]]
     then
       TERM=rxvt-unicode-256color
@@ -306,7 +308,7 @@ esac
 # Single history for all open shells
 # but separate history file for jailed shell
 # use short hostname as domain may be changed by DHCP
-if [ -n "${sysctl_jailed}" ] && [ X"$(sysctl -n "${sysctl_jailed}")" = X"1" ]
+if [ X"${in_jail}" = X"yes" ]
 then
   HISTFILE="${HOME}/.zhistory.$(hostname -s)"
 else
