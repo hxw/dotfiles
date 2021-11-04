@@ -59,7 +59,7 @@ main = do
        { manageHook = myManageHook <+> manageDocks <+> manageHook def
        --, layoutHook = avoidStruts $ layoutHook def
        , layoutHook = myLayoutHook
-       , handleEventHook = handleEventHook def <+> docksEventHook
+       --, handleEventHook = handleEventHook def <+> docksEventHook
        , logHook = dynamicLogWithPP xmobarPP
                    { ppOutput = hPutStrLn xmproc
                    , ppTitle = xmobarColor "green" "" . shorten 40
@@ -70,7 +70,7 @@ main = do
        [ ((mod4Mask .|. shiftMask, xK_z), spawn "xscreensaver-command -lock; xset dpms force off")
        , ((mod4Mask, xK_Pause), spawn "xscreensaver-command -lock; xset dpms force off")
        , ((mod4Mask, xK_b), sendMessage ToggleStruts)            -- toggle xmobar
-       , ((mod4Mask, xK_Print), spawn "sleep 0.2; scrot -s")
+       , ((mod4Mask, xK_Print), spawn "cd ; scrot -s -e 'mv $f ./Screenshots/'")
        -- , ((controlMask, xK_Print), spawn "sleep 0.2; scrot -s")
        -- , ((0, xK_Print), spawn "scrot")
        , ((mod4Mask, xK_c), runOrRaise "conlecterm" (className =? "Conlecterm"))
