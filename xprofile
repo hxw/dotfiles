@@ -22,6 +22,8 @@ fi
 # Load any Xterm settings
 xrdb -merge ~/.Xresources
 
+# set up monitor
+xrandr --output HDMI-1 --fb 1920x1080 --pos 0x0 --auto
 
 # Fix an issue with large image rendering via mozilla firefox
 export MOZ_DISABLE_IMAGE_OPTIMIZE=1
@@ -40,5 +42,7 @@ export XIM_ARGS="--daemonize --xim"
 # start a fresh gpg agent and set environment
 gpgconf --kill gpg-agent
 rm -f "${HOME}/.gnupg/gpg-agent.log"
+export QT_FONT_DPI=144
 eval $(gpg-agent --daemon --sh)
+unset QT_FONT_DPI
 export GPG_TTY='not a tty'
