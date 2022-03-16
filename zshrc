@@ -347,10 +347,10 @@ then
   #unset s
 fi
 
-# turn caps lock into compose (if running inder X)
+# turn caps lock into compose (if running under X)
 if which setxkbmap > /dev/null 2>&1
 then
-  [ -n "${DISPLAY}" ] && setxkbmap -option compose:caps
+  [ -n "${DISPLAY}" ] && setxkbmap -option compose:caps -option shift:both_capslock_cancel
 fi
 
 # set up default function key map - if zkbd has been run
