@@ -57,6 +57,9 @@ then
   touch "${flag_file}"
 fi
 
+rm -f "${error_log}"
+touch "${error_log}"
+
 # configure and build
 cabal new-configure --enable-optimization --enable-executable-stripping
 cabal new-build
