@@ -69,10 +69,11 @@ main = do
        } `additionalKeys`
        [ ((mod4Mask .|. shiftMask, xK_z), spawn "xscreensaver-command -lock; xset dpms force off")
        , ((mod4Mask, xK_Pause), spawn "xscreensaver-command -lock; xset dpms force off")
-       , ((mod4Mask, xK_b), sendMessage ToggleStruts)            -- toggle xmobar
        , ((mod4Mask, xK_Print), spawn "cd ; scrot -s -e 'mv $f ./Screenshots/'")
        -- , ((controlMask, xK_Print), spawn "sleep 0.2; scrot -s")
        -- , ((0, xK_Print), spawn "scrot")
+       , ((mod4Mask, xK_a), runOrRaise "audacity" (className =? "Audacity"))
+       , ((mod4Mask, xK_b), sendMessage ToggleStruts)            -- toggle xmobar
        , ((mod4Mask, xK_c), runOrRaise "conlecterm" (className =? "Conlecterm"))
        , ((mod4Mask, xK_e), runOrRaise "emacs" (className =? "Emacs"))
        , ((mod4Mask, xK_f), runOrRaise "firefox" (className =? "firefox"))
