@@ -1,0 +1,256 @@
+#!/bin/sh
+# update or display a jail's kernel version
+
+ERROR() {
+  printf 'error: '
+  printf "${@}"
+  printf '\n'
+  exit 1
+}
+
+VERBOSE() {
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "${@}"
+  printf '\n'
+}
+
+USAGE() {
+  if [ -n "${1}" ]
+  then
+    printf 'error: '
+    printf "${@}"
+    printf '\n'
+  fi
+  cat <<EOF
+usage: ${0##*/} <options> jails...
+       --help                 -h            this message
+       --verbose              -v            more messages
+       --yes                  -y            answer yes to all prompts
+       --prefix=DIR           -p DIR        jail chroot directory prefix [${prefix}]
+       --conf=FILE            -c FILE       configuration file [${conf}]
+       --release=REL          -r REL        release as uname -r [${release}]
+       --reldate=NUMBER       -d NUMBER     release as uname -K [${reldate}]
+       --update               -u            update the values, default is display
+       --debug                -D            show debug information
+EOF
+  exit 1
+}
+
+GetYN() {
+  local yorn junk
+  while :
+  do
+    read -p "${*} [y/n] ? " yorn junk
+    case "${yorn}" in
+      [yY]|[yY][eE][sS])
+        return 0
+        ;;
+      [nN]|[nN][oO])
+        return 1
+        ;;
+      *)
+        echo Please answer yes or no
+        ;;
+    esac
+  done
+}
+
+
+# main program
+verbose=no
+debug=no
+prompt=yes
+prefix=/jails
+conf='/etc/jail.conf'
+release="$(uname -r)"
+reldate="$(uname -K)"
+update=no
+
+# parse options
+while getopts :hvyp:c:r:d:uD-: option
+do
+  # convert long options
+  if [ X"${option}" = X"-" ]
+  then
+    option="${OPTARG%%=*}"
+    OPTARG="${OPTARG#${option}}"
+    OPTARG="${OPTARG#=}"
+  fi
+  case "${option}" in
+    (v|verbose)
+      verbose=yes
+      ;;
+
+    (y|yes)
+      prompt=no
+      ;;
+
+    (p|prefix)
+      prefix="${OPTARG}"
+      ;;
+
+    (c|conf)
+      conf="${OPTARG}"
+      ;;
+
+    (r|release)
+      release="${OPTARG}"
+      ;;
+
+    (d|reldate)
+      reldate="${OPTARG}"
+      ;;
+
+    (u|update)
+      update=yes
+      ;;
+
+    (--)
+      break
+      ;;
+
+    (D|debug)
+      debug=yes
+      ;;
+
+    (h|help)
+      USAGE
+      ;;
+
+    ('?')
+      USAGE 'invalid option: -%s' "${OPTARG}"
+      ;;
+
+    (*)
+      USAGE 'invalid option: --%s' "${option}"
+      ;;
+  esac
+done
+
+shift $((OPTIND - 1))
+
+# verify arguments
+#[ ${#} -ne 0 ] && USAGE 'extraneous arguments: %s' "${*}"
+[ "${#}" -eq 0 ] && USAGE 'missing jail name arguments: %s' "$*"
+
+# enable debugging
+[ X"${debug}" = X"yes" ] && set -x
+
+
+getversion() {
+  local jail
+  jail="${1}"
+
+  awk -v jail="${jail}" < "${conf}" '
+    BEGIN {
+      in_jail = 0
+      match_re = "^" jail "[[:space:]]*[{]"
+      release = "."
+      reldate = "."
+    }
+    END {
+      print release " " reldate
+    }
+    /^[[:space:]]*}/ {
+      if (in_jail == 1) {
+        in_jail = 2
+      }
+    }
+    /^[[:space:]]*osrelease[[:space:]]*=/ {
+      if (in_jail == 1) {
+        r = $0
+        sub("^.*=[[:space:]]*\"?", "", r)
+        sub("\"?;[[:space:]]*$", "", r)
+        release = r
+      }
+    }
+    /^[[:space:]]*osreldate[[:space:]]*=/ {
+      if (in_jail == 1) {
+        r = $0
+        sub("^.*=[[:space:]]*\"?", "", r)
+        sub("\"?;[[:space:]]*$", "", r)
+        reldate = r
+      }
+    }
+    $0 ~ match_re {
+      if (in_jail == 0) {
+        in_jail = 1
+      }
+    }
+  '
+}
+
+setversion() {
+  local jail release reldate
+  jail="${1}"
+  release="${2}"
+  reldate="${3}"
+
+  awk -v jail="${jail}" -v release="${release}" -v reldate="${reldate}" < "${conf}" '
+    BEGIN {
+      in_jail = 0
+      skip = 0
+      match_re = "^" jail "[[:space:]]*[{]"
+    }
+    /^[[:space:]]*osrelease[[:space:]]*=/ {
+      if (in_jail == 1) {
+        print "  osrelease = \"" release "\";"
+        skip = 1
+      }
+    }
+    /^[[:space:]]*osreldate[[:space:]]*=/ {
+      if (in_jail == 1) {
+        print "  osreldate = " reldate ";"
+        skip = 1
+      }
+    }
+    {
+      if (skip != 1) {
+        print $0
+      }
+      skip = 0
+    }
+    /^[[:space:]]*}/ {
+      if (in_jail == 1) {
+        in_jail = 2
+      }
+    }
+    $0 ~ match_re {
+      if (in_jail == 0) {
+        in_jail = 1
+      }
+    }
+  '
+}
+
+
+
+# process all jails
+for name in "${@}"
+do
+  j="${prefix}/${name}"
+
+  VERBOSE 'jail chroot: %s' "${j}"
+
+  [ -d "${j}" ] || ERROR 'missing jail chroot: %s' "${j}"
+
+  version="$(getversion "${name}")"
+
+  printf '%s: current version: %s\n' "${name}" "${version}"
+
+  oldrelease="${version%% *}"
+  oldreldate="${version##* }"
+
+  if [ X"${update}" == X"yes" ]
+  then
+    if [ X"${release}" != X"${oldrelease}" ] || [ X"${reldate}" != X"${oldreldate}" ]
+    then
+      printf 'update to: %s %s\n' "${release}" "${reldate}"
+      setversion "${name}" "${release}" "${reldate}" > "${conf}.new"
+      rm -f "${conf}.bk"
+      mv "${conf}" "${conf}.bk"
+      mv "${conf}.new" "${conf}"
+    fi
+  fi
+
+done

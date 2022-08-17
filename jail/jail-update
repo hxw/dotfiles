@@ -21,14 +21,16 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: "${0##*/}" '<options>' jails...
-  echo '       --help                 -h            this message'
-  echo '       --verbose              -v            more messages'
-  echo '       --yes                  -y            answer yes to all prompts'
-  echo '       --prefix=DIR           -p DIR        jail chroot directory prefix ['"${prefix}"']'
-  echo '       --conf=FILE            -c FILE       freebsd-update configuration file ['"${conf}"']'
-  echo '       --upgrade=VERSION      -u VERSION    freebsd-update upgrade to new version'
-  echo '       --debug                -D            show debug information'
+  cat <<EOF
+usage: ${0##*/} <options> jails...
+       --help                 -h            this message
+       --verbose              -v            more messages
+       --yes                  -y            answer yes to all prompts
+       --prefix=DIR           -p DIR        jail chroot directory prefix [${prefix}]
+       --conf=FILE            -c FILE       freebsd-update configuration file [${conf}]
+       --upgrade=VERSION      -u VERSION    freebsd-update upgrade to new version'
+       --debug                -D            show debug information'
+EOF
   exit 1
 }
 

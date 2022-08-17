@@ -21,6 +21,9 @@ case "${1}" in
   (sync|syn)
     cmd=sync
     ;;
+  (uname|un)
+    cmd=uname
+    ;;
   (console|c)
     shift
     exec jexec -l "${@}"
@@ -63,7 +66,8 @@ then
 supported commands:
   list       (ls)    list running jails
   ifconfig   (ip)    list jail ipaddresses
-  update     (up)    update/upgrade a jail
+  update     (up)    update/upgrade a jail's userland
+  uname      (un)    update a jail's osrelease/osreldate (requires jail restart)
   version    (ver)   list running jail userland version
   package    (pkg)   upgrade packages in a jail
   sync       (syn)   update jl and associated scripts from repository

@@ -21,15 +21,17 @@ USAGE() {
     printf "${@}"
     printf '\n'
   fi
-  echo usage: "${0##*/}" '<options>' jails...
-  echo '       --help                 -h            this message'
-  echo '       --verbose              -v            more messages'
-  echo '       --yes                  -y            answer yes to all prompts'
-  echo '       --prefix=DIR           -p DIR        jail chroot directory prefix ['"${prefix}"']'
-  echo '       --upgrade              -u            upgrade packages'
-  echo '       --clean                -c            clean downloads'
-  echo '       --autoremove           -a            autoremove'
-  echo '       --debug                -D            show debug information'
+  cat <<EOF
+usage: ${0##*/} <options> jails...
+       --help                 -h            this message
+       --verbose              -v            more messages
+       --yes                  -y            answer yes to all prompts
+       --prefix=DIR           -p DIR        jail chroot directory prefix [${prefix}]
+       --upgrade              -u            upgrade packages
+       --clean                -c            clean downloads
+       --autoremove           -a            autoremove
+       --debug                -D            show debug information
+EOF
   exit 1
 }
 
