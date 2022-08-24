@@ -1,35 +1,57 @@
 #!/bin/sh
 # Remove Duplicate files
-# Copyright 2006-2020 Christopher Hall
+# Copyright 2006-2022 Christopher Hall
 # License GPL2 or later
 # 2019-04-29 MD5 -> SHA256 Christopher Hall
 
-usage()
-{
-  if [ -n "${1}" ]
-  then
-    echo error: $*
-  fi
-  echo usage: "${0##*/}" '[--yes] [--precious=prefix]...' list-of-directories
+ERROR() {
+  printf 'error: '
+  printf "${@}"
+  printf '\n'
   exit 1
 }
+
+VERBOSE() {
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "${@}"
+  printf '\n'
+}
+
+USAGE() {
+  if [ -n "${1}" ]
+  then
+    printf 'error: '
+    printf "${@}"
+    printf '\n'
+  fi
+  cat <<EOF
+usage: ${0##*/} [options] [directories]
+       --help                 -h            this message
+       --verbose              -v            more messages
+       --set                  -s            set new settings
+       --precious=PREFIX      -p PREFIX     never delete files starting with this prefix
+       --ignore=DIR           -i DIR        ignore this directory
+       --yes                  -y            assume yes to all prompts
+       --debug                -D            show debug information
+EOF
+  exit 1
+}
+
 
 TempList=''
 
 # remove all files created by NewTemp (needs trap command)
-cleanup()
-{
+cleanup() {
   [ -n "${TempList}" ] && eval rm -f "${TempList}"
 }
 
 trap cleanup INT EXIT
 
 # usage: NetTemp var_name
-NewTemp()
-{
+NewTemp() {
   local TempName TempFile
 
-  [ -z "${1}" ] && usage INTERNAL ERROR: NewTemp requires argument
+  [ -z "${1}" ] && ERROR 'NewTemp requires argument'
 
   TempName="${1}"; shift
   TempFile="$(mktemp "/tmp/${0##*/}.XXXXXX")"
@@ -39,27 +61,25 @@ NewTemp()
 
 
 # detect program from a list of choices
-DetectProgram()
-{
+DetectProgram() {
   local ProgramName prog PathProg
 
   ProgramName="${1}"; shift
 
   for prog in "${@}"
   do
-    PathProg=$(which "${prog%%:*}" 2>/dev/null)
+    PathProg="$(command -v "${prog%%:*}" 2>/dev/null)"
     [ -n "${PathProg}" ] && break
   done
   [ -z "${PathProg}" ] && usage ${ProgramName} not found
 
-  echo using:${ProgramName} = ${PathProg} ${prog#*:}
+  printf 'using: %s = %s %s\n' "${ProgramName}" "${PathProg}" "${prog#*:}"
   eval "${ProgramName}=\"\${PathProg} \${prog#*:}\""
 }
 
 
 # Find out if file is protected
-IsPrecious()
-{
+IsPrecious() {
   local i file p q
   file="${1}"; shift
 
@@ -73,7 +93,42 @@ IsPrecious()
     then
       return 0
     fi
-    i=$((${i} + 1))
+    i=$((i + 1))
+  done
+
+  return 1
+}
+
+# Find out if file is to be ignored
+CanIgnore() {
+  local i file p element file_path
+  file="${1}"; shift
+
+  #printf '!ignore file: %s\n' "${file}"
+
+  file_path="${file}"
+  while :
+  do
+    element="${file_path%%/*}"
+    file_path="${file_path#*/}"
+    [ X"${element}" = X"${file_path}" ] && break
+
+    #printf '!element: %s   %s\n' "${element}" "${file_path}"
+
+    i=1
+    while [ ${i} -lt ${IgnoreIndex} ]
+    do
+      eval p="\${ignore_${i}}"
+
+      #printf '!ignore %4d p: %s\n' "${i}" "${p}"
+
+      if [ X"${element}" = X"${p}" ]
+      then
+        return 0
+      fi
+      i=$((i + 1))
+    done
+
   done
 
   return 1
@@ -81,11 +136,10 @@ IsPrecious()
 
 
 # Prompt for removal of non-precious files
-REMOVE()
-{
+REMOVE() {
   local f
 
-  echo "-----"
+  printf -- '-----\n'
   for f in "${@}"
   do
     if ! IsPrecious "${f}"
@@ -100,22 +154,22 @@ REMOVE()
       case "${yn}" in
 	[aA]|[aA][lL][lL])
           rm -f "${f}"
-          echo DELETED: "${f}"
+          printf 'DELETED: %s\n' "${f}"
           DefaultYes=YES
           ;;
 	[yY]|[yY][eE][sS])
           rm -f "${f}"
-          echo DELETED: "${f}"
+          printf 'DELETED: %s\n' "${f}"
           ;;
 	[qQ]|[qQ][uU][iI][tT])
           exit 1
           ;;
         *)
-          echo KEEP: "${f}"
+          printf 'KEEP: %s\n' "${f}"
           ;;
       esac
     else
-      echo ***PRECIOUS: ${f}
+      printf '***PRECIOUS: %s\n' "${f}"
     fi
   done
 }
@@ -125,21 +179,19 @@ REMOVE()
 # for files with matching SHA256 sums
 # i.e. two dissimilar files can have the same
 # sum.  So this uses cmp to be certain
-MultiDiff()
-{
+MultiDiff() {
   local first f differ
   first="${1}"; shift
 
   differ=NO
-  echo
-  echo '*'File: "${first}"
+  printf '\n*File: %s\n' "${first}"
   for f in "${@}"
   do
     if cmp "${first}" "${f}"
     then
-      echo ' 'Same: "${f}"
+      printf ' Same: %s\n' "${f}"
     else
-      echo DIFFERENT: "${f}"
+      printf 'DIFFERENT: %s\n' "${f}"
       differ=YES
     fi
   done
@@ -148,7 +200,7 @@ MultiDiff()
   then
     REMOVE "${first}" "${@}"
   else
-    echo CANNOT REMOVE
+    printf 'CANNOT REMOVE\n'
   fi
 }
 
@@ -159,45 +211,92 @@ DetectProgram SHA256 sha256:-r sha256sum:
 
 precious=''
 PreciousIndex=1
+IgnoreIndex=1
 outfile=''
 DefaultYes=NO
 NewTemp outfile
 
-# scan arguments
-while :
+# parse options
+while getopts :hvp:i:yD-: option
 do
-  case "${1}" in
-    --precious=*)
-      eval "precious_${PreciousIndex}='${1#--precious=}'"
-      PreciousIndex=$((${PreciousIndex} + 1))
-      shift
+  # convert long options
+  if [ X"${option}" = X"-" ]
+  then
+    option="${OPTARG%%=*}"
+    OPTARG="${OPTARG#${option}}"
+    OPTARG="${OPTARG#=}"
+  fi
+  case "${option}" in
+    (v|verbose)
+      verbose=yes
       ;;
-    --yes)
+
+    (p|precious)
+      p="${OPTARG}"
+      [ -z "${p}" ] && USAGE 'precious argument cannot be blank'
+      eval "precious_${PreciousIndex}='${p}'"
+      PreciousIndex=$((PreciousIndex + 1))
+      ;;
+
+    (i|ignore)
+      ig="${OPTARG}"
+      [ -z "${ig}" ] && USAGE 'ignore argument cannot be blank'
+      eval "ignore_${IgnoreIndex}='${ig}'"
+      IgnoreIndex=$((IgnoreIndex + 1))
+      ;;
+
+    (y|yes)
       DefaultYes=YES
-      shift
       ;;
-    -*)
-      usage invalid option ${1}
-      ;;
-    *)
+
+    (--)
       break
+      ;;
+
+    (D|debug)
+      debug=yes
+      ;;
+
+    (h|help)
+      USAGE
+      ;;
+
+    ('?')
+      USAGE 'invalid option: -%s' "${OPTARG}"
+      ;;
+
+    (*)
+      USAGE 'invalid option: --%s' "${option}"
       ;;
   esac
 done
 
-[ -z "${1}" ] && usage Missing arguments
+shift $((OPTIND - 1))
+
+# verify arguments
+#[ ${#} -ne 0 ] && USAGE 'extraneous arguments: %s' "${*}"
+[ ${#} -eq 0 ] && USAGE 'missing arguments'
+
+# enable debugging
+[ X"${debug}" = X"yes" ] && set -x
+
 
 # search all directories and get SHA256 sums for files
-# awk is then used to tabulate MD% matches
+# awk is then used to tabulate MD5 matches
 find "${@}" -type d | (
   IFS=''
   while read dir
   do
-    echo Check ${SHA256} ${dir}
+    if CanIgnore "${dir}"
+    then
+      #printf '!skip: %s\n' "${dir}"
+      continue
+    fi
+
+    #printf '!check: %s %s\n' "${SHA256}" "${dir}"
     if [ ! -d "${dir}" ]
     then
-      echo Something wrong with: "'${dir}'"
-      exit 99
+      ERROR '!something wrong with: %s' "${dir}"
     fi
     eval ${SHA256} \"${dir}\"/* 2>/dev/null
   done
@@ -215,18 +314,18 @@ find "${@}" -type d | (
     ++k[sha256]
     #print("# " sha256 ">" file "<")
   }
-
+  /^!/ {
+    print "# " $0 >"/dev/stderr"
+  }
   END {
-    for (i in h)
-    {
-      if (k[i] > 1)
-      {
+    for (i in h) {
+      if (k[i] > 1) {
         print("MultiDiff",h[i]," || exit ${?}")
       }
     }
   }
 ' | sort >> "${outfile}"
-[ ${?} -ne 0 ] && usage find/${AWK} Process failed
+[ ${?} -ne 0 ] && ERROR 'find | %s process failed' "${AWK}"
 
 # outfile is a script to run the REMOVE routine above
 [ -r "${outfile}" ] && . "${outfile}"
