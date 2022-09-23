@@ -41,6 +41,9 @@ myManageHook = composeAll
        <||> (nameN  9) =? "Overwrite"
        <||> (nameN 19) =? "Rebuild folder tree"
       ) --> doFloat
+    , (    name =? "pinentry-gtk"
+       <||> name =? "pinentry-qt"
+      ) --> unfloat
     ]
   where role = stringProperty "WM_WINDOW_ROLE"
         roleN n = do
@@ -50,6 +53,7 @@ myManageHook = composeAll
         nameN n = do
           p <- stringProperty "WM_NAME"
           return $ take n p
+        unfloat = ask >>= doF . W.sink
 
 
 main = do
