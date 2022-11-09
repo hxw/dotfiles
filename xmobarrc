@@ -27,6 +27,6 @@ Config { font = "xft:DejaVu Sans:style=bold:size=12,WenQuanYi Zen Hei:size=12"
        , alignSep = "}{"
        --, template = "%StdinReader% | %cpu% | %memory% * %swap% | %eth0% - %eth1% }{<fc=#ee9a00>%date%</fc> | %uname% | %CYVR% "
        --, template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname% | %default:Master% "
-       , template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %cpu% | %uname% | %tcpu% | <fc=#99aaee>Bat電池:%battery%</fc>"
+       , template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname% | %tcpu% | <fc=#99aaee>Bat電池:%battery%</fc> | %cpu%"
        --, template = "%StdinReader% | <fc=#ee9a00>%date%</fc> | %uname% "
        }

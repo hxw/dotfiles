@@ -3,8 +3,8 @@
 decorations none
 transparent false
 dockapp_mode none
-geometry 6x1-400+0
-max_geometry 5x1-325-10
+geometry 6x1-250+0
+max_geometry 5x1-150-10
 #background "#000000"
 background "purple4"
 kludges force_icons_size
