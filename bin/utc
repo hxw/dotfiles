@@ -39,7 +39,7 @@ do
   d="$(env TZ="${tz_full}" date '+%F')"
   if [ X"${d}" != X"${base_date}" ]
   then
-    env TZ="${tz_full}" date '+%F %T%z'
+    env TZ="${tz_full}" date '+%F %T%z [%a]'
     base_date="${d}"
   else
     env TZ="${tz_full}" date '+     ..    %T%z'
