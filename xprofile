@@ -40,6 +40,8 @@ export XMODIFIERS=@im=ibus
 export XIM_PROGRAM="ibus-daemon"
 export XIM_ARGS="--daemonize --xim"
 
+# mixer
+[ -f .mixerrc ] && . .mixerrc
 
 # start a fresh gpg agent and set environment
 gpgconf --kill gpg-agent

@@ -39,7 +39,7 @@ xbindkeys &
 if ! command -v sndioctl > /dev/null
 then
   # microphone in Firefox needs pulseaudio if no sndiod available
-  command -v pulseaudio > /dev/null && pulseaudio --start
+  command -v pulseaudio > /dev/null && pulseaudio --start --log-target=syslog
 fi
 
 # for system tray
