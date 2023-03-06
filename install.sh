@@ -250,9 +250,6 @@ then
 done
 fi
 
-# update less configuration
-lesskey
-
 # handle X11 files
 if [ X"${x11}" = X"yes" ]
 then

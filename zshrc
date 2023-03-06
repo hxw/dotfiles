@@ -387,6 +387,20 @@ then
 fi
 unset termfile
 
+# Setup XDG for console session if not already set by X session manager
+[ -z "${XDG_CACHE_HOME}" ] && export XDG_CACHE_HOME="${HOME}/.cache"
+[ -z "${XDG_CONFIG_DIRS}" ] && export XDG_CONFIG_DIRS="/etc/xdg:/usr/local/etc/xdg"
+[ -z "${XDG_CONFIG_HOME}" ] && export XDG_CONFIG_HOME="${HOME}/.config"
+[ -z "${XDG_CURRENT_DESKTOP}" ] && export XDG_CURRENT_DESKTOP=NONE
+[ -z "${XDG_DATA_DIRS}" ] && export XDG_DATA_DIRS="/usr/local/share:/usr/share"
+[ -z "${XDG_DATA_HOME}" ] && export XDG_DATA_HOME="${HOME}/.local/share"
+[ -z "${XDG_SESSION_TYPE}" ] && export XDG_SESSION_TYPE=console
+[ -z "${XDG_SESSION_CLASS}" ] && export XDG_SESSION_CLASS=user
+
+# set cookie if using non-XDG aware display manager
+[ -z "${XDG_SESSION_COOKIE}" ] && export XDG_SESSION_COOKIE="$(hostname -s)-$(date +'%s').$$-123456789"
+
+
 # Source any machine specific aliases, or settings
 if [[ -e "${HOME}/.zsh_local" ]]
 then

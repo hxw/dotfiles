@@ -18,7 +18,7 @@ ERROR() {
   exit 1
 }
 
-
+set -e
 # build the config
 cd "${configuration_directory}" || ERROR 'failed to change to: %s' "${configuration_directory}"
 
@@ -61,8 +61,8 @@ rm -f "${error_log}"
 touch "${error_log}"
 
 # configure and build
-cabal new-configure --enable-optimization --enable-executable-stripping
-cabal new-build
+cabal new-configure --enable-optimization --enable-executable-stripping --verbose
+cabal new-build --verbose
 
 if [ -s "${error_log}" ]
 then

@@ -176,3 +176,6 @@
 @HAVE_HOME@    excludesfile = @HOME@.git-global-ignore
 @HAVE_HOME@    attributesfile = @HOME@.git-global-attributes
 #    autocrlf = input
+
+[init]
+    defaultBranch = main
