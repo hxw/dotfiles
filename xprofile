@@ -29,6 +29,8 @@ xrandr --output HDMI-1 --fb 1920x1080 --pos 0x0 --auto
 export MOZ_DISABLE_IMAGE_OPTIMIZE=1
 #export MALLOC_CONF='narenas:1,tcache:false' ##### crashes lumina start menu
 
+# Qt theme
+export QT_QPA_PLATFORMTHEME=qt5ct
 
 # ibus
 export XIM=ibus
