@@ -32,7 +32,7 @@ stalonetray &
 # apps
 xmixer -q
 xscreensaver -no-splash &
-oneko -tomoyo -bg pink -fg purple &
+oneko -tomoyo -bg pink -fg purple -time 50000 &
 xbindkeys &
 
 # check if using sndio
