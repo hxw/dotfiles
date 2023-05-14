@@ -23,7 +23,8 @@ fi
 xrdb -merge ~/.Xresources
 
 # set up monitor
-xrandr --output HDMI-1 --fb 1920x1080 --pos 0x0 --auto
+monitor_hdmi="$(xrandr --listmonitors | awk '/HDMI/ { print $4 }')"
+[ -n "${monitor_hdmi}" ] && xrandr --output "${monitor_hdmi%% *}" --fb 1920x1080 --pos 0x0 --auto
 
 # Fix an issue with large image rendering via mozilla firefox
 export MOZ_DISABLE_IMAGE_OPTIMIZE=1
