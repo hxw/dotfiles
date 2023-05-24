@@ -325,9 +325,10 @@ setopt hist_ignore_all_dups
 # access the zkbd setup since it is in a versioned directory
 function zkbd() {
   local p f
-  for p in /usr /usr/local
+  for p in /usr /usr/local /usr/pkg
   do
-    for f in "${p}/share/zsh/${ZSH_VERSION}/functions/Misc/zkbd" "${p}/share/zsh/functions/Misc/zkbd"
+    for f in "${p}/share/zsh/${ZSH_VERSION}/functions/Misc/zkbd" "${p}/share/zsh/functions/Misc/zkbd" \
+             "${p}/share/zsh/${ZSH_VERSION}/functions/zkbd"      "${p}/share/zsh/functions/zkbd"
     do
       if [[ -f "${f}" ]]
       then
