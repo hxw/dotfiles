@@ -13,6 +13,10 @@ global-set-key "\e[[B" save-buffer
 ; F2 on rxvt-unicode
 global-set-key "\e[12~" save-buffer
 
+; F4
+global-set-key "\eOS" switch-to-buffer
+global-set-key "\e[14~" switch-to-buffer
+
 ; F8
 global-set-key "\e[19~" call-last-kbd-macro
 
