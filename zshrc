@@ -308,13 +308,21 @@ esac
 # Single history for all open shells
 # but separate history file for jailed shell
 # use short hostname as domain may be changed by DHCP
+hf="${HOME}/.zhistory"
 if [ X"${in_jail}" = X"yes" ]
 then
-  HISTFILE="${HOME}/.zhistory.$(hostname -s)"
-else
-  HISTFILE="${HOME}/.zhistory"
+  hf="${hf}.$(hostname -s)"
 fi
 
+# separate history for tmux windows
+if [ -n "${TMUX_PANE}" ]
+then
+  t_name="$(  tmux list-windows -F '#{window_name}' -f '#{==:#{pane_id},'"${TMUX_PANE}"'}')"
+  hf="${hf}.${t_name}"
+  unset t_name
+fi
+
+HISTFILE="${hf}"
 HISTSIZE=SAVEHIST=10000
 setopt inc_append_history
 setopt share_history
