@@ -76,6 +76,7 @@ main = do
        , ((mod4Mask, xK_Print), spawn "cd ; scrot -s -e 'mv $f ./Screenshots/'")
        -- , ((controlMask, xK_Print), spawn "sleep 0.2; scrot -s")
        -- , ((0, xK_Print), spawn "scrot")
+       -- to find className use: xwininfo ; xprop -id "${ID}" WM_CLASS
        , ((mod4Mask, xK_a), runOrRaise "audacity" (className =? "Audacity"))
        , ((mod4Mask, xK_b), sendMessage ToggleStruts)            -- toggle xmobar
        , ((mod4Mask, xK_c), runOrRaise "conlecterm" (className =? "Conlecterm"))
@@ -84,7 +85,7 @@ main = do
        , ((mod4Mask, xK_h), runOrRaise "hexchat" (className =? "Hexchat"))
        , ((mod4Mask, xK_p), spawn "dmenu_run -p 'run>' -fn '-Fixed-Bold-R-Normal-*-16-*-*-*-*-*-*-*' -sb grey25 -sf hotpink -nb blue -nf white")
        , ((mod4Mask, xK_u), runOrRaise "urxvt" (className =? "URxvt"))
-       , ((mod4Mask, xK_v), raise (className =? "Ssvnc"))
+       , ((mod4Mask, xK_v), raise (className =? "Vncviewer"))
        , ((mod4Mask, xK_w), runOrRaise "claws-mail" (className =? "Claws-mail"))
        , ((mod4Mask, xK_x), runOrRaise "xterm" (className =? "XTerm"))
        ]
