@@ -35,3 +35,4 @@ global-set-key "\034" undo
 
 ; set-default-mode fill
 ; set-fill-column 72
+; ---EOF---

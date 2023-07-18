@@ -33,9 +33,9 @@ CAT() {
 # SED  substitutes @NAME@ type of entries
 # COPY just copies the file
 
-SED gitconfig
-COPY git-global-ignore
-COPY git-global-attributes
+SED git/config
+COPY git/global-ignore
+COPY git/global-attributes
 
 COPY bash_aliases
 #COPY joverc
@@ -205,12 +205,15 @@ interact() {
 # use sed to substitute some @VAR@ by local values
 for f in ${list_sed}
 do
-  if ! tempfile=$(mktemp -q "/tmp/${f}.XXXXXXXX")
+  tf="$(printf '%s' -- "${f}" | tr '/' '__')"
+  if ! tempfile="$(mktemp -q "/tmp/${tf}.XXXXXXXX")"
   then
     ERROR 'cannot create temp file for "%s"' "${f}"
   fi
 
-  d="${prefix}/.${f}"
+  cfg='.config/'
+  [ X"${f}" = X"${f%/*}" ] && cfg='.'
+  d="${prefix}/${cfg}${f}"
 
   printf '\033[1;31mSubstitute "%s" to "%s"\033[0m\n' "${f}" "${d}"
 
@@ -229,7 +232,10 @@ then
   # files that are just copied
   for f in ${list_copy}
   do
-    d="${prefix}/.${f}"
+    cfg='.config/'
+    [ X"${f}" = X"${f%/*}" ] && cfg='.'
+    d="${prefix}/${cfg}${f}"
+
     printf '\033[1;34mCopy "%s" to "%s"\033[0m\n' "${f}" "${d}"
     interact
     ${copy} "${src}/${f}" "${d}"

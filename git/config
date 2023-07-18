@@ -173,9 +173,12 @@
     color = auto
 
 [core]
-@HAVE_HOME@    excludesfile = @HOME@.git-global-ignore
-@HAVE_HOME@    attributesfile = @HOME@.git-global-attributes
+@HAVE_HOME@    excludesfile = @HOME@.config/git/global-ignore
+@HAVE_HOME@    attributesfile = @HOME@.config/git/global-attributes
 #    autocrlf = input
 
 [init]
     defaultBranch = main
+
+[gpg "ssh"]
+@HAVE_HOME@    allowedSignersFile = @HOME@.config/git/allowed-signers
