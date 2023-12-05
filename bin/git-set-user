@@ -218,7 +218,7 @@ printf 'user: %s <%s> %s\n' "${n}" "${e}" "${s}"
 
 
 # update git hooks
-hooks_dir="${HOME}/Code/sh/dotfiles/git-hooks"
+hooks_dir="${HOME}/Code/sh/dotfiles/git/hooks"
 if [ -d "${hooks_dir}" ]
 then
   git_dir=$(git rev-parse --git-dir) || ERROR 'cannot determine git directory'
