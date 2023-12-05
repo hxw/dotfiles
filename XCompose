@@ -15,3 +15,4 @@ include "%L"
 <Multi_key> <V> <V>			: "⊻"  # Logical Or operator
 <Multi_key> <C> <M>			: "✔"  # Check Mark
 <Multi_key> <c> <m>			: "✔"  # Check Mark
+<Multi_key> <equal> <equal>		: "͟"      # Combining Double Macron Below

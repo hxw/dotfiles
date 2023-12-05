@@ -5,6 +5,7 @@
 list_sed=''
 list_copy=''
 list_x11=''
+list_x11_sed=''
 
 SED() {
   list_sed="${list_sed} $*"
@@ -16,6 +17,10 @@ COPY() {
 
 X11() {
   list_x11="${list_x11} $*"
+}
+
+X11_SED() {
+  list_x11_sed="${list_x11} $*"
 }
 
 CAT() {
@@ -52,6 +57,7 @@ X11 xinitrc
 X11 xmobarrc
 X11 xmonad/config.hs
 X11 xmonad/build
+X11_SED dunst/dunstrc
 X11 xprofile
 X11 Xresources
 X11 xsession
@@ -265,6 +271,29 @@ then
     printf '\033[1;32mCopy "%s" to "%s"\033[0m\n' "${f}" "${d}"
     interact
     ${copy} "${src}/${f}" "${d}"
+  done
+
+  for f in ${list_x11_sed}
+  do
+    tf="$(printf '%s' -- "${f}" | tr '/' '__')"
+    if ! tempfile="$(mktemp -q "/tmp/${tf}.XXXXXXXX")"
+    then
+      ERROR 'cannot create temp file for "%s"' "${f}"
+    fi
+
+    cfg='.config/'
+    [ X"${f}" = X"${f%/*}" ] && cfg='.'
+    d="${prefix}/${cfg}${f}"
+
+    printf '\033[1;31mSubstitute "%s" to "%s"\033[0m\n' "${f}" "${d}"
+
+    sed "s,@HOME@,${prefix}/,g;
+         s,@HAVE_HOME@,${have_home},g;
+      "  "${src}/${f}" > "${tempfile}"
+    interact
+    ${copy} "${tempfile}" "${d}"
+    rm -f "${tempfile}"
+    tempfile=
   done
 fi
 
