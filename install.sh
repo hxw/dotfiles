@@ -20,7 +20,7 @@ X11() {
 }
 
 X11_SED() {
-  list_x11_sed="${list_x11} $*"
+  list_x11_sed="${list_x11_sed} $*"
 }
 
 CAT() {
