@@ -180,5 +180,5 @@
 [init]
     defaultBranch = main
 
-[gpg "ssh"]
+[gpg.ssh]
 @HAVE_HOME@    allowedSignersFile = @HOME@.config/git/allowed-signers
