@@ -116,10 +116,14 @@
     renames = copy
     colorMovedWS = no
     wordRegex = .
+    noprefix = true
+    algorithm = histogram
 
 [log]
     # arc diff --create does not handle signatures
     showSignature = false
+    date = iso
+    abbrevcommit = false
 
 [color]
     branch = auto
@@ -182,3 +186,6 @@
 
 [gpg.ssh]
 @HAVE_HOME@    allowedSignersFile = @HOME@.config/git/allowed-signers
+
+[url "ssh://git@github.com/"]
+  insteadOf = "https://github.com"
