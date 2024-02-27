@@ -188,4 +188,4 @@
 @HAVE_HOME@    allowedSignersFile = @HOME@.config/git/allowed-signers
 
 [url "ssh://git@github.com/"]
-  insteadOf = "https://github.com"
+  insteadOf = "https://github.com/"
