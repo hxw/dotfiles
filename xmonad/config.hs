@@ -43,6 +43,7 @@ myManageHook = composeAll
       ) --> doFloat
     , (    name =? "pinentry-gtk"
        <||> name =? "pinentry-qt"
+       <||> name =? "pinentry-qt5"
       ) --> unfloat
     ]
   where role = stringProperty "WM_WINDOW_ROLE"
