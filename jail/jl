@@ -24,6 +24,9 @@ case "${1}" in
   (uname|un)
     cmd=uname
     ;;
+  (memory|m)
+    cmd=memory
+    ;;
   (console|c)
     shift
     exec jexec -l "${@}"
@@ -71,6 +74,7 @@ supported commands:
   version    (ver)   list running jail userland version
   package    (pkg)   upgrade packages in a jail
   sync       (syn)   update jl and associated scripts from repository
+  memory     (m)     summaris jail processes and memory usage
   console    (c)     open a console into a jail
   start      (s)     start one or more jails
   stop       (stp)   stop one or more jails

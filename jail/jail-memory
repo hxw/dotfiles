@@ -1,0 +1,106 @@
+#!/bin/sh
+# summarise a jails memory
+
+ERROR() {
+  printf 'error: '
+  printf "${@}"
+  printf '\n'
+  exit 1
+}
+
+VERBOSE() {
+  [ X"${verbose}" = X"no" ] && return 0
+  printf "${@}"
+  printf '\n'
+}
+
+USAGE() {
+  if [ -n "${1}" ]
+  then
+    printf 'error: '
+    printf "${@}"
+    printf '\n'
+  fi
+  cat <<EOF
+usage: ${0##*/} <options> jails...
+       --help                 -h            this message
+       --verbose              -v            more messages
+       --debug                -D            show debug information
+EOF
+  exit 1
+}
+
+# main program
+verbose=no
+debug=no
+
+# parse options
+while getopts :hvD-: option
+do
+  # convert long options
+  if [ X"${option}" = X"-" ]
+  then
+    option="${OPTARG%%=*}"
+    OPTARG="${OPTARG#${option}}"
+    OPTARG="${OPTARG#=}"
+  fi
+  case "${option}" in
+    (v|verbose)
+      verbose=yes
+      ;;
+
+    (--)
+      break
+      ;;
+
+    (D|debug)
+      debug=yes
+      ;;
+
+    (h|help)
+      USAGE
+      ;;
+
+    ('?')
+      USAGE 'invalid option: -%s' "${OPTARG}"
+      ;;
+
+    (*)
+      USAGE 'invalid option: --%s' "${option}"
+      ;;
+  esac
+done
+
+shift $((OPTIND - 1))
+
+# verify arguments
+#[ ${#} -ne 0 ] && USAGE 'extraneous arguments: %s' "${*}"
+[ "${#}" -eq 0 ] && USAGE 'missing jail name arguments: %s' "$*"
+
+# enable debugging
+[ X"${debug}" = X"yes" ] && set -x
+
+# process all jails
+for name in "${@}"
+do
+  printf 'Jail: %s\n' "${name}"
+
+  ps -a -x -o pid,vsz,rss,command -J "${name}" | awk '
+    BEGIN {
+      vsz = 0
+      rss = 0
+    }
+    !/^PID/ {
+      vsz += $1
+      rss += $2
+    }
+    {
+      print $0
+    }
+    END {
+      printf("Total VSs: %10.3f MB\n", vsz/1000)
+      printf("Total RSS: %10.3f MB\n", rss/1000)
+    }
+  '
+  printf '\n'
+done
