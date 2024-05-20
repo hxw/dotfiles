@@ -91,14 +91,14 @@ do
       rss = 0
     }
     !/^PID/ {
-      vsz += $1
-      rss += $2
+      vsz += $2
+      rss += $3
     }
     {
       print $0
     }
     END {
-      printf("Total VSs: %10.3f MB\n", vsz/1000)
+      printf("Total VSZ: %10.3f MB\n", vsz/1000)
       printf("Total RSS: %10.3f MB\n", rss/1000)
     }
   '
