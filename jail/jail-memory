@@ -25,6 +25,7 @@ USAGE() {
 usage: ${0##*/} <options> jails...
        --help                 -h            this message
        --verbose              -v            more messages
+       --summary              -s            only show final summary
        --debug                -D            show debug information
 EOF
   exit 1
@@ -33,9 +34,10 @@ EOF
 # main program
 verbose=no
 debug=no
+summary=no
 
 # parse options
-while getopts :hvD-: option
+while getopts :hvsD-: option
 do
   # convert long options
   if [ X"${option}" = X"-" ]
@@ -47,6 +49,10 @@ do
   case "${option}" in
     (v|verbose)
       verbose=yes
+      ;;
+
+    (s|summary)
+      summary=yes
       ;;
 
     (--)
@@ -80,12 +86,14 @@ shift $((OPTIND - 1))
 # enable debugging
 [ X"${debug}" = X"yes" ] && set -x
 
+[ X"${summary}" = X"yes" ] && printf '%-12s %10s  %10s\n' 'JAIL' 'VSZ (MB)' 'RSS (MB)'
+
 # process all jails
 for name in "${@}"
 do
-  printf 'Jail: %s\n' "${name}"
+  [ X"${summary}" = X"no" ] && printf 'Jail: %s\n' "${name}"
 
-  ps -a -x -o pid,vsz,rss,command -J "${name}" | awk '
+  ps -a -x -o pid,vsz,rss,command -J "${name}" | awk -v name="${name}" -v summary="${summary}" '
     BEGIN {
       vsz = 0
       rss = 0
@@ -95,12 +103,18 @@ do
       rss += $3
     }
     {
-      print $0
+      if (summary == "no") {
+        print $0
+      }
     }
     END {
-      printf("Total VSZ: %10.3f MB\n", vsz/1000)
-      printf("Total RSS: %10.3f MB\n", rss/1000)
+      if (summary == "no") {
+        printf("Total VSZ: %10.3f MB\n", vsz/1000)
+        printf("Total RSS: %10.3f MB\n", rss/1000)
+      } else {
+        printf("%-12s %10.3f  %10.3f\n", name, vsz/1000, rss/1000)
+      }
     }
   '
-  printf '\n'
+  [ X"${summary}" = X"no" ] && printf '\n'
 done
