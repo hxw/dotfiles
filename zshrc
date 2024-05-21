@@ -151,6 +151,9 @@ fi
 # put user's main bin directory first
 [[ -d "${HOME}/bin" ]] && pathfront "${HOME}/bin"
 
+# autopushd so cd -<tab> is useful
+setopt autopushd
+
 # Enables all sorts of extended globbing:
 #   ls */.txt       find all text files
 #   ls -d *(D)      show all files including those starting with "."
