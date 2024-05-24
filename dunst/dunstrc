@@ -114,8 +114,13 @@
     #  * anything else will be interpreted as a X color.
     separator_color = frame
 
-    # Sort messages by urgency.
-    sort = yes
+    # Sort type.
+    # possible values are:
+    #  * id: sort by id
+    #  * urgency_ascending: sort by urgency (low then normal then critical)
+    #  * urgency_descending: sort by urgency (critical then normal then low)
+    #  * update: sort by update (most recent always at the top)
+    sort = update
 
     # Don't remove messages, if the user is idle (no mouse or keyboard input)
     # for longer than idle_threshold seconds.
@@ -332,6 +337,7 @@
     background = "#285577"
     foreground = "#ffffff"
     timeout = 10
+    override_pause_level = 30
     # Icon for notifications with normal urgency, uncomment to enable
     #default_icon = /path/to/icon
 
@@ -340,6 +346,7 @@
     foreground = "#ffffff"
     frame_color = "#ff0000"
     timeout = 0
+    override_pause_level = 60
     # Icon for notifications with critical urgency, uncomment to enable
     #default_icon = /path/to/icon
 
@@ -377,6 +384,7 @@
 #    ellipsize
 #    alignment
 #    hide_text
+#    override_pause_level
 #
 # Shell-like globbing will get expanded.
 #
@@ -384,6 +392,10 @@
 # GLib based applications export their desktop-entry name. In comparison to the appname,
 # the desktop-entry won't get localized.
 #
+# You can also allow a notification to appear even when paused. Notification will appear whenever notification's override_pause_level >= dunst's paused level.
+# This can be used to set partial pause modes, where more urgent notifications get through, but less urgent stay paused. To do that, you can override the following in the rules:
+# override_pause_level = X
+
 # SCRIPTING
 # You can specify a script that gets run when the rule matches by
 # setting the "script" option.
