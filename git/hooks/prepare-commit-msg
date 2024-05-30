@@ -18,11 +18,12 @@ then
   sections="$(awk -v prefix="${prefix}" -- '
 /^# Changes to be committed:[[:space:]]*$/, /^#[[:space:]]*$/ {
   split($0, parts, ":")
-  sub("^[[:space:]]*(../)*", "", parts[2])
+  sub("^[[:space:]]*", "", parts[2])
+  flag = sub("^([.][.]/)+", "", parts[2])
   split(parts[2], path, "/")
-  if ("" != path[1] && "" != path[2]) {
+  if (path[1] != "" && path[2] != "") {
     print path[1] ","
-  } else if ("" != prefix) {
+  } else if (flag == 0 && prefix != "" && path[1] != "") {
     print prefix ","
   }
 }' "${file}" | sort -u | tr -d '\n')"
