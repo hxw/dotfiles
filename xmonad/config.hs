@@ -41,7 +41,8 @@ myManageHook = composeAll
        <||> (nameN  9) =? "Overwrite"
        <||> (nameN 19) =? "Rebuild folder tree"
       ) --> doFloat
-    , (    name =? "pinentry-gtk"
+    , (     name =? "pinentry-gtk"
+       <||> name =? "pinentry-gtk2"
        <||> name =? "pinentry-qt"
        <||> name =? "pinentry-qt5"
       ) --> unfloat
