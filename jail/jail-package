@@ -29,6 +29,8 @@ usage: ${0##*/} <options> jails...
        --prefix=DIR           -p DIR        jail chroot directory prefix [${prefix}]
        --upgrade              -u            upgrade packages
        --clean                -c            clean downloads
+       --jexec                -j            use jexec in running jail instead of chroot
+       --chroot               -C            use pkg --chroot instead of jexec
        --autoremove           -a            autoremove
        --debug                -D            show debug information
 EOF
@@ -63,9 +65,10 @@ prefix=/jails
 upgrade=no
 clean=no
 autoremove=no
+mode=auto
 
 # parse options
-while getopts :hvyucaD-: option
+while getopts :hvyucajCD-: option
 do
   # convert long options
   if [ X"${option}" = X"-" ]
@@ -89,6 +92,14 @@ do
 
     (c|clean)
       clean=yes
+      ;;
+
+    (j|jexec)
+      mode=jexec
+      ;;
+
+    (C|chroot)
+      mode=chroot
       ;;
 
     (a|autoremove)
@@ -129,11 +140,41 @@ shift $((OPTIND - 1))
 opts=
 [ X"${prompt}" = X"no" ] && opts='-y'
 
+exec-pkg() {
+  local mode name
+  mode="${1}"; shift
+  name="${1}"; shift
+  j="${1}"; shift
+  case "${mode}" in
+    (jexec)
+      jexec -l "${name}" pkg -- "${@}"
+      ;;
+    (chroot)
+      pkg --chroot="${j}" "${@}"
+      ;;
+    (*)
+      ERROR 'unknown execution-type: %s' "${kind}"
+      ;;
+  esac
+}
+
+
 # process all jails
 for name in "${@}"
 do
   j="${prefix}/${name}"
 
+  if [ X"${mode}" = X"auto" ]
+  then
+    if jls -j "${name}" > /dev/null 2>&1
+    then
+      kind=jexec
+    else
+      kind=chroot
+    fi
+  else
+    kind="${mode}"
+  fi
   VERBOSE 'jail chroot: %s' "${j}"
 
   [ -d "${j}" ] || ERROR 'missing jail chroot: %s' "${j}"
@@ -141,22 +182,22 @@ do
   # upgrade packages
   if [ X"${upgrade}" = X"yes" ]
   then
-    printf 'upgrading packages in jail: %s\n' "${j}"
-    jexec -l "${name}" pkg -- upgrade ${opts}
+    printf 'upgrading packages in jail: %s using: %s\n' "${j}" "${kind}"
+    exec-pkg "${kind}" "${name}" "${j}" upgrade ${opts}
   fi
 
   # clean downloaded packages
   if [ X"${clean}" = X"yes" ]
   then
-    printf 'clean packages in jail: %s\n' "${j}"
-    jexec -l "${name}" pkg -- clean -a ${opts}
+    printf 'clean packages in jail: %s using: %s\n' "${j}" "${kind}"
+    exec-pkg "${kind}" "${name}" "${j}" clean -a ${opts}
   fi
 
   # autoremove obsolete packages
   if [ X"${autoremove}" = X"yes" ]
   then
-    printf 'autoremove packages in jail: %s\n' "${j}"
-    jexec -l "${name}" pkg -- autoremove ${opts}
+    printf 'autoremove packages in jail: %s using: %s\n' "${j}" "${kind}"
+    exec-pkg "${kind}" "${name}" "${j}" autoremove ${opts}
   fi
 
 done
