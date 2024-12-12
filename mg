@@ -7,20 +7,25 @@ make-backup-files 0
 global-set-key "\eg" goto-line
 
 ; F2
-global-set-key "\eOQ" save-buffer
-; F2 on linux console
-global-set-key "\e[[B" save-buffer
-; F2 on rxvt-unicode
-global-set-key "\e[12~" save-buffer
+global-set-key "\eOQ" save-buffer    ; xterm
+global-set-key "\e[[B" save-buffer   ; linux console
+global-set-key "\e[12~" save-buffer  ; rxvt-unicode
 
 ; F4
-global-set-key "\eOS" switch-to-buffer
-global-set-key "\e[14~" switch-to-buffer
+global-set-key "\eOS" switch-to-buffer   ; xterm
+global-set-key "\e[14~" switch-to-buffer ; rxvt-unicode
 
 ; F8
 global-set-key "\e[19~" call-last-kbd-macro
 
 ; F11
+global-set-key "\e[23~" save-buffers-kill-emacs   ; rxvt-unicode
+global-set-key "\e[1;2P" save-buffers-kill-emacs  ; tmux
+
+; F12
+global-set-key "\e[24~" delete-other-windows      ; rxvt-unicode
+global-set-key "\e[1;2Q" delete-other-windows     ; tmux
+
 global-set-key "\e[23~" save-buffers-kill-emacs
 ; F12
 global-set-key "\e[24~" delete-other-windows
