@@ -6,7 +6,7 @@ executable_name=xmonad-config
 # xmonad tells us how it want resulting executable to be named
 output_file="${1}"; shift
 
-configuration_directory="${HOME}/.xmonad"
+configuration_directory="${XDG_CONFIG_HOME}/xmonad"
 flag_file="${configuration_directory}/update.flag"
 error_log="${configuration_directory}/xmonad.errors"
 
@@ -36,7 +36,7 @@ build-type:    Simple
 cabal-version: >=1.8
 
 executable xmonad-config
-  main-is: config.hs
+  main-is: xmonad.hs
   build-depends: base, xmonad, xmonad-contrib
 EOF
 fi

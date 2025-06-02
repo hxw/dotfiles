@@ -55,7 +55,7 @@ X11 XCompose
 X11 Xdefaults
 X11 xinitrc
 X11 xmobarrc
-X11 xmonad/config.hs
+X11 xmonad/xmonad.hs
 X11 xmonad/build
 X11_SED dunst/dunstrc
 X11 xprofile
@@ -267,7 +267,9 @@ if [ X"${x11}" = X"yes" ]
 then
   for f in ${list_x11}
   do
-    d="${prefix}/.${f}"
+    cfg='.config/'
+    [ X"${f}" = X"${f%/*}" ] && cfg='.'
+    d="${prefix}/${cfg}${f}"
     printf '\033[1;32mCopy "%s" to "%s"\033[0m\n' "${f}" "${d}"
     interact
     ${copy} "${src}/${f}" "${d}"

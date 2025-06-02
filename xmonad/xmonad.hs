@@ -4,7 +4,7 @@ import XMonad
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
 import XMonad.Util.Run(spawnPipe)
-import XMonad.Layout.Circle
+import XMonad.Layout.CircleEx
 import XMonad.Layout.Spiral
 import XMonad.Actions.WindowGo
 import qualified XMonad.StackSet as W
@@ -13,7 +13,7 @@ import System.IO
 import Data.Ratio
 
 
-myLayoutHook = avoidStruts (Full ||| tiled ||| Mirror tiled ||| spiral (1 % 1) ||| Circle)
+myLayoutHook = avoidStruts (Full ||| tiled ||| Mirror tiled ||| spiral (1 % 1) ||| circle)
   where
      -- default tiling algorithm partitions the screen into two panes
      tiled = Tall nmaster delta ratio
