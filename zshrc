@@ -412,6 +412,9 @@ unset termfile
 # set cookie if using non-XDG aware display manager
 [ -z "${XDG_SESSION_COOKIE}" ] && export XDG_SESSION_COOKIE="$(hostname -s)-$(date +'%s').$$-123456789"
 
+# set a better language default
+[ -z "${LANG}" ] && export LANG='C.UTF-8'
+[ -z "${MM_CHARSET}" ] && export MM_CHARSET='UTF-8'
 
 # Source any machine specific aliases, or settings
 if [[ -e "${HOME}/.zsh_local" ]]
