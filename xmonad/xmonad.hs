@@ -34,6 +34,7 @@ myManageHook = composeAll
        <||> role =? "gimp-image-window"
        <||> role =? "gimp-toolbox-color-dialog"
        <||> role =? "gimp-message-dialog"
+       <||> role =? "conlecterm-warning"
       ) --> doFloat -- ) --> (ask >>= doF . W.sink)
     , (    (nameN 14) =? "Delete message"
        <||> (nameN 14) =? "Upcoming event"
